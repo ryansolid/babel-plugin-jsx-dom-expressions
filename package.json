@@ -1,7 +1,7 @@
 {
   "name": "babel-plugin-jsx-dom-expressions",
   "description": "A JSX to DOM plugin that wraps expressions for fine grained render libraries",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Ryan Carniato",
   "license": "MIT",
   "readmeFilename": "README.md",

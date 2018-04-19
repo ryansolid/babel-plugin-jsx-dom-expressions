@@ -1,9 +1,12 @@
+import attributes from './attributes'
+
 export default (babel) ->
   { types: t } = babel
 
   document = t.identifier("document");
   createElement = t.identifier("createElement");
   createElementNS = t.identifier("createElementNS");
+  createFragment = t.identifier("createDocumentFragment");
   createTextNode = t.identifier("createTextNode");
   appendChild = t.identifier("appendChild");
   setAttribute = t.identifier("setAttribute");
@@ -19,9 +22,8 @@ export default (babel) ->
   text = (string) ->
     t.callExpression(t.memberExpression(document, createTextNode), [string])
 
-  append = (node, child, returnPartial) ->
+  append = (node, child) ->
     call = t.callExpression(t.memberExpression(node, appendChild), [child])
-    return call if returnPartial
     t.expressionStatement(call)
 
   declare = (name, value) ->
@@ -31,7 +33,16 @@ export default (babel) ->
     name.slice(2).replace(/^(.)/, ($1) -> $1.toLowerCase())
 
   setAttr = (elem, name, value) ->
-    t.expressionStatement(t.callExpression(t.memberExpression(elem, setAttribute), [name, value]))
+    isAttribute = name.indexOf('-') > -1
+    if attribute = attributes[name]
+      if attribute.type is 'attribute'
+        isAttribute = true
+      else name = attribute.alias
+
+    if isAttribute
+      t.callExpression(t.memberExpression(elem, setAttribute), [t.stringLiteral(name), value])
+    else
+      t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
 
   setAttrExpr = (path, elem, name, value) ->
     if (name.startsWith("on"))
@@ -43,7 +54,7 @@ export default (babel) ->
             t.arrowFunctionExpression([], t.callExpression(t.identifier("r.assign"), [t.memberExpression(elem, t.identifier(name)), value]))
           ])
         )
-      when "class"
+      when 'class', 'className'
         arg = path.scope.generateUidIdentifier("classNames");
         iter = path.scope.generateUidIdentifier("className");
         t.expressionStatement(
@@ -69,7 +80,7 @@ export default (babel) ->
       else
         t.expressionStatement(
           t.callExpression(t.identifier("r.wrap"), [
-            t.arrowFunctionExpression([], t.callExpression(t.memberExpression(elem, setAttribute), [t.stringLiteral(name), value]))
+            t.arrowFunctionExpression([], setAttr(elem, name, value))
           ])
         )
 
@@ -110,6 +121,7 @@ export default (babel) ->
         return { id: null, elems: [t.arrowFunctionExpression([], decl)] }
 
       namespace = null;
+      nativeExtension = undefined;
       for attribute in jsx.openingElement.attributes
         if t.isJSXSpreadAttribute(attribute)
           arg = path.scope.generateUidIdentifier("attrs")
@@ -119,7 +131,8 @@ export default (babel) ->
             t.forInStatement(
               iter,
               arg,
-              t.ifStatement(t.callExpression(t.memberExpression(arg, hasOwnProperty), [iter]), setAttr(name, iter, t.memberExpression(arg, iter, true)))
+              t.ifStatement(t.callExpression(t.memberExpression(arg, hasOwnProperty), [iter]),
+              t.expressionStatement(setAttr(name, iter.value, t.memberExpression(arg, iter, true))))
             )
           )
         else
@@ -127,16 +140,42 @@ export default (babel) ->
             namespace = attribute.value
             continue
 
+          if attribute.name.name is 'is'
+            nativeExtension = attribute.value
+            continue
+
           value = attribute.value;
           if t.isJSXExpressionContainer(value)
             elems.push(setAttrExpr(path, name, attribute.name.name, value.expression))
           else
-            elems.push(setAttr(name, t.stringLiteral(attribute.name.name), value))
+            elems.push(t.expressionStatement(setAttr(name, attribute.name.name, value)))
 
       if namespace
         call = t.callExpression(t.memberExpression(document, createElementNS), [namespace, t.stringLiteral(tagName)])
+      else if nativeExtension
+        call = t.callExpression(t.memberExpression(document, createElement), [t.stringLiteral(tagName), t.objectExpression([t.objectProperty(t.identifier('is'), nativeExtension)])])
       else
         call = t.callExpression(t.memberExpression(document, createElement), [t.stringLiteral(tagName)])
+
+      decl = t.variableDeclaration("const", [t.variableDeclarator(name, call)])
+      elems.unshift(decl)
+
+      childExpressions = []
+      for child in jsx.children
+        child = generateHTMLNode(path, child, opts)
+        continue if child is null
+        if child.id
+          elems.push(...child.elems)
+          elems.push(append(name, child.id))
+        else
+          elems.push(t.expressionStatement(t.callExpression(t.identifier("r.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
+
+      return { id: name, elems: elems }
+    else if t.isJSXFragment(jsx)
+      name = path.scope.generateUidIdentifier("elem")
+      elems = []
+
+      call = t.callExpression(t.memberExpression(document, createFragment), [])
 
       decl = t.variableDeclaration("const", [t.variableDeclarator(name, call)])
       elems.unshift(decl)
@@ -148,7 +187,7 @@ export default (babel) ->
           elems.push(...child.elems)
           elems.push(append(name, child.id))
         else
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("r.insert"), [name, child.elems[0]])))
+          elems.push(t.expressionStatement(t.callExpression(t.identifier("r.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
 
       return { id: name, elems: elems }
     else if t.isJSXText(jsx)
@@ -163,7 +202,12 @@ export default (babel) ->
     name: "ast-transform",
     visitor:
       JSXElement: (path, { opts }) ->
-        result = generateHTMLNode(path, path.node, opts);
+        result = generateHTMLNode(path, path.node, opts)
         path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)))
+        return
+      JSXFragment: (path, { opts }) ->
+        result = generateHTMLNode(path, path.node, opts)
+        path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)))
+        return
   }
 
