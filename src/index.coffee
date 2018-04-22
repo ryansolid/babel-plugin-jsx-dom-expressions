@@ -18,6 +18,7 @@ export default (babel) ->
   NodeClass = t.identifier("Node");
   zero = t.numericLiteral(0);
   one = t.numericLiteral(1);
+  moduleName = 'r'
 
   text = (string) ->
     t.callExpression(t.memberExpression(document, createTextNode), [string])
@@ -50,21 +51,21 @@ export default (babel) ->
     switch name
       when "style"
         t.expressionStatement(
-          t.callExpression(t.identifier("r.wrap"), [
-            t.arrowFunctionExpression([], t.callExpression(t.identifier("r.assign"), [t.memberExpression(elem, t.identifier(name)), value]))
+          t.callExpression(t.identifier("#{moduleName}.wrap"), [
+            t.arrowFunctionExpression([], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), value]))
           ])
         )
-      when 'class', 'className'
+      when 'classList'
         arg = path.scope.generateUidIdentifier("classNames");
         iter = path.scope.generateUidIdentifier("className");
         t.expressionStatement(
-          t.callExpression(t.identifier("r.wrap"), [
+          t.callExpression(t.identifier("#{moduleName}.wrap"), [
             t.arrowFunctionExpression(
               [],
               t.blockStatement([
                 declare(arg, value),
                 t.forInStatement(
-                  iter,
+                  declare(iter),
                   arg,
                   t.ifStatement(
                     t.callExpression(t.memberExpression(arg, hasOwnProperty), [iter]),
@@ -79,7 +80,7 @@ export default (babel) ->
         t.expressionStatement(t.assignmentExpression("=", value, elem))
       else
         t.expressionStatement(
-          t.callExpression(t.identifier("r.wrap"), [
+          t.callExpression(t.identifier("#{moduleName}.wrap"), [
             t.arrowFunctionExpression([], setAttr(elem, name, value))
           ])
         )
@@ -113,12 +114,16 @@ export default (babel) ->
         if children.length
           props.push(t.objectProperty(t.identifier("children"), t.arrayExpression(children)))
 
-        decl = t.callExpression(
-          t.identifier(tagName),
-          if spreads.length then [t.callExpression(t.identifier("r.assign"), [t.objectExpression(props), ...spreads])] else [t.objectExpression(props)]
-        )
+        unless spreads.length
+          elems = t.callExpression(t.identifier(tagName), [t.objectExpression(props)])
+        else
+          propsId = path.scope.generateUidIdentifier("props")
+          elems.push(declare(propsId, t.objectExpression(props)))
+          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.assign"), [propsId, ...spreads])))
+          elems.push(t.returnStatement(t.callExpression(t.identifier(tagName),[propsId])))
+          elems = t.blockStatement(elems)
 
-        return { id: null, elems: [t.arrowFunctionExpression([], decl)] }
+        return { id: null, elems: [t.arrowFunctionExpression([], elems)] }
 
       namespace = null;
       nativeExtension = undefined;
@@ -129,7 +134,7 @@ export default (babel) ->
           elems.push(declare(arg, attribute.argument));
           elems.push(
             t.forInStatement(
-              iter,
+              declare(iter),
               arg,
               t.ifStatement(t.callExpression(t.memberExpression(arg, hasOwnProperty), [iter]),
               t.expressionStatement(setAttr(name, iter.value, t.memberExpression(arg, iter, true))))
@@ -168,7 +173,7 @@ export default (babel) ->
           elems.push(...child.elems)
           elems.push(append(name, child.id))
         else
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("r.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
+          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
 
       return { id: name, elems: elems }
     else if t.isJSXFragment(jsx)
@@ -187,7 +192,7 @@ export default (babel) ->
           elems.push(...child.elems)
           elems.push(append(name, child.id))
         else
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("r.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
+          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
 
       return { id: name, elems: elems }
     else if t.isJSXText(jsx)
@@ -202,10 +207,15 @@ export default (babel) ->
     name: "ast-transform",
     visitor:
       JSXElement: (path, { opts }) ->
+        moduleName = opts.moduleName if opts.moduleName
         result = generateHTMLNode(path, path.node, opts)
-        path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)))
+        if result.id
+          path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)));
+        else
+          path.replaceWith(t.callExpression(result.elems[0], []));
         return
       JSXFragment: (path, { opts }) ->
+        moduleName = opts.moduleName if opts.moduleName
         result = generateHTMLNode(path, path.node, opts)
         path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)))
         return
