@@ -177,19 +177,24 @@ export default (babel) ->
 
       return { id: name, elems: elems }
     else if t.isJSXFragment(jsx)
-      ids = []
+      name = path.scope.generateUidIdentifier("elem")
       elems = []
+
+      call = t.callExpression(t.memberExpression(document, createFragment), [])
+
+      decl = t.variableDeclaration("const", [t.variableDeclarator(name, call)])
+      elems.unshift(decl)
 
       for child in jsx.children
         child = generateHTMLNode(path, child, opts)
         continue if child is null
         if child.id
           elems.push(...child.elems)
-          ids.push(child.id)
+          elems.push(append(name, child.id))
         else
           elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
 
-      return { ids, elems }
+      return { id: name, elems: elems }
     else if t.isJSXText(jsx)
       return null if opts.noWhitespaceOnly and /^\s*$/.test(jsx.value)
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
@@ -212,7 +217,7 @@ export default (babel) ->
       JSXFragment: (path, { opts }) ->
         moduleName = opts.moduleName if opts.moduleName
         result = generateHTMLNode(path, path.node, opts)
-        path.replaceWithMultiple(result.elems.concat(t.expressionStatement(t.arrayExpression(result.ids))))
+        path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)))
         return
   }
 
