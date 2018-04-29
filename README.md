@@ -12,11 +12,11 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 To write a wrapper you create an object with the following methods:
 
-wrap(fn):
+wrap(accessor, fn):
 
 This is called around attribute expressions. Generally this will be a straight mapping to a computed or equivalent in your library.
 
-insert(parentNode, multi, fn):
+insert(parentNode, multi, accessor):
 
 This handles content expressions (expressions between the tags). Multi indicates whether there is only a single expression or multiple expressions/tags between the parent tags which can allow for optimization. This method typically works much more like a hyperscript function with a big switch statment to handle different data types.
 

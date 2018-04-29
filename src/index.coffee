@@ -52,24 +52,24 @@ export default (babel) ->
       when "style"
         t.expressionStatement(
           t.callExpression(t.identifier("#{moduleName}.wrap"), [
-            t.arrowFunctionExpression([], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), value]))
+            t.arrowFunctionExpression([], value)
+            t.arrowFunctionExpression([t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), t.identifier('value')]))
           ])
         )
       when 'classList'
-        arg = path.scope.generateUidIdentifier("classNames");
-        iter = path.scope.generateUidIdentifier("className");
+        iter = t.identifier("className");
         t.expressionStatement(
           t.callExpression(t.identifier("#{moduleName}.wrap"), [
+            t.arrowFunctionExpression([], value)
             t.arrowFunctionExpression(
-              [],
+              [t.identifier('value')],
               t.blockStatement([
-                declare(arg, value),
                 t.forInStatement(
                   declare(iter),
-                  arg,
+                  t.identifier('value'),
                   t.ifStatement(
-                    t.callExpression(t.memberExpression(arg, hasOwnProperty), [iter]),
-                    t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [iter, t.memberExpression(arg, iter, true)]))
+                    t.callExpression(t.memberExpression(t.identifier('value'), hasOwnProperty), [iter]),
+                    t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [iter, t.memberExpression(t.identifier('value'), iter, true)]))
                   )
                 )
               ])
@@ -81,7 +81,8 @@ export default (babel) ->
       else
         t.expressionStatement(
           t.callExpression(t.identifier("#{moduleName}.wrap"), [
-            t.arrowFunctionExpression([], setAttr(elem, name, value))
+            t.arrowFunctionExpression([], value)
+            t.arrowFunctionExpression([t.identifier('value')], setAttr(elem, name, t.identifier('value')))
           ])
         )
 
