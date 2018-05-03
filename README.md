@@ -10,19 +10,15 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 ## API
 
-To write a wrapper you create an object with the following methods:
+To write a runtime you create an object with the following methods:
 
-wrap(accessor, fn):
+### wrap(accessor, fn)
 
-This is called around attribute expressions. Generally this will be a straight mapping to a computed or equivalent in your library.
+This is called around attribute expressions. Call fn with the resolved value.
 
-insert(parentNode, multi, accessor):
+### wrapContent(accessor, fn)
 
-This handles content expressions (expressions between the tags). Multi indicates whether there is only a single expression or multiple expressions/tags between the parent tags which can allow for optimization. This method typically works much more like a hyperscript function with a big switch statment to handle different data types.
-
-assign(obj1, obj2):
-
-This is used in a few places and for spreads. Use the approach of choice to merge object properties.
+This called around content expressions. Call fn with the resolved value.
 
 ## Work in Progress
 

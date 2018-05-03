@@ -1,13 +1,16 @@
 {
   "name": "babel-plugin-jsx-dom-expressions",
   "description": "A JSX to DOM plugin that wraps expressions for fine grained render libraries",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "Ryan Carniato",
   "license": "MIT",
   "readmeFilename": "README.md",
   "main": "lib/index.js",
   "scripts": {
-    "prepublishOnly": "rollup -f \"cjs\" -c -o lib/index.js"
+    "buildPlugin": "rollup -f \"cjs\" -c -o lib/index.js src/index.coffee",
+    "buildRuntimeES": "rollup -f \"es\" -c -o dist/createRuntime.js src/createRuntime/index.coffee",
+    "buildRuntimeCJS": "rollup -f \"cjs\" -c -o lib/createRuntime.js src/createRuntime/index.coffee",
+    "prepublishOnly": "npm run buildPlugin && npm run buildRuntimeES && npm run buildRuntimeCJS"
   },
   "devDependencies": {
     "coffeescript": "2.x",
