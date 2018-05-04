@@ -1,4 +1,5 @@
 import reconcileArrays from './reconcileArrays'
+import Attributes from '../Attributes'
 
 isNode = (el) -> el and el.nodeName and el.nodeType
 
@@ -124,9 +125,11 @@ multipleExpressions = (parent, accessor, options) ->
 
 export default (options) ->
   # options are wrap, wrapContent
-  return {
-    assign: (a, b) ->
-      a[k] = b[k] for k of b
+  return runtime = {
+    assign: (a) ->
+      for i in [1...arguments.length] by 1
+        b = arguments[i]
+        a[k] = b[k] for k of b
       return a
     insert: (parent, multiple, accessor) ->
       if multiple
@@ -134,4 +137,20 @@ export default (options) ->
       else singleExpression(parent, accessor, options)
       return
     wrap: options.wrap
+    spread: (node, accessor) ->
+      options.wrap accessor, (props) ->
+        for prop, value of props
+          if prop is 'style'
+            runtime.assign(node.style, value)
+            continue
+          if prop is 'classList'
+            node.classList.toggle(className, prop[className]) for className of value
+            continue
+          if info = Attributes[prop]
+            if info.type is 'attribute'
+              node.setAttribute(prop, value)
+              continue
+            else prop = info.alias
+          node[prop] = value
+        return
   }

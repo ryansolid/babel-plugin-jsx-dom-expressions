@@ -1,4 +1,5 @@
-import attributes from './attributes'
+import SyntaxJSX from '@babel/plugin-syntax-jsx'
+import Attributes from './Attributes'
 
 export default (babel) ->
   { types: t } = babel
@@ -35,7 +36,7 @@ export default (babel) ->
 
   setAttr = (elem, name, value) ->
     isAttribute = name.indexOf('-') > -1
-    if attribute = attributes[name]
+    if attribute = Attributes[name]
       if attribute.type is 'attribute'
         isAttribute = true
       else name = attribute.alias
@@ -130,16 +131,8 @@ export default (babel) ->
       nativeExtension = undefined;
       for attribute in jsx.openingElement.attributes
         if t.isJSXSpreadAttribute(attribute)
-          arg = path.scope.generateUidIdentifier("attrs")
-          iter = path.scope.generateUidIdentifier("attr")
-          elems.push(declare(arg, attribute.argument));
           elems.push(
-            t.forInStatement(
-              declare(iter),
-              arg,
-              t.ifStatement(t.callExpression(t.memberExpression(arg, hasOwnProperty), [iter]),
-              t.expressionStatement(setAttr(name, iter.value, t.memberExpression(arg, iter, true))))
-            )
+            t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.spread"), [name, t.arrowFunctionExpression([], attribute.argument)]))
           )
         else
           if attribute.name.name is "namespace"
@@ -206,6 +199,7 @@ export default (babel) ->
 
   return {
     name: "ast-transform",
+    inherits: SyntaxJSX
     visitor:
       JSXElement: (path, { opts }) ->
         moduleName = opts.moduleName if opts.moduleName
