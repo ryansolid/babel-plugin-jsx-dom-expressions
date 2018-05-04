@@ -24,7 +24,7 @@ normalizeIncomingArray = (normalized, array) ->
 
 singleExpression = (parent, accessor, options) ->
   current = null
-  options.wrapContent accessor, (value) ->
+  options.wrapExpr accessor, (value) ->
     return if value is current
     t = typeof value
     if t is 'string'
@@ -67,7 +67,7 @@ singleExpression = (parent, accessor, options) ->
 
 multipleExpressions = (parent, accessor, options) ->
   nodes = []
-  options.wrapContent accessor, (value) ->
+  options.wrapExpr accessor, (value) ->
     marker = null
     t = typeof value
     parent = nodes[0]?.parentNode or parent
@@ -124,21 +124,27 @@ multipleExpressions = (parent, accessor, options) ->
     return
 
 export default (options) ->
-  # options are wrap, wrapContent
+  # options are wrapExpr, sanitize
+  options.sanitize or= (i) -> i
   return runtime = {
     assign: (a) ->
       for i in [1...arguments.length] by 1
         b = arguments[i]
         a[k] = b[k] for k of b
       return a
+
     insert: (parent, multiple, accessor) ->
       if multiple
         multipleExpressions(parent, accessor, options)
       else singleExpression(parent, accessor, options)
       return
-    wrap: options.wrap
+
+    wrap: (accessor, fn) ->
+      options.wrapExpr accessor, (value) ->
+        fn(options.sanitize(value))
+
     spread: (node, accessor) ->
-      options.wrap accessor, (props) ->
+      options.wrapExpr accessor, (props) ->
         for prop, value of props
           if prop is 'style'
             runtime.assign(node.style, value)
@@ -151,6 +157,6 @@ export default (options) ->
               node.setAttribute(prop, value)
               continue
             else prop = info.alias
-          node[prop] = value
+          node[prop] = options.sanitize(value)
         return
   }

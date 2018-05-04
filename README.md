@@ -12,13 +12,13 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 To write a runtime you create an object with the following methods:
 
-### wrap(accessor, fn)
+### wrapExpr(accessor, fn) : void
 
-This is called around attribute expressions. Call fn with the resolved value.
+This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Call fn with the resolved value. This is required.
 
-### wrapContent(accessor, fn)
+### sanitize(value) : value
 
-This called around content expressions. Call fn with the resolved value.
+This called whenever a value is going to be assigned to a element property. It lets you clean up the value (like remove nested observables etc..) before you pass it to element. This is optional.
 
 ## Work in Progress
 
