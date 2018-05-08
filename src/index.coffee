@@ -1,6 +1,8 @@
 import SyntaxJSX from '@babel/plugin-syntax-jsx'
 import Attributes from './Attributes'
 
+export { createRuntime } from './createRuntime'
+
 export default (babel) ->
   { types: t } = babel
 
