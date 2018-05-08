@@ -123,7 +123,7 @@ multipleExpressions = (parent, accessor, options) ->
       nodes.length = nodes.length - 1
     return
 
-export default (options) ->
+export createRuntime = (options) ->
   # options are wrapExpr, sanitize
   options.sanitize or= (i) -> i
   return runtime = {

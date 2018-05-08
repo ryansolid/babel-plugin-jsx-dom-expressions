@@ -8,9 +8,20 @@ This plugin would allow you to take a library like KnockoutJS or MobX and use th
 
 This plugin treats all lowercase tags as html elements and mixed cased tags as Custom Functions. This enables breaking up your view into functional components. This library supports Web Compoenent Custom Elements spec. Support for common camelcase event handlers like React, dom safe attributes like class and for, a simple ref property, and parsing of objects for style, and classList properties. Support for JSX fragment elements.
 
-## API
+## Example Implementations
+* [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
 
-To write a runtime you create an object with the following methods:
+## Plugin Options
+
+### moduleName
+The name of the runtime the compiler will output. Defaults to 'r'.
+
+### allowWhitespaceOnly
+By default the plugin skips expressions that are only white space. You can set this to true if you wish it not to skip.
+
+## Runtime API
+
+To write a runtime you pass an object with the following methods to the createRuntime method:
 
 ### wrapExpr(accessor, fn) : void
 

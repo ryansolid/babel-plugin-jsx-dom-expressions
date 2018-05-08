@@ -190,7 +190,7 @@ export default (babel) ->
 
       return { id: name, elems: elems }
     else if t.isJSXText(jsx)
-      return null if opts.noWhitespaceOnly and /^\s*$/.test(jsx.value)
+      return null if not opts.allowWhitespaceOnly and /^\s*$/.test(jsx.value)
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
     else if t.isJSXExpressionContainer(jsx)
       return { elems: [t.arrowFunctionExpression([], jsx.expression)] }

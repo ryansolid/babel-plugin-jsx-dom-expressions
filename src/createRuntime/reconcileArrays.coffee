@@ -1,13 +1,13 @@
-# Shamelessly lifted straight from SurplusJS https://github.com/adamhaile/surplus
-
 NOMATCH = -1
 NOINSERT = -2
 RECONCILE_ARRAY_BATCH = 0
 RECONCILE_ARRAY_BITS = 16
 RECONCILE_ARRAY_INC = 1 << RECONCILE_ARRAY_BITS
 RECONCILE_ARRAY_MASK = RECONCILE_ARRAY_INC - 1
+# reconcileArray is lifted from SurplusJS https://github.com/adamhaile/surplus
+
 # reconcile the content of parent from ns to us
-# see ivi's excellent writeup of diffing arrays in a vdom library: 
+# see ivi's excellent writeup of diffing arrays in a vdom library:
 # https://github.com/ivijs/ivi/blob/2c81ead934b9128e092cc2a5ef2d3cabc73cb5dd/packages/ivi/src/vdom/implementation.ts#L1187
 # this code isn't identical, since we're diffing real dom nodes to nodes-or-strings, 
 # but the core methodology of trimming ends and reversals, matching nodes, then using
