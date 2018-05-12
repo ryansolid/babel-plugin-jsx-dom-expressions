@@ -109,7 +109,7 @@ export default (babel) ->
               props.push(t.objectProperty(t.identifier(attribute.name.name), value))
 
         children = []
-        for child in jsx.children.length
+        for child in jsx.children
           child = generateHTMLNode(path, child, opts);
           continue if child is null
           if child.id

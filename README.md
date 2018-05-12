@@ -37,7 +37,11 @@ This is still early in the works. I'm still consolidating what methods should be
 
 An interesting area here is that unlike VDOM libraries controlling re-rendering parts of the tree is much more of a concern, so I'm looking to see if control flow as a JSX abstraction is more beneficial here. Naked ternary operators and map functions work fine in the simple case but are incredibly inefficient once you are drawing something of significance. Memoization of mapping functions and conditionals is a must and since caching the inputs is necessary in these libraries, the input source needs to be evaluated separately from the templated DOM expressions it maps to. While this can exist in user land for each library something as simple as a <Map> component might allow library writers to abstract that away. While this introduces a DSL it doesn't have to be a heavy one. My thinking is that a single component could handle mapping and conditionals. You still have all the it's javascript benefits.
 
-I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably limited support for SVG. I intend to get a few working examples up of library wrapper implementations. I've been validating with my own library but I am probably going to start with Knockoutjs since it's a prime candidate to demonstrate whether such an approach is a universal game changer for these types of libraries. This approach really attacks their fundamental weakness while leveraging their strengths.
+I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably limited support for SVG. I intend to get a few working examples up of library wrapper implementations.
+
+TODOS:
+Multi-nested Fragments
+Boolean Attribute handling
 
 ## Acknowledgements
 
