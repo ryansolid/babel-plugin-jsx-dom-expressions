@@ -22,9 +22,9 @@ normalizeIncomingArray = (normalized, array) ->
     i++
   normalized
 
-singleExpression = (parent, accessor, options) ->
+singleExpression = (parent, accessor, wrapExpr) ->
   current = null
-  options.wrapExpr accessor, (value) ->
+  wrapExpr accessor, (value) ->
     return if value is current
     t = typeof value
     if t is 'string'
@@ -39,7 +39,7 @@ singleExpression = (parent, accessor, options) ->
     else if value instanceof Node
       if Array.isArray(current)
         if current.length is 0
-          parent.appendChild(value);
+          parent.appendChild(value)
         else if current.length is 1
           parent.replaceChild(value, current[0])
         else
@@ -65,9 +65,9 @@ singleExpression = (parent, accessor, options) ->
     else
       throw new Error("content must be Node, stringable, or array of same")
 
-multipleExpressions = (parent, accessor, options) ->
+multipleExpressions = (parent, accessor, wrapExpr) ->
   nodes = []
-  options.wrapExpr accessor, (value) ->
+  wrapExpr accessor, (value) ->
     marker = null
     t = typeof value
     parent = nodes[0]?.parentNode or parent
@@ -94,7 +94,7 @@ multipleExpressions = (parent, accessor, options) ->
           for child, i in array
             parent.appendChild(child)
             nodes[i] = child
-          marker = nodes[i-1]
+          marker = nodes[i - 1]
         else
           reconcileArrays(parent, nodes, array, true)
           nodes = array
@@ -123,10 +123,9 @@ multipleExpressions = (parent, accessor, options) ->
       nodes.length = nodes.length - 1
     return
 
-export createRuntime = (options) ->
-  # options are wrapExpr, sanitize
-  options.sanitize or= (i) -> i
-  return runtime = {
+export createRuntime = ({ wrapExpr, sanitize }) ->
+  sanitize or= (i) -> i
+  return {
     assign: (a) ->
       for i in [1...arguments.length] by 1
         b = arguments[i]
@@ -135,19 +134,19 @@ export createRuntime = (options) ->
 
     insert: (parent, multiple, accessor) ->
       if multiple
-        multipleExpressions(parent, accessor, options)
-      else singleExpression(parent, accessor, options)
+        multipleExpressions(parent, accessor, wrapExpr)
+      else singleExpression(parent, accessor, wrapExpr)
       return
 
     wrap: (accessor, fn) ->
-      options.wrapExpr accessor, (value) ->
-        fn(options.sanitize(value))
+      wrapExpr accessor, (value) ->
+        fn(sanitize(value))
 
     spread: (node, accessor) ->
-      options.wrapExpr accessor, (props) ->
+      wrapExpr accessor, (props) ->
         for prop, value of props
           if prop is 'style'
-            runtime.assign(node.style, value)
+            node.style[k] = value[k] for k of value
             continue
           if prop is 'classList'
             node.classList.toggle(className, prop[className]) for className of value
@@ -157,6 +156,6 @@ export createRuntime = (options) ->
               node.setAttribute(prop, value)
               continue
             else prop = info.alias
-          node[prop] = options.sanitize(value)
+          node[prop] = sanitize(value)
         return
   }
