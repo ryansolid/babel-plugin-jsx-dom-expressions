@@ -49,8 +49,15 @@ export default (babel) ->
       t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
 
   setAttrExpr = (path, elem, name, value) ->
+    if value.comments
+      break for c, i in value.comments when c.value.indexOf('@skip') > -1
+      if i < value.comments.length
+        value.comments.splice(i, 1);
+        return t.expressionStatement(setAttr(elem, name, value));
+
     if (name.startsWith("on"))
       return t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("addEventListener")), [t.stringLiteral(toEventName(name)), value]))
+
     switch name
       when "style"
         t.expressionStatement(

@@ -29,7 +29,15 @@ This is called around all expressions. This is typically where you wrap the expr
 
 ### sanitize(value) : value
 
-This called whenever a value is going to be assigned to a element property. It lets you clean up the value (like remove nested observables etc..) before you pass it to element. This is optional.
+This is called whenever a value is going to be assigned to a element property. It lets you clean up the value (like remove nested observables etc..) before you pass it to element. This is optional.
+
+## Pragma Comments
+
+In order to optimize certain situations the compiler supports pragma comments.
+
+### @skip
+
+This skips wrapping the attribute expression in a function and just writes it straight out. Keep in mind if the element is in a parent expression it may unintentionally trigger it. So keep that in mind.
 
 ## Work in Progress
 
@@ -41,7 +49,7 @@ I'm mostly focusing early on where I can make the biggest conceptual gain so the
 
 TODOS:
 Multi-nested Fragments
-Boolean Attribute handling
+Better Boolean Attribute handling
 
 ## Acknowledgements
 
