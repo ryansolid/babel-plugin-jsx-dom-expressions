@@ -49,10 +49,10 @@ export default (babel) ->
       t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
 
   setAttrExpr = (path, elem, name, value) ->
-    if value.comments
-      break for c, i in value.comments when c.value.indexOf('@skip') > -1
-      if i < value.comments.length
-        value.comments.splice(i, 1);
+    if value.leadingComments
+      break for c, i in value.leadingComments when c.value.indexOf('@skip') > -1
+      if i < value.leadingComments.length
+        value.leadingComments.splice(i, 1);
         return t.expressionStatement(setAttr(elem, name, value));
 
     if (name.startsWith("on"))
@@ -176,7 +176,7 @@ export default (babel) ->
           elems.push(...child.elems)
           elems.push(append(name, child.id))
         else
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
+          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert#{if jsx.children.length > 1 then 'M' else ''}"), [name, child.elems[0]])))
 
       return { id: name, elems: elems }
     else if t.isJSXFragment(jsx)
@@ -195,13 +195,19 @@ export default (babel) ->
           elems.push(...child.elems)
           elems.push(append(name, child.id))
         else
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert"), [name, t.booleanLiteral(jsx.children.length > 1), child.elems[0]])))
+          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert#{if jsx.children.length > 1 then 'M' else ''}"), [name, child.elems[0]])))
 
       return { id: name, elems: elems }
     else if t.isJSXText(jsx)
       return null if not opts.allowWhitespaceOnly and /^\s*$/.test(jsx.value)
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
     else if t.isJSXExpressionContainer(jsx)
+      if jsx.expression.leadingComments
+        break for c, i in jsx.expression.leadingComments when c.value.indexOf('@skip') > -1
+        if i < jsx.expression.leadingComments.length
+          jsx.expression.leadingComments.splice(i, 1)
+          return { elems: [jsx.expression] }
+
       return { elems: [t.arrowFunctionExpression([], jsx.expression)] }
     else
       return { id: null, elems: [jsx] }

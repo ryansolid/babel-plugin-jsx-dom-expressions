@@ -37,7 +37,7 @@ In order to optimize certain situations the compiler supports pragma comments.
 
 ### @skip
 
-This skips wrapping the attribute expression in a function and just writes it straight out. Keep in mind if the element is in a parent expression it may unintentionally trigger it. So keep that in mind.
+This skips calling the wrapExpr handler. Keep in mind if the element is in a parent expression it may unintentionally trigger it.
 
 ## Work in Progress
 

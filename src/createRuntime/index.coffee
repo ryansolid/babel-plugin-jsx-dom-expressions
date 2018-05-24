@@ -22,9 +22,9 @@ normalizeIncomingArray = (normalized, array) ->
     i++
   normalized
 
-singleExpression = (parent, accessor, wrapExpr) ->
+singleExpression = (parent) ->
   current = null
-  wrapExpr accessor, (value) ->
+  (value) ->
     return if value is current
     t = typeof value
     if t is 'string'
@@ -65,9 +65,9 @@ singleExpression = (parent, accessor, wrapExpr) ->
     else
       throw new Error("content must be Node, stringable, or array of same")
 
-multipleExpressions = (parent, accessor, wrapExpr) ->
+multipleExpressions = (parent) ->
   nodes = []
-  wrapExpr accessor, (value) ->
+  (value) ->
     marker = null
     t = typeof value
     parent = nodes[0]?.parentNode or parent
@@ -132,11 +132,15 @@ export createRuntime = ({ wrapExpr, sanitize }) ->
         a[k] = b[k] for k of b
       return a
 
-    insert: (parent, multiple, accessor) ->
-      if multiple
-        multipleExpressions(parent, accessor, wrapExpr)
-      else singleExpression(parent, accessor, wrapExpr)
-      return
+    insert: (parent, accessor) ->
+      if typeof accessor is 'function'
+        return wrapExpr(accessor, singleExpression(parent))
+      singleExpression(parent)(accessor)
+
+    insertM: (parent, accessor) ->
+      if typeof accessor is 'function'
+        return wrapExpr(accessor, multipleExpressions(parent))
+      multipleExpressions(parent)(accessor)
 
     wrap: (accessor, fn) ->
       wrapExpr accessor, (value) ->
