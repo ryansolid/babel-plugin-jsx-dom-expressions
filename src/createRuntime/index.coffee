@@ -162,4 +162,7 @@ export createRuntime = ({ wrapExpr, sanitize }) ->
             else prop = info.alias
           node[prop] = sanitize(value)
         return
+
+    addEventListener: (node, eventName, fn) ->
+      node.addEventListener(eventName, fn)
   }

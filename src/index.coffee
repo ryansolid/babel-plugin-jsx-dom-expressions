@@ -56,7 +56,7 @@ export default (babel) ->
         return t.expressionStatement(setAttr(elem, name, value));
 
     if (name.startsWith("on"))
-      return t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("addEventListener")), [t.stringLiteral(toEventName(name)), value]))
+      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addEventListener"), [elem, t.stringLiteral(toEventName(name)), value]))
 
     switch name
       when "style"

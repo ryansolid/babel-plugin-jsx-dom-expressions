@@ -10,6 +10,7 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 ## Example Implementations
 * [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
+* [solid-js](https://github.com/ryansolid/solid-js): A declarative JavaScript library for building user interfaces.
 
 ## Plugin Options
 
