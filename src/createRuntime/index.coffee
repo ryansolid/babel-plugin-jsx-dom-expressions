@@ -123,8 +123,7 @@ multipleExpressions = (parent) ->
       nodes.length = nodes.length - 1
     return
 
-export createRuntime = ({ wrapExpr, sanitize }) ->
-  sanitize or= (i) -> i
+export createRuntime = ({ wrapExpr }) ->
   return {
     assign: (a) ->
       for i in [1...arguments.length] by 1
@@ -134,20 +133,23 @@ export createRuntime = ({ wrapExpr, sanitize }) ->
 
     insert: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrapExpr(accessor, singleExpression(parent))
+        return wrapExpr(accessor, false, singleExpression(parent))
       singleExpression(parent)(accessor)
 
     insertM: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrapExpr(accessor, multipleExpressions(parent))
+        return wrapExpr(accessor, false, multipleExpressions(parent))
       multipleExpressions(parent)(accessor)
 
     wrap: (accessor, fn) ->
-      wrapExpr accessor, (value) ->
-        fn(sanitize(value))
+      wrapExpr accessor, true, fn
 
     spread: (node, accessor) ->
-      wrapExpr accessor, (props) ->
+      wrapExpr () ->
+        props = accessor()
+        v for k, v of props
+        return props
+      , true, (props) ->
         for prop, value of props
           if prop is 'style'
             node.style[k] = value[k] for k of value
@@ -160,7 +162,7 @@ export createRuntime = ({ wrapExpr, sanitize }) ->
               node.setAttribute(prop, value)
               continue
             else prop = info.alias
-          node[prop] = sanitize(value)
+          node[prop] = value
         return
 
     addEventListener: (node, eventName, fn) ->
