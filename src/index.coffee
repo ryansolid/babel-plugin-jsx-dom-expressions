@@ -3,6 +3,9 @@ import Attributes from './Attributes'
 
 export { createRuntime } from './createRuntime'
 
+REGEX_ON_KEY = /@on\((.+)\)/
+REGEX_DELEGATE_KEY = /@delegate\((.+)\)/
+
 export default (babel) ->
   { types: t } = babel
 
@@ -48,57 +51,64 @@ export default (babel) ->
     else
       t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
 
-  setAttrExpr = (path, elem, name, value) ->
-    if value.leadingComments
-      break for c, i in value.leadingComments when c.value.indexOf('@skip') > -1
-      if i < value.leadingComments.length
-        value.leadingComments.splice(i, 1);
-        return t.expressionStatement(setAttr(elem, name, value));
-
+  setAttrExpr = (path, elem, name, value, delegate) ->
     if (name.startsWith("on"))
+      if delegate
+        delKey = path.scope.generateUid("del")
+        parentEl = path.findParent((p) => p.isCallExpression() && p.node.callee.name?.startsWith("#{moduleName}.insert")).node.arguments[0]
+        return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addEventDelegate"), [elem, parentEl, t.stringLiteral(toEventName(name)), t.stringLiteral(delKey), t.identifier(delegate), value]))
       return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addEventListener"), [elem, t.stringLiteral(toEventName(name)), value]))
 
-    switch name
+    return t.expressionStatement(t.assignmentExpression("=", value, elem)) if name is 'ref'
+
+    content = switch name
       when "style"
-        t.expressionStatement(
-          t.callExpression(t.identifier("#{moduleName}.wrap"), [
-            t.arrowFunctionExpression([], value)
-            t.arrowFunctionExpression([t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), t.identifier('value')]))
-          ])
-        )
+        [
+          t.arrowFunctionExpression([], value)
+          t.arrowFunctionExpression([t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), t.identifier('value')]))
+        ]
       when 'classList'
         iter = t.identifier("className");
-        t.expressionStatement(
-          t.callExpression(t.identifier("#{moduleName}.wrap"), [
-            t.arrowFunctionExpression([], value)
-            t.arrowFunctionExpression(
-              [t.identifier('value')],
-              t.blockStatement([
-                t.forInStatement(
-                  declare(iter),
-                  t.identifier('value'),
-                  t.ifStatement(
-                    t.callExpression(t.memberExpression(t.identifier('value'), hasOwnProperty), [iter]),
-                    t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [iter, t.memberExpression(t.identifier('value'), iter, true)]))
-                  )
+        [
+          t.arrowFunctionExpression([], value)
+          t.arrowFunctionExpression(
+            [t.identifier('value')],
+            t.blockStatement([
+              t.forInStatement(
+                declare(iter),
+                t.identifier('value'),
+                t.ifStatement(
+                  t.callExpression(t.memberExpression(t.identifier('value'), hasOwnProperty), [iter]),
+                  t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [iter, t.memberExpression(t.identifier('value'), iter, true)]))
                 )
-              ])
-            )
-          ])
-        )
-      when "ref"
-        t.expressionStatement(t.assignmentExpression("=", value, elem))
+              )
+            ])
+          )
+        ]
       else
+        [
+          t.arrowFunctionExpression([], value)
+          t.arrowFunctionExpression([t.identifier('value')], setAttr(elem, name, t.identifier('value')))
+        ]
+
+    if delegate
+      delKey = path.scope.generateUid("on")
+      path.getFunctionParent().getStatementParent().insertBefore(
         t.expressionStatement(
-          t.callExpression(t.identifier("#{moduleName}.wrap"), [
-            t.arrowFunctionExpression([], value)
-            t.arrowFunctionExpression([t.identifier('value')], setAttr(elem, name, t.identifier('value')))
-          ])
+          t.callExpression(
+            t.identifier("#{moduleName}.delegateBinding"), [
+              t.stringLiteral(delKey), t.identifier(delegate)
+            ]
+          )
         )
+      )
+      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addBindingDelegate"), [t.stringLiteral(delKey), content...]))
+
+    t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), content))
 
   generateHTMLNode = (path, jsx, opts) ->
     if t.isJSXElement(jsx)
-      name = path.scope.generateUidIdentifier("elem")
+      name = path.scope.generateUidIdentifier("el$")
       tagName = jsx.openingElement.name.name
       elems = []
 
@@ -138,6 +148,7 @@ export default (babel) ->
 
       namespace = null;
       nativeExtension = undefined;
+      delegatedEvents = []
       for attribute in jsx.openingElement.attributes
         if t.isJSXSpreadAttribute(attribute)
           elems.push(
@@ -153,8 +164,23 @@ export default (babel) ->
             continue
 
           value = attribute.value;
-          if t.isJSXExpressionContainer(value)
-            elems.push(setAttrExpr(path, name, attribute.name.name, value.expression))
+
+          if attribute.leadingComments
+            for c in attribute.leadingComments
+              if c.value.indexOf('@skip') > -1
+                skip = true
+                break
+              if c.value.indexOf('@on') > -1
+                if (matches = c.value.match(REGEX_ON_KEY))
+                  delegate = matches[1]
+                break
+              if c.value.indexOf('@delegate') > -1
+                if (matches = c.value.match(REGEX_DELEGATE_KEY))
+                  delegate = matches[1]
+                break
+
+          if t.isJSXExpressionContainer(value) and not skip
+            elems.push(setAttrExpr(path, name, attribute.name.name, value.expression, delegate))
           else
             elems.push(t.expressionStatement(setAttr(name, attribute.name.name, value)))
 
@@ -180,7 +206,7 @@ export default (babel) ->
 
       return { id: name, elems: elems }
     else if t.isJSXFragment(jsx)
-      name = path.scope.generateUidIdentifier("elem")
+      name = path.scope.generateUidIdentifier("el$")
       elems = []
 
       call = t.callExpression(t.memberExpression(document, createFragment), [])

@@ -28,13 +28,21 @@ To write a runtime you pass an object with the following methods to the createRu
 
 This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Call fn with the resolved value.
 
-## Pragma Comments
+## Experimental Features
 
-In order to optimize certain situations the compiler supports pragma comments.
+In order to optimize certain situations the compiler supports pragma comments. These are still experimental. The @on, and @delegate decorators require the mapping function to be in the same function.
 
 ### @skip
 
 This skips calling the wrapExpr handler. Keep in mind if the element is in a parent expression it may unintentionally trigger it.
+
+### @on(signal/observable)
+
+Instead of having every row in an array have it's own computed this sets the binding to execute on a specific observable change. Beneficial for hover/selected states where the driving observable is outside of the list.
+
+### @delegate(identifier)
+
+Prefixes an event handler it uses event delegation to reduce the number of DOM Event Listeners.
 
 ## Work in Progress
 

@@ -123,8 +123,17 @@ multipleExpressions = (parent) ->
       nodes.length = nodes.length - 1
     return
 
-export createRuntime = ({ wrapExpr }) ->
-  return {
+DelegateMap = {}
+eventHandler = (el, key, fn) -> (e) ->
+  node = e.target
+  node = node.parentNode while node and node isnt el and !(found = node[key])?
+  return unless found?
+  fn(found, e)
+  return
+
+export createRuntime = ({ wrapExpr, disposer }) ->
+  disposer or= (->)
+  return runtime = {
     assign: (a) ->
       for i in [1...arguments.length] by 1
         b = arguments[i]
@@ -167,4 +176,38 @@ export createRuntime = ({ wrapExpr }) ->
 
     addEventListener: (node, eventName, fn) ->
       node.addEventListener(eventName, fn)
+
+    addEventDelegate: (el, parentEl, eventName, key, id, fn) ->
+      el[key] = id
+      return if parentEl[key]
+      parentEl[key] = true
+      parentEl.addEventListener(eventName, eventHandler(parentEl, key, fn), true);
+
+    delegateBinding: (k, signal) ->
+      DelegateMap[k] = delegate = {head: undefined, tail: undefined}
+      wrapExpr signal, true, ->
+        tail = delegate.tail
+        node = delegate.head
+        while node isnt tail
+          node.update(node.value())
+          node = node.next
+        return
+      disposer(() -> delete DelegateMap[k]; return)
+      return
+
+    addBindingDelegate: (key, value, update) ->
+      delegate = DelegateMap[key]
+      unless delegate.tail
+        delegate.tail = delegate.head = node = {value, update}
+      else
+        delegate.tail = delegate.tail.next = node = {value, update, prev: delegate.tail}
+      disposer(() ->
+        if node.prev
+          node.prev.next = node.next
+        else delegate.head = node.next
+        if node.next
+          node.next.prev = node.prev
+        else delegate.tail = node.prev
+        return
+      )
   }

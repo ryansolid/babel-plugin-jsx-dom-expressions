@@ -19,12 +19,9 @@ export default [{
   plugins,
 }, {
   input: 'src/createRuntime/index.coffee',
-  output: [{
-    file: 'lib/createRuntime.js',
-    format: 'cjs'
-  }, {
+  output: {
     file: 'dist/createRuntime.js',
     format: 'es'
-  }],
+  },
   plugins
 }]
