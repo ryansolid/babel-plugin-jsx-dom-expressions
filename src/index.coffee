@@ -64,22 +64,24 @@ export default (babel) ->
     content = switch name
       when "style"
         [
+          elem,
           t.arrowFunctionExpression([], value)
-          t.arrowFunctionExpression([t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), t.identifier('value')]))
+          t.arrowFunctionExpression([t.identifier('value'), t.identifier('_el$')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(t.identifier('_el$'), t.identifier(name)), t.identifier('value')]))
         ]
       when 'classList'
         iter = t.identifier("className");
         [
+          elem,
           t.arrowFunctionExpression([], value)
           t.arrowFunctionExpression(
-            [t.identifier('value')],
+            [t.identifier('value'), t.identifier('_el$')],
             t.blockStatement([
               t.forInStatement(
                 declare(iter),
                 t.identifier('value'),
                 t.ifStatement(
                   t.callExpression(t.memberExpression(t.identifier('value'), hasOwnProperty), [iter]),
-                  t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [iter, t.memberExpression(t.identifier('value'), iter, true)]))
+                  t.expressionStatement(t.callExpression(t.memberExpression(t.identifier('_el$'), t.identifier("classList.toggle")), [iter, t.memberExpression(t.identifier('value'), iter, true)]))
                 )
               )
             ])
@@ -87,8 +89,9 @@ export default (babel) ->
         ]
       else
         [
+          elem,
           t.arrowFunctionExpression([], value)
-          t.arrowFunctionExpression([t.identifier('value')], setAttr(elem, name, t.identifier('value')))
+          t.arrowFunctionExpression([t.identifier('value'), t.identifier('_el$')], setAttr(t.identifier('_el$'), name, t.identifier('value')))
         ]
 
     if delegate
@@ -97,12 +100,13 @@ export default (babel) ->
         t.expressionStatement(
           t.callExpression(
             t.identifier("#{moduleName}.delegateBinding"), [
-              t.stringLiteral(delKey), t.identifier(delegate)
+              t.stringLiteral(delKey), t.identifier(delegate),
+              content[content.length - 1]
             ]
           )
         )
       )
-      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addBindingDelegate"), [t.stringLiteral(delKey), content...]))
+      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addBindingDelegate"), [t.stringLiteral(delKey), content[...-1]...]))
 
     t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), content))
 

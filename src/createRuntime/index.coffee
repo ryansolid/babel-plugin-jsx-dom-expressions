@@ -22,9 +22,9 @@ normalizeIncomingArray = (normalized, array) ->
     i++
   normalized
 
-singleExpression = (parent) ->
+singleExpression = ->
   current = null
-  (value) ->
+  (value, parent) ->
     return if value is current
     t = typeof value
     if t is 'string'
@@ -65,9 +65,9 @@ singleExpression = (parent) ->
     else
       throw new Error("content must be Node, stringable, or array of same")
 
-multipleExpressions = (parent) ->
+multipleExpressions = ->
   nodes = []
-  (value) ->
+  (value, parent) ->
     marker = null
     t = typeof value
     parent = nodes[0]?.parentNode or parent
@@ -131,6 +131,22 @@ eventHandler = (el, key, fn) -> (e) ->
   fn(found, e)
   return
 
+applySpread = (props, node) ->
+  for prop, value of props
+    if prop is 'style'
+      node.style[k] = value[k] for k of value
+      continue
+    if prop is 'classList'
+      node.classList.toggle(className, prop[className]) for className of value
+      continue
+    if info = Attributes[prop]
+      if info.type is 'attribute'
+        node.setAttribute(prop, value)
+        continue
+      else prop = info.alias
+    node[prop] = value
+  return
+
 export createRuntime = ({ wrapExpr, disposer }) ->
   disposer or= (->)
   return runtime = {
@@ -142,37 +158,23 @@ export createRuntime = ({ wrapExpr, disposer }) ->
 
     insert: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrapExpr(accessor, false, singleExpression(parent))
-      singleExpression(parent)(accessor)
+        return wrapExpr(accessor, parent, false, singleExpression())
+      singleExpression()(accessor, parent)
 
     insertM: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrapExpr(accessor, false, multipleExpressions(parent))
-      multipleExpressions(parent)(accessor)
+        return wrapExpr(accessor, parent, false, multipleExpressions())
+      multipleExpressions()(accessor, parent)
 
-    wrap: (accessor, fn) ->
-      wrapExpr accessor, true, fn
+    wrap: (elem, accessor, fn) ->
+      wrapExpr accessor, elem, true, fn
 
-    spread: (node, accessor) ->
-      wrapExpr () ->
+    spread: (elem, accessor) ->
+      wrapExpr ->
         props = accessor()
         v for k, v of props
         return props
-      , true, (props) ->
-        for prop, value of props
-          if prop is 'style'
-            node.style[k] = value[k] for k of value
-            continue
-          if prop is 'classList'
-            node.classList.toggle(className, prop[className]) for className of value
-            continue
-          if info = Attributes[prop]
-            if info.type is 'attribute'
-              node.setAttribute(prop, value)
-              continue
-            else prop = info.alias
-          node[prop] = value
-        return
+      , elem, true, applySpread
 
     addEventListener: (node, eventName, fn) ->
       node.addEventListener(eventName, fn)
@@ -183,24 +185,23 @@ export createRuntime = ({ wrapExpr, disposer }) ->
       parentEl[key] = true
       parentEl.addEventListener(eventName, eventHandler(parentEl, key, fn), true);
 
-    delegateBinding: (k, signal) ->
+    delegateBinding: (k, signal, update) ->
       DelegateMap[k] = delegate = {head: undefined, tail: undefined}
-      wrapExpr signal, true, ->
-        tail = delegate.tail
+      wrapExpr signal, delegate, true, (_, delegate) ->
         node = delegate.head
-        while node isnt tail
-          node.update(node.value())
+        while node
+          update(node.value(), node.elem)
           node = node.next
         return
       disposer(() -> delete DelegateMap[k]; return)
       return
 
-    addBindingDelegate: (key, value, update) ->
+    addBindingDelegate: (key, elem, value) ->
       delegate = DelegateMap[key]
       unless delegate.tail
-        delegate.tail = delegate.head = node = {value, update}
+        delegate.tail = delegate.head = node = {value, elem}
       else
-        delegate.tail = delegate.tail.next = node = {value, update, prev: delegate.tail}
+        delegate.tail = delegate.tail.next = node = {value, elem, prev: delegate.tail}
       disposer(() ->
         if node.prev
           node.prev.next = node.next

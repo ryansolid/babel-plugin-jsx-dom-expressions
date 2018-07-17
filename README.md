@@ -24,9 +24,9 @@ By default the plugin skips expressions that are only white space. You can set t
 
 To write a runtime you pass an object with the following methods to the createRuntime method:
 
-### wrapExpr(accessor, isAttr, fn) : void
+### wrapExpr(valueAccessor, element, isAttr, fn) : void
 
-This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Call fn with the resolved value.
+This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Call fn with the resolved value and element.
 
 ## Experimental Features
 
