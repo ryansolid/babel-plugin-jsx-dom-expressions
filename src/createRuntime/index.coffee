@@ -124,11 +124,12 @@ multipleExpressions = ->
     return
 
 DelegateMap = {}
-eventHandler = (el, key, fn) -> (e) ->
+eventHandler = (e) ->
   node = e.target
-  node = node.parentNode while node and node isnt el and !(found = node[key])?
-  return unless found?
-  fn(found, e)
+  name = "__ev$#{e.type}"
+  node = node.parentNode while node and node isnt @ and !(found = node[name])?
+  return unless found
+  found(node["#{name}Data"], e)
   return
 
 applySpread = (props, node) ->
@@ -147,9 +148,11 @@ applySpread = (props, node) ->
     node[prop] = value
   return
 
-export createRuntime = ({ wrapExpr, disposer }) ->
-  disposer or= (->)
-  return runtime = {
+export createRuntime = (options) ->
+  { wrap } = options
+  return Object.assign({
+    linkEvent: (data, handler) -> {handler, data}
+
     assign: (a) ->
       for i in [1...arguments.length] by 1
         b = arguments[i]
@@ -158,57 +161,31 @@ export createRuntime = ({ wrapExpr, disposer }) ->
 
     insert: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrapExpr(accessor, parent, false, singleExpression())
+        return wrap(accessor, parent, false, singleExpression())
       singleExpression()(accessor, parent)
 
     insertM: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrapExpr(accessor, parent, false, multipleExpressions())
+        return wrap(accessor, parent, false, multipleExpressions())
       multipleExpressions()(accessor, parent)
 
-    wrap: (elem, accessor, fn) ->
-      wrapExpr accessor, elem, true, fn
-
     spread: (elem, accessor) ->
-      wrapExpr ->
+      wrap ->
         props = accessor()
         v for k, v of props
         return props
       , elem, true, applySpread
 
-    addEventListener: (node, eventName, fn) ->
-      node.addEventListener(eventName, fn)
+    addEventListener: (node, eventName, identifier, fn) ->
+      return node.addEventListener(eventName, fn) if typeof fn is 'function'
 
-    addEventDelegate: (el, parentEl, eventName, key, id, fn) ->
-      el[key] = id
-      return if parentEl[key]
-      parentEl[key] = true
-      parentEl.addEventListener(eventName, eventHandler(parentEl, key, fn), true);
-
-    delegateBinding: (k, signal, update) ->
-      DelegateMap[k] = delegate = {head: undefined, tail: undefined}
-      wrapExpr signal, delegate, true, (_, delegate) ->
-        node = delegate.head
-        while node
-          update(node.value(), node.elem)
-          node = node.next
-        return
-      disposer(() -> delete DelegateMap[k]; return)
-      return
-
-    addBindingDelegate: (key, elem, value) ->
-      delegate = DelegateMap[key]
-      unless delegate.tail
-        delegate.tail = delegate.head = node = {value, elem}
-      else
-        delegate.tail = delegate.tail.next = node = {value, elem, prev: delegate.tail}
-      disposer(() ->
-        if node.prev
-          node.prev.next = node.next
-        else delegate.head = node.next
-        if node.next
-          node.next.prev = node.prev
-        else delegate.tail = node.prev
-        return
-      )
-  }
+      node["__ev$#{eventName}"] = fn.handler
+      node["__ev$#{eventName}Data"] = fn.data
+      return if DelegateMap[identifier]
+      DelegateMap[identifier] = true
+      Promise.resolve().then ->
+        delNode = node.getRootNode?() or document
+        return if delNode["__h$#{eventName}"]
+        delNode["__h$#{eventName}"] = true
+        delNode.addEventListener(eventName, eventHandler)
+  }, options)

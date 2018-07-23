@@ -3,8 +3,7 @@ import Attributes from './Attributes'
 
 export { createRuntime } from './createRuntime'
 
-REGEX_ON_KEY = /@on\((.+)\)/
-REGEX_DELEGATE_KEY = /@delegate\((.+)\)/
+REGEX_CUSTOM = /@custom\((.+)\)/
 
 export default (babel) ->
   { types: t } = babel
@@ -51,28 +50,25 @@ export default (babel) ->
     else
       t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
 
-  setAttrExpr = (path, elem, name, value, delegate) ->
+  setAttrExpr = (path, elem, name, value, custom) ->
     if (name.startsWith("on"))
-      if delegate
-        delKey = path.scope.generateUid("del")
-        parentEl = path.findParent((p) => p.isCallExpression() && p.node.callee.name?.startsWith("#{moduleName}.insert")).node.arguments[0]
-        return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addEventDelegate"), [elem, parentEl, t.stringLiteral(toEventName(name)), t.stringLiteral(delKey), t.identifier(delegate), value]))
-      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addEventListener"), [elem, t.stringLiteral(toEventName(name)), value]))
+      ev = path.scope.generateUid("ev$")
+      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addEventListener"), [elem, t.stringLiteral(toEventName(name)), t.stringLiteral(ev), value]))
 
     return t.expressionStatement(t.assignmentExpression("=", value, elem)) if name is 'ref'
 
     content = switch name
       when "style"
         [
-          elem,
           t.arrowFunctionExpression([], value)
+          elem, t.booleanLiteral(true),
           t.arrowFunctionExpression([t.identifier('value'), t.identifier('_el$')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(t.identifier('_el$'), t.identifier(name)), t.identifier('value')]))
         ]
       when 'classList'
         iter = t.identifier("className");
         [
-          elem,
           t.arrowFunctionExpression([], value)
+          elem, t.booleanLiteral(true),
           t.arrowFunctionExpression(
             [t.identifier('value'), t.identifier('_el$')],
             t.blockStatement([
@@ -89,26 +85,12 @@ export default (babel) ->
         ]
       else
         [
-          elem,
           t.arrowFunctionExpression([], value)
+          elem, t.booleanLiteral(true),
           t.arrowFunctionExpression([t.identifier('value'), t.identifier('_el$')], setAttr(t.identifier('_el$'), name, t.identifier('value')))
         ]
 
-    if delegate
-      delKey = path.scope.generateUid("on")
-      path.getFunctionParent().getStatementParent().insertBefore(
-        t.expressionStatement(
-          t.callExpression(
-            t.identifier("#{moduleName}.delegateBinding"), [
-              t.stringLiteral(delKey), t.identifier(delegate),
-              content[content.length - 1]
-            ]
-          )
-        )
-      )
-      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addBindingDelegate"), [t.stringLiteral(delKey), content[...-1]...]))
-
-    t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), content))
+    t.expressionStatement(t.callExpression(t.identifier(if custom then custom else "#{moduleName}.wrap"), content))
 
   generateHTMLNode = (path, jsx, opts) ->
     if t.isJSXElement(jsx)
@@ -152,7 +134,6 @@ export default (babel) ->
 
       namespace = null;
       nativeExtension = undefined;
-      delegatedEvents = []
       for attribute in jsx.openingElement.attributes
         if t.isJSXSpreadAttribute(attribute)
           elems.push(
@@ -171,20 +152,16 @@ export default (babel) ->
 
           if attribute.leadingComments
             for c in attribute.leadingComments
-              if c.value.indexOf('@skip') > -1
+              if c.value.indexOf('@static') > -1
                 skip = true
                 break
-              if c.value.indexOf('@on') > -1
-                if (matches = c.value.match(REGEX_ON_KEY))
-                  delegate = matches[1]
-                break
-              if c.value.indexOf('@delegate') > -1
-                if (matches = c.value.match(REGEX_DELEGATE_KEY))
-                  delegate = matches[1]
+              if c.value.indexOf('@custom') > -1
+                if (matches = c.value.match(REGEX_CUSTOM))
+                  custom = matches[1]
                 break
 
           if t.isJSXExpressionContainer(value) and not skip
-            elems.push(setAttrExpr(path, name, attribute.name.name, value.expression, delegate))
+            elems.push(setAttrExpr(path, name, attribute.name.name, value.expression, custom))
           else
             elems.push(t.expressionStatement(setAttr(name, attribute.name.name, value)))
 
@@ -233,7 +210,7 @@ export default (babel) ->
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
     else if t.isJSXExpressionContainer(jsx)
       if jsx.expression.leadingComments
-        break for c, i in jsx.expression.leadingComments when c.value.indexOf('@skip') > -1
+        break for c, i in jsx.expression.leadingComments when c.value.indexOf('@static') > -1
         if i < jsx.expression.leadingComments.length
           jsx.expression.leadingComments.splice(i, 1)
           return { elems: [jsx.expression] }

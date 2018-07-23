@@ -24,25 +24,24 @@ By default the plugin skips expressions that are only white space. You can set t
 
 To write a runtime you pass an object with the following methods to the createRuntime method:
 
-### wrapExpr(valueAccessor, element, isAttr, fn) : void
+### wrap(valueAccessor, element, isAttr, fn) : void
 
 This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Call fn with the resolved value and element.
 
 ## Experimental Features
 
-In order to optimize certain situations the compiler supports pragma comments. These are still experimental. The @on, and @delegate decorators require the mapping function to be in the same function.
+In order to optimize certain situations the compiler supports pragma comments. These are still experimental.
 
-### @skip
+### @static
 
-This skips calling the wrapExpr handler. Keep in mind if the element is in a parent expression it may unintentionally trigger it.
+This skips calling the wrap handler. Keep in mind if the element is in a parent expression it may unintentionally trigger it.
 
-### @on(signal/observable)
+### @custom(fn)
 
-Instead of having every row in an array have it's own computed this sets the binding to execute on a specific observable change. Beneficial for hover/selected states where the driving observable is outside of the list.
-
-### @delegate(identifier)
-
-Prefixes an event handler it uses event delegation to reduce the number of DOM Event Listeners.
+Ability to control how an attribute binding works. The provided function signature is:
+```js
+fn(valueAccessor, element, isAttr, fn) {}
+```
 
 ## Work in Progress
 
@@ -53,8 +52,9 @@ An interesting area here is that unlike VDOM libraries controlling re-rendering 
 I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably limited support for SVG. I intend to get a few working examples up of library wrapper implementations.
 
 TODOS:
-Multi-nested Fragments
-Better Boolean Attribute handling
+
+* Multi-nested Fragments
+* Better Boolean Attribute handling
 
 ## Acknowledgements
 
