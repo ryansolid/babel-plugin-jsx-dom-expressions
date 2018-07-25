@@ -24,7 +24,7 @@ normalizeIncomingArray = (normalized, array) ->
 
 singleExpression = ->
   current = null
-  (value, parent) ->
+  (parent, value) ->
     return if value is current
     t = typeof value
     if t is 'string'
@@ -67,7 +67,7 @@ singleExpression = ->
 
 multipleExpressions = ->
   nodes = []
-  (value, parent) ->
+  (parent, value) ->
     marker = null
     t = typeof value
     parent = nodes[0]?.parentNode or parent
@@ -123,16 +123,7 @@ multipleExpressions = ->
       nodes.length = nodes.length - 1
     return
 
-DelegateMap = {}
-eventHandler = (e) ->
-  node = e.target
-  name = "__ev$#{e.type}"
-  node = node.parentNode while node and node isnt @ and !(found = node[name])?
-  return unless found
-  found(node["#{name}Data"], e)
-  return
-
-applySpread = (props, node) ->
+applySpread = (node, props) ->
   for prop, value of props
     if prop is 'style'
       node.style[k] = value[k] for k of value
@@ -151,8 +142,6 @@ applySpread = (props, node) ->
 export createRuntime = (options) ->
   { wrap } = options
   return Object.assign({
-    linkEvent: (data, handler) -> {handler, data}
-
     assign: (a) ->
       for i in [1...arguments.length] by 1
         b = arguments[i]
@@ -161,31 +150,18 @@ export createRuntime = (options) ->
 
     insert: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrap(accessor, parent, false, singleExpression())
-      singleExpression()(accessor, parent)
+        return wrap(parent, accessor, false, singleExpression())
+      singleExpression()(parent, accessor)
 
     insertM: (parent, accessor) ->
       if typeof accessor is 'function'
-        return wrap(accessor, parent, false, multipleExpressions())
-      multipleExpressions()(accessor, parent)
+        return wrap(parent, accessor, false, multipleExpressions())
+      multipleExpressions()(parent, accessor)
 
     spread: (elem, accessor) ->
-      wrap ->
+      wrap elem, ->
         props = accessor()
         v for k, v of props
         return props
-      , elem, true, applySpread
-
-    addEventListener: (node, eventName, identifier, fn) ->
-      return node.addEventListener(eventName, fn) if typeof fn is 'function'
-
-      node["__ev$#{eventName}"] = fn.handler
-      node["__ev$#{eventName}Data"] = fn.data
-      return if DelegateMap[identifier]
-      DelegateMap[identifier] = true
-      Promise.resolve().then ->
-        delNode = node.getRootNode?() or document
-        return if delNode["__h$#{eventName}"]
-        delNode["__h$#{eventName}"] = true
-        delNode.addEventListener(eventName, eventHandler)
+      , true, applySpread
   }, options)

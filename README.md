@@ -10,6 +10,7 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 ## Example Implementations
 * [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
+* [mobx-jsx](https://github.com/ryansolid/ko-jsx): Ever wondered how much more performant MobX is without React?
 * [solid-js](https://github.com/ryansolid/solid-js): A declarative JavaScript library for building user interfaces.
 
 ## Plugin Options
@@ -28,26 +29,39 @@ To write a runtime you pass an object with the following methods to the createRu
 
 This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Call fn with the resolved value and element.
 
+## Special Binding
+
+### ref
+
+This binding will assign the variable you pass to it with the DOM element
+
+### on...
+
+These will be treated as event handlers expecting a function.
+
+### fn
+
+This takes a custom method that passes the element as a parameter. You can add as many as you want.
+
+### classList
+
+This takes an object and assigns all the keys which are truthy.
+
+### ... (spreads)
+
+Keep in mind given the independent nature of binding updates there is no guarentee of order using spreads at this time. It's definitely an area for improvement.
+
 ## Experimental Features
 
-In order to optimize certain situations the compiler supports pragma comments. These are still experimental.
+In order to optimize certain situations the compiler supports pragma comments.
 
 ### @static
 
 This skips calling the wrap handler. Keep in mind if the element is in a parent expression it may unintentionally trigger it.
 
-### @custom(fn)
-
-Ability to control how an attribute binding works. The provided function signature is:
-```js
-fn(valueAccessor, element, isAttr, fn) {}
-```
-
 ## Work in Progress
 
-This is still early in the works. I'm still consolidating what methods should be helpers or end user provided. My goal here is to better understand and generalize this approach to provide non Virtual DOM alternatives to developing web applications.  In a sense when React hit the scene it brought with it tools and approaches that were light years ahead of the competition but also prematurely dismissed other approaches that were more optimized in other ways. I hope being able to leverage JSX evens the playing ground a bit.
-
-An interesting area here is that unlike VDOM libraries controlling re-rendering parts of the tree is much more of a concern, so I'm looking to see if control flow as a JSX abstraction is more beneficial here. Naked ternary operators and map functions work fine in the simple case but are incredibly inefficient once you are drawing something of significance. Memoization of mapping functions and conditionals is a must and since caching the inputs is necessary in these libraries, the input source needs to be evaluated separately from the templated DOM expressions it maps to. While this can exist in user land for each library something as simple as a <Map> component might allow library writers to abstract that away. While this introduces a DSL it doesn't have to be a heavy one. My thinking is that a single component could handle mapping and conditionals. You still have all the it's javascript benefits.
+This is still early in the works. I'm still consolidating what methods should be helpers or end user provided. My goal here is to better understand and generalize this approach to provide non Virtual DOM alternatives to developing web applications.  In a sense when React hit the scene it brought with it tools and approaches that were light years ahead of the competition but also prematurely dismissed other approaches that were more optimized in other ways. I hope being able to leverage JSX evens the playing field a bit.
 
 I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably limited support for SVG. I intend to get a few working examples up of library wrapper implementations.
 
@@ -55,8 +69,9 @@ TODOS:
 
 * Multi-nested Fragments
 * Better Boolean Attribute handling
+* Spreads to preserve overrides
 
 ## Acknowledgements
 
-The JSX to DOM basis is built on top of babel-plugin-jsx-to-dom. The concept of using JSX to DOM instead of html strings and context based binding usually found in these libraries was inspired greatly by SurplusJS. If you want to use a library today that employs a further optimized version of these techniques you should check it out.
+The JSX to DOM basis is built on top of babel-plugin-jsx-to-dom. The concept of using JSX to DOM instead of html strings and context based binding usually found in these libraries was inspired greatly by [Surplus](https://github.com/adamhaile/surplus). If you want to use a library today that employs a further optimized version of these techniques you should check it out.
 

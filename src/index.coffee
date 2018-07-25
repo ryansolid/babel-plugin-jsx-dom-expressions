@@ -3,8 +3,6 @@ import Attributes from './Attributes'
 
 export { createRuntime } from './createRuntime'
 
-REGEX_CUSTOM = /@custom\((.+)\)/
-
 export default (babel) ->
   { types: t } = babel
 
@@ -50,27 +48,35 @@ export default (babel) ->
     else
       t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
 
-  setAttrExpr = (path, elem, name, value, custom) ->
+  setAttrExpr = (path, elem, name, value) ->
     if (name.startsWith("on"))
-      ev = path.scope.generateUid("ev$")
-      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.addEventListener"), [elem, t.stringLiteral(toEventName(name)), t.stringLiteral(ev), value]))
+      return t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier('addEventListener')), [t.stringLiteral(toEventName(name)), value]))
 
     return t.expressionStatement(t.assignmentExpression("=", value, elem)) if name is 'ref'
 
+    if name is 'fn'
+      return t.expressionStatement(t.callExpression(value, [elem]))
+
     content = switch name
-      when "style"
+      when 'fn'
         [
-          t.arrowFunctionExpression([], value)
-          elem, t.booleanLiteral(true),
-          t.arrowFunctionExpression([t.identifier('value'), t.identifier('_el$')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(t.identifier('_el$'), t.identifier(name)), t.identifier('value')]))
+          elem, t.arrowFunctionExpression([], value)
+          t.booleanLiteral(true),
+          t.arrowFunctionExpression([t.identifier('_el$'), t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(t.identifier('_el$'), t.identifier(name)), t.identifier('value')]))
+        ]
+      when 'style'
+        [
+          elem, t.arrowFunctionExpression([], value)
+          t.booleanLiteral(true),
+          t.arrowFunctionExpression([t.identifier('_el$'), t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(t.identifier('_el$'), t.identifier(name)), t.identifier('value')]))
         ]
       when 'classList'
         iter = t.identifier("className");
         [
-          t.arrowFunctionExpression([], value)
-          elem, t.booleanLiteral(true),
+          elem, t.arrowFunctionExpression([], value)
+          t.booleanLiteral(true),
           t.arrowFunctionExpression(
-            [t.identifier('value'), t.identifier('_el$')],
+            [t.identifier('_el$'), t.identifier('value')],
             t.blockStatement([
               t.forInStatement(
                 declare(iter),
@@ -85,12 +91,12 @@ export default (babel) ->
         ]
       else
         [
-          t.arrowFunctionExpression([], value)
-          elem, t.booleanLiteral(true),
-          t.arrowFunctionExpression([t.identifier('value'), t.identifier('_el$')], setAttr(t.identifier('_el$'), name, t.identifier('value')))
+          elem, t.arrowFunctionExpression([], value)
+          t.booleanLiteral(true),
+          t.arrowFunctionExpression([ t.identifier('_el$'), t.identifier('value')], setAttr(t.identifier('_el$'), name, t.identifier('value')))
         ]
 
-    t.expressionStatement(t.callExpression(t.identifier(if custom then custom else "#{moduleName}.wrap"), content))
+    t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), content))
 
   generateHTMLNode = (path, jsx, opts) ->
     if t.isJSXElement(jsx)
@@ -155,13 +161,9 @@ export default (babel) ->
               if c.value.indexOf('@static') > -1
                 skip = true
                 break
-              if c.value.indexOf('@custom') > -1
-                if (matches = c.value.match(REGEX_CUSTOM))
-                  custom = matches[1]
-                break
 
           if t.isJSXExpressionContainer(value) and not skip
-            elems.push(setAttrExpr(path, name, attribute.name.name, value.expression, custom))
+            elems.push(setAttrExpr(path, name, attribute.name.name, value.expression))
           else
             elems.push(t.expressionStatement(setAttr(name, attribute.name.name, value)))
 
