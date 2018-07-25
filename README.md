@@ -10,7 +10,7 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 ## Example Implementations
 * [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
-* [mobx-jsx](https://github.com/ryansolid/ko-jsx): Ever wondered how much more performant MobX is without React?
+* [mobx-jsx](https://github.com/ryansolid/mobx-jsx): Ever wondered how much more performant MobX is without React?
 * [solid-js](https://github.com/ryansolid/solid-js): A declarative JavaScript library for building user interfaces.
 
 ## Plugin Options
