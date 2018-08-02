@@ -154,13 +154,11 @@ export default (babel) ->
             nativeExtension = attribute.value
             continue
 
-          value = attribute.value;
+          value = attribute.value
 
-          if attribute.leadingComments
-            for c in attribute.leadingComments
-              if c.value.indexOf('@static') > -1
-                skip = true
-                break
+          if value.expression?.extra?.parenthesized
+            skip = true
+            value = value.expression
 
           if t.isJSXExpressionContainer(value) and not skip
             elems.push(setAttrExpr(path, name, attribute.name.name, value.expression))
@@ -211,11 +209,8 @@ export default (babel) ->
       return null if not opts.allowWhitespaceOnly and /^\s*$/.test(jsx.value)
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
     else if t.isJSXExpressionContainer(jsx)
-      if jsx.expression.leadingComments
-        break for c, i in jsx.expression.leadingComments when c.value.indexOf('@static') > -1
-        if i < jsx.expression.leadingComments.length
-          jsx.expression.leadingComments.splice(i, 1)
-          return { elems: [jsx.expression] }
+      if jsx.expression.extra?.parenthesized
+        return { elems: [jsx.expression] }
 
       return { elems: [t.arrowFunctionExpression([], jsx.expression)] }
     else

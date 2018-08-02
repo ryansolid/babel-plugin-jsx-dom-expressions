@@ -35,7 +35,7 @@ This is called around all expressions. This is typically where you wrap the expr
 
 This binding will assign the variable you pass to it with the DOM element
 
-### on...
+### on____
 
 These will be treated as event handlers expecting a function.
 
@@ -51,13 +51,9 @@ This takes an object and assigns all the keys which are truthy.
 
 Keep in mind given the independent nature of binding updates there is no guarentee of order using spreads at this time. It's definitely an area for improvement.
 
-## Experimental Features
+### ()
 
-In order to optimize certain situations the compiler supports pragma comments.
-
-### @static
-
-This skips calling the wrap handler. Keep in mind if the element is in a parent expression it may unintentionally trigger it.
+In JSX wrapping outer expressions in parenthesis is unnecessary so using outer parenthesis as means to indicate static (not wrapped) expressions.
 
 ## Work in Progress
 
