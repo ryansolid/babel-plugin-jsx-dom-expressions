@@ -51,9 +51,9 @@ This takes an object and assigns all the keys which are truthy.
 
 Keep in mind given the independent nature of binding updates there is no guarentee of order using spreads at this time. It's definitely an area for improvement.
 
-### ()
+### (( ))
 
-In JSX wrapping outer expressions in parenthesis is unnecessary so using outer parenthesis as means to indicate static (not wrapped) expressions.
+The library uses double outer parenthesis to indicate the content is static and should not be wrapped.
 
 ## Work in Progress
 

@@ -36,6 +36,10 @@ export default (babel) ->
   toEventName = (name) ->
     name.slice(2).replace(/^(.)/, ($1) -> $1.toLowerCase())
 
+  checkDoubleParens = (jsx, path) ->
+    e = path.hub.file.code[jsx.start+1..jsx.end-1].trim()
+    e[0] is '(' and e[1] is '(' and e[e.length - 2] is ')' and e[e.length - 1] is ')'
+
   setAttr = (elem, name, value) ->
     isAttribute = name.indexOf('-') > -1
     if attribute = Attributes[name]
@@ -156,7 +160,8 @@ export default (babel) ->
 
           value = attribute.value
 
-          if value.expression?.extra?.parenthesized
+          skip = false
+          if checkDoubleParens(value, path)
             skip = true
             value = value.expression
 
@@ -209,7 +214,7 @@ export default (babel) ->
       return null if not opts.allowWhitespaceOnly and /^\s*$/.test(jsx.value)
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
     else if t.isJSXExpressionContainer(jsx)
-      if jsx.expression.extra?.parenthesized
+      if checkDoubleParens(jsx, path)
         return { elems: [jsx.expression] }
 
       return { elems: [t.arrowFunctionExpression([], jsx.expression)] }
