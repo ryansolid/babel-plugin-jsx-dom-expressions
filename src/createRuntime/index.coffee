@@ -22,10 +22,11 @@ normalizeIncomingArray = (normalized, array) ->
     i++
   normalized
 
-singleExpression = ->
-  current = null
-  (parent, value) ->
-    return if value is current
+export createRuntime = (options) ->
+  { wrap } = options
+
+  singleExpression = (parent, value, current) ->
+    return current if value is current
     t = typeof value
     if t is 'string'
       return current = parent.firstChild.data = value if current
@@ -36,6 +37,8 @@ singleExpression = ->
       current = parent.textContent = value
     else if not value? or t is 'boolean'
       current = parent.textContent = ''
+    else if t is 'function'
+      wrap -> current = singleExpression(parent, value(), current)
     else if value instanceof Node
       if Array.isArray(current)
         if current.length is 0
@@ -65,9 +68,7 @@ singleExpression = ->
     else
       throw new Error("content must be Node, stringable, or array of same")
 
-multipleExpressions = ->
-  nodes = []
-  (parent, value) ->
+  multipleExpressions = (parent, value, nodes) ->
     marker = null
     t = typeof value
     parent = nodes[0]?.parentNode or parent
@@ -81,6 +82,8 @@ multipleExpressions = ->
           parent.replaceChild(value, nodes[0])
         else parent.appendChild(value)
         nodes[0] = marker = value
+    else if t is 'function'
+      wrap -> nodes = multipleExpressions(parent, value(), nodes)
     else if value instanceof Node
       if nodes[0]
         if nodes[0] isnt value
@@ -121,26 +124,8 @@ multipleExpressions = ->
     while marker isnt (node = nodes[nodes.length - 1])
       parent.removeChild(node)
       nodes.length = nodes.length - 1
-    return
+    return nodes
 
-applySpread = (node, props) ->
-  for prop, value of props
-    if prop is 'style'
-      node.style[k] = value[k] for k of value
-      continue
-    if prop is 'classList'
-      node.classList.toggle(className, prop[className]) for className of value
-      continue
-    if info = Attributes[prop]
-      if info.type is 'attribute'
-        node.setAttribute(prop, value)
-        continue
-      else prop = info.alias
-    node[prop] = value
-  return
-
-export createRuntime = (options) ->
-  { wrap } = options
   return Object.assign({
     assign: (a) ->
       for i in [1...arguments.length] by 1
@@ -149,19 +134,35 @@ export createRuntime = (options) ->
       return a
 
     insert: (parent, accessor) ->
-      if typeof accessor is 'function'
-        return wrap(parent, accessor, false, singleExpression())
-      singleExpression()(parent, accessor)
+      return singleExpression(parent, accessor) unless typeof accessor is 'function'
+      current = null
+      wrap =>
+        current = singleExpression(parent, accessor(), current)
+        return
 
     insertM: (parent, accessor) ->
-      if typeof accessor is 'function'
-        return wrap(parent, accessor, false, multipleExpressions())
-      multipleExpressions()(parent, accessor)
+      return multipleExpressions(parent, accessor) unless typeof accessor is 'function'
+      current = null
+      wrap =>
+        current = expr(parent, accessor(), current)
+        return
 
-    spread: (elem, accessor) ->
-      wrap elem, ->
+    spread: (node, accessor) ->
+      wrap ->
         props = accessor()
-        v for k, v of props
-        return props
-      , true, applySpread
+        for prop, value of props
+          if prop is 'style'
+            node.style[k] = value[k] for k of value
+            continue
+          if prop is 'classList'
+            node.classList.toggle(className, value[className]) for className of value
+            continue
+          if info = Attributes[prop]
+            if info.type is 'attribute'
+              node.setAttribute(prop, value)
+              continue
+            else prop = info.alias
+          node[prop] = value
+        return
+
   }, options)

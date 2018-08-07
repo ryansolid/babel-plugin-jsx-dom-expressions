@@ -37,7 +37,7 @@ export default (babel) ->
     name.slice(2).replace(/^(.)/, ($1) -> $1.toLowerCase())
 
   checkDoubleParens = (jsx, path) ->
-    e = path.hub.file.code[jsx.start+1..jsx.end-1].trim()
+    e = path.hub.file.code[jsx.start+1...jsx.end-1].trim()
     e[0] is '(' and e[1] is '(' and e[e.length - 2] is ')' and e[e.length - 1] is ')'
 
   setAttr = (elem, name, value) ->
@@ -62,43 +62,27 @@ export default (babel) ->
       return t.expressionStatement(t.callExpression(value, [elem]))
 
     content = switch name
-      when 'fn'
-        [
-          elem, t.arrowFunctionExpression([], value)
-          t.booleanLiteral(true),
-          t.arrowFunctionExpression([t.identifier('_el$'), t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(t.identifier('_el$'), t.identifier(name)), t.identifier('value')]))
-        ]
       when 'style'
-        [
-          elem, t.arrowFunctionExpression([], value)
-          t.booleanLiteral(true),
-          t.arrowFunctionExpression([t.identifier('_el$'), t.identifier('value')], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(t.identifier('_el$'), t.identifier(name)), t.identifier('value')]))
-        ]
+        [t.arrowFunctionExpression([], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), value]))]
       when 'classList'
         iter = t.identifier("className");
         [
-          elem, t.arrowFunctionExpression([], value)
-          t.booleanLiteral(true),
           t.arrowFunctionExpression(
-            [t.identifier('_el$'), t.identifier('value')],
+            [],
             t.blockStatement([
               t.forInStatement(
                 declare(iter),
-                t.identifier('value'),
+                value,
                 t.ifStatement(
-                  t.callExpression(t.memberExpression(t.identifier('value'), hasOwnProperty), [iter]),
-                  t.expressionStatement(t.callExpression(t.memberExpression(t.identifier('_el$'), t.identifier("classList.toggle")), [iter, t.memberExpression(t.identifier('value'), iter, true)]))
+                  t.callExpression(t.memberExpression(value, hasOwnProperty), [iter]),
+                  t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [iter, t.memberExpression(value, iter, true)]))
                 )
               )
             ])
           )
         ]
       else
-        [
-          elem, t.arrowFunctionExpression([], value)
-          t.booleanLiteral(true),
-          t.arrowFunctionExpression([ t.identifier('_el$'), t.identifier('value')], setAttr(t.identifier('_el$'), name, t.identifier('value')))
-        ]
+        [t.arrowFunctionExpression([], setAttr(elem, name, value))]
 
     t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), content))
 
