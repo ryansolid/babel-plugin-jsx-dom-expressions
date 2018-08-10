@@ -47,7 +47,9 @@ export default (babel) ->
         isAttribute = true
       else name = attribute.alias
 
-    if isAttribute
+    if name.startsWith('fn')
+      t.callExpression(value, [elem])
+    else if isAttribute
       t.callExpression(t.memberExpression(elem, setAttribute), [t.stringLiteral(name), value])
     else
       t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
@@ -58,8 +60,8 @@ export default (babel) ->
 
     return t.expressionStatement(t.assignmentExpression("=", value, elem)) if name is 'ref'
 
-    if name is 'fn'
-      return t.expressionStatement(t.callExpression(value, [elem]))
+    if name.startsWith('fn')
+      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), [t.arrowFunctionExpression([t.identifier('_current$')], t.callExpression(value, [elem, t.identifier('_current$')]))]))
 
     content = switch name
       when 'style'
@@ -93,17 +95,20 @@ export default (babel) ->
       elems = []
 
       if tagName isnt tagName.toLowerCase()
-        spreads = []
         props = []
+        runningObject = []
         for attribute in jsx.openingElement.attributes
           if t.isJSXSpreadAttribute(attribute)
-            spreads.push(attribute.argument)
+            if runningObject.length
+              props.push(t.objectExpression(runningObject))
+              runningObject = []
+            props.push(attribute.argument)
           else
             value = attribute.value
             if t.isJSXExpressionContainer(value)
-              props.push(t.objectProperty(t.identifier(attribute.name.name), value.expression))
+              runningObject.push(t.objectProperty(t.identifier(attribute.name.name), value.expression))
             else
-              props.push(t.objectProperty(t.identifier(attribute.name.name), value))
+              runningObject.push(t.objectProperty(t.identifier(attribute.name.name), value))
 
         children = []
         for child in jsx.children
@@ -111,20 +116,21 @@ export default (babel) ->
           continue if child is null
           if child.id
             children.push(t.callExpression(t.arrowFunctionExpression([], t.blockStatement([...child.elems, t.returnStatement(child.id)])), []))
-          else children.push(t.callExpression(child.elems[0], []))
+          else if child.expression
+            children.push(t.callExpression(child.elems[0], []))
+          else children.push(child.elems[0])
         if children.length
-          props.push(t.objectProperty(t.identifier("children"), t.arrayExpression(children)))
+          runningObject.push(t.objectProperty(t.identifier("children"), t.arrayExpression(children)))
 
-        unless spreads.length
-          elems = t.callExpression(t.identifier(tagName), [t.objectExpression(props)])
-        else
-          propsId = path.scope.generateUidIdentifier("props")
-          elems.push(declare(propsId, t.objectExpression(props)))
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.assign"), [propsId, ...spreads])))
-          elems.push(t.returnStatement(t.callExpression(t.identifier(tagName),[propsId])))
-          elems = t.blockStatement(elems)
+        if runningObject.length
+          props.push(t.objectExpression(runningObject))
 
-        return { id: null, elems: [t.arrowFunctionExpression([], elems)] }
+        if props.length > 1
+          props = [t.callExpression(t.identifier("#{moduleName}.assign"), props)]
+
+        elems = [t.callExpression(t.identifier(tagName), props)]
+
+        return { elems }
 
       namespace = null;
       nativeExtension = undefined;
@@ -199,11 +205,11 @@ export default (babel) ->
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
     else if t.isJSXExpressionContainer(jsx)
       if checkDoubleParens(jsx, path)
-        return { elems: [jsx.expression] }
+        return { elems: [jsx.expression], expression: true }
 
-      return { elems: [t.arrowFunctionExpression([], jsx.expression)] }
+      return { elems: [t.arrowFunctionExpression([], jsx.expression)], expression: true }
     else
-      return { id: null, elems: [jsx] }
+      return { elems: [jsx] }
 
   return {
     name: "ast-transform",
@@ -213,9 +219,11 @@ export default (babel) ->
         moduleName = opts.moduleName if opts.moduleName
         result = generateHTMLNode(path, path.node, opts)
         if result.id
-          path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)));
-        else
+          path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)))
+        else if result.expression
           path.replaceWith(t.callExpression(result.elems[0], []));
+        else
+          path.replaceWith(result.elems[0]);
         return
       JSXFragment: (path, { opts }) ->
         moduleName = opts.moduleName if opts.moduleName

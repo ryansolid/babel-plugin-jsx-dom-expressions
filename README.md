@@ -10,7 +10,7 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 ## Example Implementations
 * [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
-* [mobx-jsx](https://github.com/ryansolid/mobx-jsx): Ever wondered how much more performant MobX is without React?
+* [mobx-jsx](https://github.com/ryansolid/mobx-jsx): Ever wondered how much more performant MobX is without React? A lot.
 * [solid-js](https://github.com/ryansolid/solid-js): A declarative JavaScript library for building user interfaces.
 
 ## Plugin Options
@@ -27,7 +27,7 @@ To write a runtime you pass an object with the following methods to the createRu
 
 ### wrap(fn) : void
 
-This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing.
+This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Your wrap method is expected to call fn with the previously evaluated value if the arity is 1 to allow for reducing computations.
 
 ## Special Binding
 

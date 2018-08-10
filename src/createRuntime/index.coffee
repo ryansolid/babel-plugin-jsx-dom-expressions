@@ -84,6 +84,7 @@ export createRuntime = (options) ->
         nodes[0] = marker = value
     else if t is 'function'
       wrap -> nodes = multipleExpressions(parent, value(), nodes)
+      marker = nodes[nodes.length - 1]
     else if value instanceof Node
       if nodes[0]
         if nodes[0] isnt value
@@ -135,17 +136,11 @@ export createRuntime = (options) ->
 
     insert: (parent, accessor) ->
       return singleExpression(parent, accessor) unless typeof accessor is 'function'
-      current = null
-      wrap =>
-        current = singleExpression(parent, accessor(), current)
-        return
+      wrap (current) -> singleExpression(parent, accessor(), current)
 
     insertM: (parent, accessor) ->
-      return multipleExpressions(parent, accessor) unless typeof accessor is 'function'
-      current = null
-      wrap =>
-        current = expr(parent, accessor(), current)
-        return
+      return multipleExpressions(parent, accessor, []) unless typeof accessor is 'function'
+      wrap (current=[]) -> multipleExpressions(parent, accessor(), current)
 
     spread: (node, accessor) ->
       wrap ->
