@@ -47,8 +47,10 @@ export default (babel) ->
         isAttribute = true
       else name = attribute.alias
 
-    if name.startsWith('fn')
-      t.callExpression(value, [elem])
+    # if name.startsWith('fn')
+    #   t.callExpression(value, [elem])
+    if name.startsWith('$')
+      t.callExpression(t.identifier(name.slice(1)), [elem, value])
     else if isAttribute
       t.callExpression(t.memberExpression(elem, setAttribute), [t.stringLiteral(name), value])
     else
@@ -60,8 +62,11 @@ export default (babel) ->
 
     return t.expressionStatement(t.assignmentExpression("=", value, elem)) if name is 'ref'
 
-    if name.startsWith('fn')
-      return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), [t.arrowFunctionExpression([t.identifier('_current$')], t.callExpression(value, [elem, t.identifier('_current$')]))]))
+    # if name.startsWith('fn')
+    #   return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), [t.arrowFunctionExpression([t.identifier('_current$')], t.callExpression(value, [elem, t.identifier('_current$')]))]))
+
+    if name.startsWith('$')
+      return t.expressionStatement(t.callExpression(t.identifier(name.slice(1)), [elem, t.arrowFunctionExpression([], value)]))
 
     content = switch name
       when 'style'

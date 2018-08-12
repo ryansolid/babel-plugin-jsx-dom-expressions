@@ -39,9 +39,13 @@ This binding will assign the variable you pass to it with the DOM element
 
 These will be treated as event handlers expecting a function.
 
-### fn
+### $____
 
-This takes a custom method that passes the element as a parameter. You can add as many as you want.
+Custom directives are written with a $ prefix. Their signature is:
+```js
+function(element, valueAccessor) {}
+```
+where valueAccessor is function wrapping the expression.
 
 ### classList
 
@@ -53,7 +57,7 @@ Keep in mind given the independent nature of binding updates there is no guarent
 
 ### (( ))
 
-The library uses double outer parenthesis to indicate the content is static and should not be wrapped.
+The library uses double outer parenthesis in an expresion to indicate the content is static and should not be wrapped.
 
 ## Work in Progress
 
