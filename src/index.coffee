@@ -70,7 +70,7 @@ export default (babel) ->
 
     content = switch name
       when 'style'
-        [t.arrowFunctionExpression([], t.callExpression(t.identifier("#{moduleName}.assign"), [t.memberExpression(elem, t.identifier(name)), value]))]
+        [t.arrowFunctionExpression([], t.callExpression(t.identifier("Object.assign"), [t.memberExpression(elem, t.identifier(name)), value]))]
       when 'classList'
         iter = t.identifier("className");
         [
@@ -131,7 +131,7 @@ export default (babel) ->
           props.push(t.objectExpression(runningObject))
 
         if props.length > 1
-          props = [t.callExpression(t.identifier("#{moduleName}.assign"), props)]
+          props = [t.callExpression(t.identifier("Object.assign"), props)]
 
         elems = [t.callExpression(t.identifier(tagName), props)]
 

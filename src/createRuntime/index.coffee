@@ -128,26 +128,20 @@ export createRuntime = (options) ->
     return nodes
 
   return Object.assign({
-    assign: (a) ->
-      for i in [1...arguments.length] by 1
-        b = arguments[i]
-        a[k] = b[k] for k of b
-      return a
-
     insert: (parent, accessor) ->
       return singleExpression(parent, accessor) unless typeof accessor is 'function'
       wrap (current) -> singleExpression(parent, accessor(), current)
 
     insertM: (parent, accessor) ->
       return multipleExpressions(parent, accessor, []) unless typeof accessor is 'function'
-      wrap (current=[]) -> multipleExpressions(parent, accessor(), current)
+      wrap (current = []) -> multipleExpressions(parent, accessor(), current)
 
     spread: (node, accessor) ->
       wrap ->
         props = accessor()
         for prop, value of props
           if prop is 'style'
-            node.style[k] = value[k] for k of value
+            Object.assign(node.style, value)
             continue
           if prop is 'classList'
             node.classList.toggle(className, value[className]) for className of value
