@@ -5,6 +5,8 @@ Types =
 export default {
   href:
     type: Types.Attribute
+  list:
+    type: Types.Attribute
   style:
     type: Types.Property
     alias: 'style.cssText'

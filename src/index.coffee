@@ -49,9 +49,9 @@ export default (babel) ->
 
     # if name.startsWith('fn')
     #   t.callExpression(value, [elem])
-    if name.startsWith('$')
-      t.callExpression(t.identifier(name.slice(1)), [elem, value])
-    else if isAttribute
+    # if name.startsWith('$')
+    #   t.callExpression(t.identifier(name.slice(1)), [elem, value])
+    if isAttribute
       t.callExpression(t.memberExpression(elem, setAttribute), [t.stringLiteral(name), value])
     else
       t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value)
@@ -59,8 +59,6 @@ export default (babel) ->
   setAttrExpr = (path, elem, name, value) ->
     if (name.startsWith("on"))
       return t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier('addEventListener')), [t.stringLiteral(toEventName(name)), value]))
-
-    return t.expressionStatement(t.assignmentExpression("=", value, elem)) if name is 'ref'
 
     # if name.startsWith('fn')
     #   return t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.wrap"), [t.arrowFunctionExpression([t.identifier('_current$')], t.callExpression(value, [elem, t.identifier('_current$')]))]))
@@ -137,11 +135,12 @@ export default (babel) ->
 
         return { elems }
 
-      namespace = null;
-      nativeExtension = undefined;
+      namespace = null
+      nativeExtension = undefined
+      dynElems = []
       for attribute in jsx.openingElement.attributes
         if t.isJSXSpreadAttribute(attribute)
-          elems.push(
+          dynElems.push(
             t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.spread"), [name, t.arrowFunctionExpression([], attribute.argument)]))
           )
         else
@@ -160,8 +159,10 @@ export default (babel) ->
             skip = true
             value = value.expression
 
-          if t.isJSXExpressionContainer(value) and not skip
-            elems.push(setAttrExpr(path, name, attribute.name.name, value.expression))
+          if t.isJSXExpressionContainer(value) and attribute.name.name is 'ref'
+            elems.push(t.expressionStatement(t.assignmentExpression("=", value.expression, name)))
+          else if t.isJSXExpressionContainer(value) and not skip
+            dynElems.push(setAttrExpr(path, name, attribute.name.name, value.expression))
           else
             elems.push(t.expressionStatement(setAttr(name, attribute.name.name, value)))
 
@@ -181,14 +182,16 @@ export default (babel) ->
         continue if child is null
         if child.id
           elems.push(...child.elems)
+          dynElems.push(...child.dynElems)
           elems.push(append(name, child.id))
         else
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert#{if jsx.children.length > 1 then 'M' else ''}"), [name, child.elems[0]])))
+          dynElems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert#{if jsx.children.length > 1 then 'M' else ''}"), [name, child.elems[0]])))
 
-      return { id: name, elems: elems }
+      return { id: name, elems, dynElems}
     else if t.isJSXFragment(jsx)
       name = path.scope.generateUidIdentifier("el$")
       elems = []
+      dynElems = []
 
       call = t.callExpression(t.memberExpression(document, createFragment), [])
 
@@ -200,11 +203,12 @@ export default (babel) ->
         continue if child is null
         if child.id
           elems.push(...child.elems)
+          dynElems.push(...child.dynElems)
           elems.push(append(name, child.id))
         else
-          elems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert#{if jsx.children.length > 1 then 'M' else ''}"), [name, child.elems[0]])))
+          dynElems.push(t.expressionStatement(t.callExpression(t.identifier("#{moduleName}.insert#{if jsx.children.length > 1 then 'M' else ''}"), [name, child.elems[0]])))
 
-      return { id: name, elems: elems }
+      return { id: name, elems, dynElems }
     else if t.isJSXText(jsx)
       return null if not opts.allowWhitespaceOnly and /^\s*$/.test(jsx.value)
       return { id: text(t.stringLiteral(jsx.value)), elems: [] }
@@ -224,7 +228,7 @@ export default (babel) ->
         moduleName = opts.moduleName if opts.moduleName
         result = generateHTMLNode(path, path.node, opts)
         if result.id
-          path.replaceWithMultiple(result.elems.concat(t.expressionStatement(result.id)))
+          path.replaceWithMultiple(result.elems.concat(result.dynElems, t.expressionStatement(result.id)))
         else if result.expression
           path.replaceWith(t.callExpression(result.elems[0], []));
         else
