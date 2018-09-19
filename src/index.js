@@ -70,8 +70,24 @@ export default (babel) => {
         case 'style':
           return [t.arrowFunctionExpression([], t.callExpression(t.identifier("Object.assign"), [t.memberExpression(elem, t.identifier(name)), value]))];
         case 'classList':
-          const iter = t.identifier("className");
-          return [t.arrowFunctionExpression([], t.blockStatement([t.forInStatement(declare(iter), value, t.ifStatement(t.callExpression(t.memberExpression(value, t.identifier('hasOwnProperty')), [iter]), t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [iter, t.memberExpression(value, iter, true)]))))]))];
+          const iter = t.identifier('i'),
+          list = t.identifier('classNames'),
+          keys = t.identifier('classKeys');
+          return [
+            t.arrowFunctionExpression([], t.blockStatement([
+              declare(list, value),
+              declare(keys, t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('keys')), [list])),
+              t.forStatement(
+                declare(iter),
+                t.binaryExpression('<', iter, t.memberExpression(keys, t.identifier('length'))),
+                t.updateExpression('++', iter),
+                t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [
+                  t.memberExpression(keys, iter, true),
+                  t.memberExpression(list, t.memberExpression(keys, iter, true), true)
+                ]))
+              )
+            ]))
+          ];
         default:
           return [t.arrowFunctionExpression([], setAttr(elem, name, value))];
       }
