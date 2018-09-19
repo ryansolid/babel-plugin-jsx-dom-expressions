@@ -78,7 +78,7 @@ export default (babel) => {
               declare(list, value),
               declare(keys, t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('keys')), [list])),
               t.forStatement(
-                declare(iter),
+                declare(iter, t.numericLiteral(0)),
                 t.binaryExpression('<', iter, t.memberExpression(keys, t.identifier('length'))),
                 t.updateExpression('++', iter),
                 t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier("classList.toggle")), [
