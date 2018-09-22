@@ -45,6 +45,14 @@ export default (babel) => {
 
   function toEventName(name) { return name.slice(2).replace(/^(.)/, $1 => $1.toLowerCase()); }
 
+  function getTagName(tag) {
+    if(t.isJSXMemberExpression(tag.openingElement.name)) {
+      return `${tag.openingElement.name.object.name}.${tag.openingElement.name.property.name}`
+    } else if (t.isJSXIdentifier(tag.openingElement.name)) {
+      return tag.openingElement.name.name;
+    }
+  }
+
   function setAttr(elem, name, value) {
     let isAttribute = name.indexOf('-') > -1,
       attribute = Attributes[name];
@@ -115,7 +123,7 @@ export default (babel) => {
     for (let i = index; i < jsx.children.length; i++) {
       if (t.isJSXExpressionContainer(jsx.children[i])) return true;
       if (t.isJSXElement(jsx.children[i])) {
-        const tagName = jsx.children[i].openingElement.name.name;
+        const tagName = getTagName(jsx.children[i]);
         if (tagName.toLowerCase() !== tagName) return true;
         if (jsx.children[i].openingElement.attributes.some(attr => t.isJSXSpreadAttribute(attr) || t.isJSXExpressionContainer(attr.value))) return true;
         if (jsx.children[i].children.length)
@@ -165,7 +173,7 @@ export default (babel) => {
     if (props.length > 1)
       props = [t.callExpression(t.identifier("Object.assign"), props)];
 
-    return { exprs: [t.callExpression(t.identifier(jsx.openingElement.name.name), props)], template: '' }
+    return { exprs: [t.callExpression(t.identifier(getTagName(jsx)), props)], template: '' }
   }
 
   function transformAttributes(path, jsx, results) {
@@ -230,7 +238,7 @@ export default (babel) => {
 
   function generateHTMLNode(path, jsx, opts, info = {}) {
     if (t.isJSXElement(jsx)) {
-      let tagName = jsx.openingElement.name.name,
+      let tagName = getTagName(jsx),
         voidTag = VOID_ELEM_TAGS.indexOf(tagName) > -1;
       if (tagName !== tagName.toLowerCase()) return generateComponent(path, jsx, opts);
       let results = { template: `<${tagName}`, decl: [], exprs: [] };
