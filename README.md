@@ -49,7 +49,7 @@ The use of cloneNode improves repeat insert performance and precompilation reduc
 ## Example Implementations
 * [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
 * [mobx-jsx](https://github.com/ryansolid/mobx-jsx): Ever wondered how much more performant MobX is without React? A lot.
-* [solid-js](https://github.com/ryansolid/solid-js): A declarative JavaScript library for building user interfaces.
+* [solid-js](https://github.com/ryansolid/solid): A declarative JavaScript library for building user interfaces.
 
 ## Plugin Options
 
