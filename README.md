@@ -17,9 +17,9 @@ const view = ({ item }) =>
   <tr class={ item.id === selected ? 'danger' : '' }>
     <td class="col-md-1">{(( item.id ))}</td>
     <td class="col-md-4">
-      <a onclick={select(item)}>{ item.label }</a>
+      <a onclick={e => select(item, e)}>{ item.label }</a>
     </td>
-    <td class="col-md-1"><a onclick={del(item)}><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
+    <td class="col-md-1"><a onclick={e => del(item, e)}><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
     <td class="col-md-6"></td>
   </tr>
 ```
@@ -38,9 +38,9 @@ const view = ({ item }) =>
       _el$6 = _el$5.firstChild;
     r.wrap(() => _el$.className = item.id === selected ? 'danger' : '');
     r.insert(_el$2, item.id);
-    r.addEventListener(_el$4, "click", select(item));
+    r.addEventListener(_el$4, "click", e => select(item, e));
     r.insert(_el$4, () => item.label);
-    r.addEventListener(_el$6, "click", del(item));
+    r.addEventListener(_el$6, "click", e => del(item, e));
     return _el$;
   }()
 ```
