@@ -20,8 +20,12 @@ function normalizeIncomingArray(normalized, array) {
 }
 
 function appendNodes(parent, array) {
-  for (let i = 0, len = array.length; i < len; i++)
-    parent.appendChild(array[i]);
+  for (let i = 0, len = array.length; i < len; i++) {
+    let node = array[i];
+    if (!(node instanceof Node))
+      node = array[i] = document.createTextNode(node);
+    parent.appendChild(node);
+  }
 }
 
 function model(el) { return el && (el.model || model(el.parentNode)) }
@@ -33,7 +37,7 @@ export function createRuntime(options) {
     if (value === current) return current;
     const t = typeof value;
     if (t === 'string') {
-      if (current !== "" && typeof current === 'string') {
+      if (current !== '' && typeof current === 'string') {
         current = parent.firstChild.data = value;
       } else current = parent.textContent = value;
     } else if ('number' === t) {
@@ -41,7 +45,7 @@ export function createRuntime(options) {
       if (current !== "" && typeof current === 'string') {
         current = parent.firstChild.data = value;
       } else current = parent.textContent = value;
-    } else if (value == null || t === 'boolean') {
+    } else if (value == null || value === '' || t === 'boolean') {
       current = parent.textContent = '';
     } else if (t === 'function') {
       wrap(function() { current = singleExpression(parent, value(), current); });
@@ -55,7 +59,7 @@ export function createRuntime(options) {
           parent.textContent = '';
           parent.appendChild(value);
         }
-      } else if (current == null) {
+      } else if (current == null || current === '') {
         parent.appendChild(value);
       } else {
         parent.replaceChild(value, parent.firstChild);
@@ -72,7 +76,7 @@ export function createRuntime(options) {
           } else {
             reconcileArrays(parent, current, array);
           }
-        } else if (current == null) {
+        } else if (current == null || current === '') {
           appendNodes(parent, array);
         } else {
           reconcileArrays(parent, [parent.firstChild], array);
@@ -112,11 +116,15 @@ export function createRuntime(options) {
     } else if (Array.isArray(value)) {
       const array = normalizeIncomingArray([], value);
       if (array.length) {
-        if (!nodes.length) {
+        if (nodes.length === 1) {
+          let next = nodes[0].nextSibling;
+          nodes[0].remove();
           for (let i = 0, len = array.length; i < len; i++) {
-            const child = array[i];
-            parent.appendChild(child);
-            nodes[i] = child;
+            let node = array[i];
+            if (!(node instanceof Node))
+              node = nodes[i] = document.createTextNode(node);
+            parent.insertBefore(node, next);
+            nodes[i] = node;
           }
           marker = nodes[array.length - 1];
         } else {
@@ -133,6 +141,7 @@ export function createRuntime(options) {
         value = document.createTextNode('');
         parent.appendChild(value);
         marker = nodes[0] = value;
+        nodes.length = 1;
       } else if (nodes[0].nodeType === 3) {
         nodes[0].data = '';
         marker = nodes[0];
@@ -155,13 +164,13 @@ export function createRuntime(options) {
   }
 
   return Object.assign({
-    insert(parent, accessor) {
-      if (typeof accessor !== 'function') return singleExpression(parent, accessor);
-      wrap(current => singleExpression(parent, accessor(), current));
+    insert(parent, accessor, init) {
+      if (typeof accessor !== 'function') return singleExpression(parent, accessor, init);
+      wrap((current = init) => singleExpression(parent, accessor(), current));
     },
-    insertM(parent, accessor, placeholder) {
-      if (typeof accessor !== 'function') return multipleExpressions(parent, accessor, [placeholder]);
-      wrap((current = [placeholder]) => multipleExpressions(parent, accessor(), current));
+    insertM(parent, accessor, init) {
+      if (typeof accessor !== 'function') return multipleExpressions(parent, accessor, init);
+      wrap((current = init) => multipleExpressions(parent, accessor(), current));
     },
     addEventListener(node, eventName, handler) {
       node.addEventListener(eventName, e => {

@@ -150,12 +150,10 @@ export default function reconcileArrays(parent, ns, us, multiple) {
 
   if (preserved === 0 && nmin === 0 && nmax === ns.length - 1) {
     if (multiple) {
+      for (i = 0; i <= nmax; i++) parent.removeChild(ns[i]);
       while (umin <= umax) {
-        insertOrAppend(parent, us[umin], ns[0], umin, us)
+        insertOrAppend(parent, us[umin], ul, umin, us)
         umin++
-      }
-      for (i = 0; i < ns; i++) {
-        parent.removeChild(ns[i]);
       }
       return;
     }
