@@ -10,14 +10,16 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 In general JSX Attribute Expressions are treated as properties by default, with exception of hyphenated(-) ones that will always be set as attributes on the DOM element.
 
+**With version 0.2.0 the API has changed where dynamic expressions that are to be wrapped are represented by {( )}.**
+
 ## Example
 
 ```jsx
 const view = ({ item }) =>
-  <tr class={ item.id === selected ? 'danger' : '' }>
-    <td class="col-md-1">{(( item.id ))}</td>
+  <tr class={( item.id === selected ? 'danger' : '' )}>
+    <td class="col-md-1">{ item.id }</td>
     <td class="col-md-4">
-      <a onclick={e => select(item, e)}>{ item.label }</a>
+      <a onclick={e => select(item, e)}>{( item.label )}</a>
     </td>
     <td class="col-md-1"><a onclick={e => del(item, e)}><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
     <td class="col-md-6"></td>
@@ -25,7 +27,7 @@ const view = ({ item }) =>
 ```
 Compiles to:
 
-```js
+```jsx
 const _tmpl$ = document.createElement("template");
 _tmpl$.innerHTML = "<tr><td class='col-md-1'></td><td class='col-md-4'><a></a></td><td class='col-md-1'><a><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></a></td><td class='col-md-6'></td></tr>";
 const view = ({ item }) =>
@@ -70,9 +72,13 @@ This is called around all expressions. This is typically where you wrap the expr
 
 This binding will assign the variable you pass to it with the DOM element
 
+### model / action
+
+These bindings will assign the variable you pass to it as the data model for the DOM element. It is used for event delegation as 2nd and 3rd arguments. The syntax and usage of these is still experimental.
+
 ### on____
 
-These will be treated as event handlers expecting a function. If the arity of the function is 2, the event handler will attempt to look up a data model property on the target element or parents to pass to the handler function. This allows out of the box event delegation.
+These will be treated as event handlers expecting a function. If the arity of the function is greater than 1, the event handler will attempt to look up a data model property and optional action on the target element or parents to pass to the handler function. This allows out of the box event delegation.
 
 ### $____
 
@@ -90,9 +96,6 @@ This takes an object and assigns all the keys as classes which are truthy.
 
 Keep in mind given the independent nature of binding updates there is no guarentee of order using spreads at this time. It's under consideration.
 
-### (( ))
-
-The library uses double outer parenthesis in an expresion to indicate the content is static and should not be wrapped.
 
 ## Work in Progress
 

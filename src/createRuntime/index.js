@@ -28,7 +28,11 @@ function appendNodes(parent, array) {
   }
 }
 
-function model(el) { return el && (el.model || model(el.parentNode)) }
+function model(el) {
+  let m = el.model, a = el.action, r;
+  if (!m && el.parentNode) r = model(el.parentNode);
+  return [m || r && r[0], a || r && r[1]];
+}
 
 export function createRuntime(options) {
   const { wrap } = options;
@@ -175,7 +179,8 @@ export function createRuntime(options) {
     addEventListener(node, eventName, handler) {
       node.addEventListener(eventName, e => {
         if (handler.length < 2) return handler(e);
-        handler(e, model(e.target));
+        const a = model(e.target);
+        handler(e, a[0], a[1]);
       });
     },
     spread(node, accessor) {

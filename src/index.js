@@ -34,9 +34,9 @@ export default (babel) => {
     setAttribute = t.identifier("setAttribute");
   let moduleName = 'r';
 
-  function checkDoubleParens(jsx, path) {
+  function checkParens(jsx, path) {
     const e = path.hub.file.code.slice(jsx.start+1,jsx.end-1).trim();
-    return e[0] === '(' && e[1] === '(' && e[e.length - 2] === ')' && e[e.length - 1]=== ')';
+    return e[0] === '(' && e[e.length - 1]=== ')';
   }
 
   function declare(name, value) {
@@ -67,12 +67,6 @@ export default (babel) => {
   }
 
   function setAttrExpr(elem, name, value) {
-    if (name.startsWith("on"))
-      return t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.addEventListener`), [elem, t.stringLiteral(toEventName(name)), value]));
-
-    if (name.startsWith('$'))
-      return t.expressionStatement(t.callExpression(t.identifier(name.slice(1)), [elem, t.arrowFunctionExpression([], value)]));
-
     const content = (function() {
       switch (name) {
         case 'style':
@@ -159,9 +153,7 @@ export default (babel) => {
       if (child.id) {
         createTemplate(path, child);
         children.push(t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), []));
-      } else if (child.expression)
-        children.push(t.callExpression(child.exprs[0], []));
-      else children.push(child.exprs[0]);
+      } else children.push(child.exprs[0]);
     });
 
     if (children.length)
@@ -185,16 +177,19 @@ export default (babel) => {
         );
       }
 
-      let value = attribute.value,
-        skip = false;
-      if (value && checkDoubleParens(value, path)) skip = true;
-
-      if (t.isJSXExpressionContainer(value) && attribute.name.name === 'ref') {
-        results.exprs.unshift(t.expressionStatement(t.assignmentExpression("=", value.expression, name)));
-      } else if (t.isJSXExpressionContainer(value) && !skip) {
-        results.exprs.push(setAttrExpr(name, attribute.name.name, value.expression));
-      } else if (skip) {
-        results.exprs.push(t.expressionStatement(setAttr(name, attribute.name.name, value.expression)));
+      let value = attribute.value;
+      if (t.isJSXExpressionContainer(value)) {
+        if (attribute.name.name === 'ref') {
+          results.exprs.unshift(t.expressionStatement(t.assignmentExpression("=", value.expression, name)));
+        } else if (attribute.name.name.startsWith("on")) {
+          results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.addEventListener`), [name, t.stringLiteral(toEventName(attribute.name.name)), value.expression])));
+        } else if (attribute.name.name.startsWith('$')) {
+          results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(attribute.name.name.slice(1)), [name, t.arrowFunctionExpression([], value.expression)])));
+        } else if (!value || checkParens(value, path)) {
+          results.exprs.push(setAttrExpr(name, attribute.name.name, value.expression));
+        } else {
+          results.exprs.push(t.expressionStatement(setAttr(name, attribute.name.name, value.expression)));
+        }
       } else {
         results.template += ` ${attribute.name.name}`;
         if (value) results.template += `='${value.value}'`;
@@ -261,8 +256,8 @@ export default (babel) => {
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$")
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
-      if (checkDoubleParens(jsx, path)) return { exprs: [jsx.expression], expression: true, template: '' }
-      return { exprs: [t.arrowFunctionExpression([], jsx.expression)], expression: true, template: '' }
+      if (!checkParens(jsx, path)) return { exprs: [jsx.expression], template: '' }
+      return { exprs: [t.arrowFunctionExpression([], jsx.expression)], template: '' }
     }
   }
 
