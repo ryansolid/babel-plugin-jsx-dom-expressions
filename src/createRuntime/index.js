@@ -19,13 +19,23 @@ function normalizeIncomingArray(normalized, array) {
   return normalized;
 }
 
-function appendNodes(parent, array) {
+function appendNodes(parent, array, marker) {
   for (let i = 0, len = array.length; i < len; i++) {
     let node = array[i];
     if (!(node instanceof Node))
       node = array[i] = document.createTextNode(node);
-    parent.appendChild(node);
+    parent.insertBefore(node, marker);
   }
+}
+
+function clearAll(parent, current, marker) {
+  if (!marker) return parent.textContent = '';
+  if (Array.isArray(current)) {
+    for (let i = 0; i < current.length; i++) {
+      parent.removeChild(current[i]);
+    }
+  } else if (current != null && current != '') parent.removeChild(marker.previousSibling);
+  return '';
 }
 
 function model(el) {
@@ -37,53 +47,61 @@ function model(el) {
 export function createRuntime(options) {
   const { wrap } = options;
 
-  function singleExpression(parent, value, current) {
+  function insertExpression(parent, value, current, marker) {
     if (value === current) return current;
+    parent = (marker && marker.parentNode) || parent;
     const t = typeof value;
-    if (t === 'string') {
-      if (current !== '' && typeof current === 'string') {
-        current = parent.firstChild.data = value;
-      } else current = parent.textContent = value;
-    } else if ('number' === t) {
-      value = value.toString()
-      if (current !== "" && typeof current === 'string') {
-        current = parent.firstChild.data = value;
-      } else current = parent.textContent = value;
+    if (t === 'string' || t === 'number') {
+      if (t === 'number') value = value.toString();
+      if (marker) {
+        if (current !== '' && typeof current === 'string') {
+          current = marker.previousSibling.data = value;
+        } else {
+          const node = document.createTextNode(value);
+          if (current !== '' && current != null) {
+            parent.replaceChild(node, marker.previousSibling);
+          } else parent.insertBefore(node, marker);
+        }
+      } else {
+        if (current !== '' && typeof current === 'string') {
+          current = parent.firstChild.data = value;
+        } else current = parent.textContent = value;
+      }
     } else if (value == null || value === '' || t === 'boolean') {
-      current = parent.textContent = '';
+      current = clearAll(parent, current, marker);
     } else if (t === 'function') {
-      wrap(function() { current = singleExpression(parent, value(), current); });
+      wrap(function() { current = insertExpression(parent, value(), current, marker); });
     } else if (value instanceof Node) {
       if (Array.isArray(current)) {
         if (current.length === 0) {
-          parent.appendChild(value);
+          parent.insertBefore(value, marker);
         } else if (current.length === 1) {
           parent.replaceChild(value, current[0]);
         } else {
-          parent.textContent = '';
+          clearAll(parent, current, marker);
           parent.appendChild(value);
         }
       } else if (current == null || current === '') {
-        parent.appendChild(value);
+        parent.insertBefore(value, marker);
       } else {
-        parent.replaceChild(value, parent.firstChild);
+        parent.replaceChild(value, (marker && marker.previousSibling) || parent.firstChild);
       }
       current = value;
     } else if (Array.isArray(value)) {
       let array = normalizeIncomingArray([], value);
       if (array.length === 0) {
-        parent.textContent = '';
+        clearAll(parent, current, marker);
       } else {
         if (Array.isArray(current)) {
           if (current.length === 0) {
-            appendNodes(parent, array);
+            appendNodes(parent, array, marker);
           } else {
-            reconcileArrays(parent, current, array);
+            reconcileArrays(parent, current, array, !!marker);
           }
         } else if (current == null || current === '') {
-          appendNodes(parent, array);
+          appendNodes(parent, array, marker);
         } else {
-          reconcileArrays(parent, [parent.firstChild], array);
+          reconcileArrays(parent, [(marker && marker.previousSibling) || parent.firstChild], array, !!marker);
         }
       }
       current = array;
@@ -94,87 +112,14 @@ export function createRuntime(options) {
     return current;
   }
 
-  function multipleExpressions(parent, value, nodes) {
-    let marker = null;
-    const t = typeof value;
-    parent = (nodes[0] && nodes[0].parentNode) ? nodes[0].parentNode : parent;
-    if (t === 'string' || t === 'number') {
-      if (nodes[0].nodeType === 3) {
-        nodes[0].data = value.toString();
-        marker = nodes[0];
-      } else {
-        value = document.createTextNode(value.toString());
-        if (nodes[0]) {
-          parent.replaceChild(value, nodes[0]);
-        } else parent.appendChild(value);
-        nodes[0] = marker = value;
-      }
-    } else if (t === 'function') {
-      wrap(function() { nodes = multipleExpressions(parent, value(), nodes); });
-      marker = nodes[nodes.length - 1];
-    } else if (value instanceof Node) {
-      if (nodes[0]) {
-        if (nodes[0] !== value) parent.replaceChild(value, nodes[0]);
-      } else parent.appendChild(value);
-      nodes[0] = marker = value;
-    } else if (Array.isArray(value)) {
-      const array = normalizeIncomingArray([], value);
-      if (array.length) {
-        if (nodes.length === 1) {
-          let next = nodes[0].nextSibling;
-          nodes[0].remove();
-          for (let i = 0, len = array.length; i < len; i++) {
-            let node = array[i];
-            if (!(node instanceof Node))
-              node = nodes[i] = document.createTextNode(node);
-            parent.insertBefore(node, next);
-            nodes[i] = node;
-          }
-          marker = nodes[array.length - 1];
-        } else {
-          reconcileArrays(parent, nodes, array, true);
-          nodes = array;
-          marker = nodes[nodes.length - 1];
-        }
-      }
-    }
-    // handle nulls
-    if (marker == null) {
-      if (nodes[0] === parent.firstChild && nodes.length > 1 && nodes[nodes.length - 1] === parent.lastChild) {
-        parent.textContent = '';
-        value = document.createTextNode('');
-        parent.appendChild(value);
-        marker = nodes[0] = value;
-        nodes.length = 1;
-      } else if (nodes[0].nodeType === 3) {
-        nodes[0].data = '';
-        marker = nodes[0];
-      } else {
-        value = document.createTextNode('');
-        if (nodes[0])
-          parent.replaceChild(value, nodes[0]);
-        else parent.appendChild(value);
-        marker = nodes[0] = value;
-      }
-    }
-
-    // trim extras
-    let node;
-    while (marker !== (node = nodes[nodes.length - 1])) {
-      parent.removeChild(node);
-      nodes.length = nodes.length - 1;
-    }
-    return nodes;
-  }
-
   return Object.assign({
     insert(parent, accessor, init) {
-      if (typeof accessor !== 'function') return singleExpression(parent, accessor, init);
-      wrap((current = init) => singleExpression(parent, accessor(), current));
+      if (typeof accessor !== 'function') return insertExpression(parent, accessor, init);
+      wrap((current = init) => insertExpression(parent, accessor(), current));
     },
-    insertM(parent, accessor, init) {
-      if (typeof accessor !== 'function') return multipleExpressions(parent, accessor, init);
-      wrap((current = init) => multipleExpressions(parent, accessor(), current));
+    insertM(parent, accessor, init, marker) {
+      if (typeof accessor !== 'function') return insertExpression(parent, accessor, init, marker);
+      wrap((current = init) => insertExpression(parent, accessor(), current, marker));
     },
     addEventListener(node, eventName, handler) {
       node.addEventListener(eventName, e => {

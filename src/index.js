@@ -223,7 +223,7 @@ export default (babel) => {
               ])
             )
           );
-          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insertM`), [results.id, child.exprs[0], t.arrayExpression([exprId])])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insertM`), [results.id, child.exprs[0], t.nullLiteral(), exprId])));
           tempPath = exprId.name;
           i++;
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insert`), [results.id, child.exprs[0]])));

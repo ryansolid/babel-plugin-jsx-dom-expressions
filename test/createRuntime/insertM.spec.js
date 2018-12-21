@@ -35,31 +35,31 @@ describe("r.insertM", () => {
   it("inserts nothing for null in array", () => {
     const res = insert(["a", null, "b"]);
     expect(res.innerHTML).toBe("beforeabafter");
-    expect(res.childNodes.length).toBe(4);
+    expect(res.childNodes.length).toBe(5);
   });
 
   it("inserts nothing for undefined in array", () => {
     const res = insert(["a", undefined, "b"]);
     expect(res.innerHTML).toBe("beforeabafter");
-    expect(res.childNodes.length).toBe(4);
+    expect(res.childNodes.length).toBe(5);
   });
 
   it("inserts nothing for false in array", () => {
     const res = insert(["a", false, "b"]);
     expect(res.innerHTML).toBe("beforeabafter");
-    expect(res.childNodes.length).toBe(4);
+    expect(res.childNodes.length).toBe(5);
   });
 
   it("inserts nothing for true in array", () => {
     const res = insert(["a", true, "b"]);
     expect(res.innerHTML).toBe("beforeabafter");
-    expect(res.childNodes.length).toBe(4);
+    expect(res.childNodes.length).toBe(5);
   });
 
   it("can insert strings", () => {
     const res = insert("foo");
     expect(res.innerHTML).toBe("beforefooafter");
-    expect(res.childNodes.length).toBe(3);
+    expect(res.childNodes.length).toBe(4);
   });
 
   it("can insert a node", () => {
@@ -93,42 +93,43 @@ describe("r.insertM", () => {
 
   it("can insert a changing array of nodes", () => {
     let container = document.createElement("div"),
-      current = container.appendChild(document.createTextNode("")),
+      marker = container.appendChild(document.createTextNode("")),
       span1 = document.createElement("span"),
       div2 = document.createElement("div"),
-      span3 = document.createElement("span");
+      span3 = document.createElement("span"),
+      current;
     span1.textContent = "1";
     div2.textContent = "2";
     span3.textContent = "3"
 
-    current = r.insertM(container, [], [current]);
+    current = r.insertM(container, [], current, marker);
     expect(container.innerHTML).toBe("");
 
-    current = r.insertM(container, [span1, div2, span3], current);
+    current = r.insertM(container, [span1, div2, span3], current, marker);
     expect(container.innerHTML)
       .toBe("<span>1</span><div>2</div><span>3</span>");
 
-    current = r.insertM(container, [div2, span3], current);
+    current = r.insertM(container, [div2, span3], current, marker);
     expect(container.innerHTML)
       .toBe("<div>2</div><span>3</span>");
 
-    current = r.insertM(container, [div2, span3], current);
+    current = r.insertM(container, [div2, span3], current, marker);
     expect(container.innerHTML)
       .toBe("<div>2</div><span>3</span>");
 
-    current = r.insertM(container, [span3, div2], current);
+    current = r.insertM(container, [span3, div2], current, marker);
     expect(container.innerHTML)
       .toBe("<span>3</span><div>2</div>");
 
-    current = r.insertM(container, [], current);
+    current = r.insertM(container, [], current, marker);
     expect(container.innerHTML)
       .toBe("");
 
-    current = r.insertM(container, [span3], current);
+    current = r.insertM(container, [span3], current, marker);
     expect(container.innerHTML)
       .toBe("<span>3</span>");
 
-    current = r.insertM(container, [div2], current);
+    current = r.insertM(container, [div2], current, marker);
     expect(container.innerHTML)
       .toBe("<div>2</div>");
   });
@@ -140,7 +141,7 @@ describe("r.insertM", () => {
 
   function insert(val) {
     const parent = container.cloneNode(true);
-    r.insertM(parent, val, [parent.childNodes[1]]);
+    r.insertM(parent, val, undefined, parent.childNodes[1]);
     return parent;
   }
 });
