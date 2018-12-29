@@ -140,6 +140,10 @@ export function createRuntime(options) {
           const value = accessor();
           if (value === cached) return cached;
           disposable && disposable();
+          if (value == null || value === false) {
+            clearAll(parent, cached, marker);
+            return value;
+          }
           root(disposer => {
             disposable = disposer;
             current = insertExpression(parent, expr(value), current, marker)
