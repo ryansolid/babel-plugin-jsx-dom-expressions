@@ -19,15 +19,6 @@ function normalizeIncomingArray(normalized, array) {
   return normalized;
 }
 
-function appendNodes(parent, array, marker) {
-  for (let i = 0, len = array.length; i < len; i++) {
-    let node = array[i];
-    if (!(node instanceof Node))
-      node = array[i] = document.createTextNode(node);
-    parent.insertBefore(node, marker);
-  }
-}
-
 function clearAll(parent, current, marker) {
   if (!marker) return parent.textContent = '';
   if (Array.isArray(current)) {
@@ -45,7 +36,7 @@ function model(el) {
 }
 
 export function createRuntime(options) {
-  const { wrap } = options;
+  const { wrap, cleanup, root } = options;
 
   function insertExpression(parent, value, current, marker) {
     if (value === current) return current;
@@ -89,19 +80,13 @@ export function createRuntime(options) {
       current = value;
     } else if (Array.isArray(value)) {
       let array = normalizeIncomingArray([], value);
-      if (array.length === 0) {
-        clearAll(parent, current, marker);
-      } else {
-        if (Array.isArray(current)) {
-          if (current.length === 0) {
-            appendNodes(parent, array, marker);
-          } else {
-            reconcileArrays(parent, current, array, !!marker);
-          }
-        } else if (current == null || current === '') {
-          appendNodes(parent, array, marker);
-        } else {
-          reconcileArrays(parent, [(marker && marker.previousSibling) || parent.firstChild], array, !!marker);
+      clearAll(parent, current, marker);
+      if (array.length !== 0) {
+        for (let i = 0, len = array.length; i < len; i++) {
+          let node = array[i];
+          if (!(node instanceof Node))
+            node = array[i] = document.createTextNode(node);
+          parent.insertBefore(node, marker);
         }
       }
       current = array;
@@ -113,11 +98,7 @@ export function createRuntime(options) {
   }
 
   return Object.assign({
-    insert(parent, accessor, init) {
-      if (typeof accessor !== 'function') return insertExpression(parent, accessor, init);
-      wrap((current = init) => insertExpression(parent, accessor(), current));
-    },
-    insertM(parent, accessor, init, marker) {
+    insert(parent, accessor, init, marker) {
       if (typeof accessor !== 'function') return insertExpression(parent, accessor, init, marker);
       wrap((current = init) => insertExpression(parent, accessor(), current, marker));
     },
@@ -145,6 +126,27 @@ export function createRuntime(options) {
           } else node[prop] = value;
         }
       });
+    },
+    flow(parent, type, accessor, expr, afterRender, marker) {
+      if (type === 'each') {
+        let startNode;
+        if (marker) startNode = marker.previousSibling;
+        reconcileArrays(parent, accessor, expr, afterRender, options, startNode, marker);
+      } else if (type === 'when') {
+        let current, disposable;
+        cleanup(function dispose() { disposable && disposable(); });
+        wrap(cached => {
+          const value = accessor();
+          if (value === cached) return cached;
+          disposable && disposable();
+          root(disposer => {
+            disposable = disposer;
+            current = insertExpression(parent, expr(value), current, marker)
+            afterRender && afterRender(current, marker);
+          });
+          return value;
+        })
+      }
     }
   }, options);
 }

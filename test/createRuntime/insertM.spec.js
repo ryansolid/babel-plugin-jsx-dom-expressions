@@ -1,7 +1,7 @@
-const { createRuntime } = require('../../lib/index')
+const { createRuntime } = require('../../lib/createRuntime')
 const r = createRuntime({})
 
-describe("r.insertM", () => {
+describe("r.insert with Markers", () => {
   // <div>before<!-- insert -->after</div>
   var container = document.createElement("div");
   container.appendChild(document.createTextNode("before"));
@@ -102,34 +102,34 @@ describe("r.insertM", () => {
     div2.textContent = "2";
     span3.textContent = "3"
 
-    current = r.insertM(container, [], current, marker);
+    current = r.insert(container, [], current, marker);
     expect(container.innerHTML).toBe("");
 
-    current = r.insertM(container, [span1, div2, span3], current, marker);
+    current = r.insert(container, [span1, div2, span3], current, marker);
     expect(container.innerHTML)
       .toBe("<span>1</span><div>2</div><span>3</span>");
 
-    current = r.insertM(container, [div2, span3], current, marker);
+    current = r.insert(container, [div2, span3], current, marker);
     expect(container.innerHTML)
       .toBe("<div>2</div><span>3</span>");
 
-    current = r.insertM(container, [div2, span3], current, marker);
+    current = r.insert(container, [div2, span3], current, marker);
     expect(container.innerHTML)
       .toBe("<div>2</div><span>3</span>");
 
-    current = r.insertM(container, [span3, div2], current, marker);
+    current = r.insert(container, [span3, div2], current, marker);
     expect(container.innerHTML)
       .toBe("<span>3</span><div>2</div>");
 
-    current = r.insertM(container, [], current, marker);
+    current = r.insert(container, [], current, marker);
     expect(container.innerHTML)
       .toBe("");
 
-    current = r.insertM(container, [span3], current, marker);
+    current = r.insert(container, [span3], current, marker);
     expect(container.innerHTML)
       .toBe("<span>3</span>");
 
-    current = r.insertM(container, [div2], current, marker);
+    current = r.insert(container, [div2], current, marker);
     expect(container.innerHTML)
       .toBe("<div>2</div>");
   });
@@ -141,7 +141,7 @@ describe("r.insertM", () => {
 
   function insert(val) {
     const parent = container.cloneNode(true);
-    r.insertM(parent, val, undefined, parent.childNodes[1]);
+    r.insert(parent, val, undefined, parent.childNodes[1]);
     return parent;
   }
 });

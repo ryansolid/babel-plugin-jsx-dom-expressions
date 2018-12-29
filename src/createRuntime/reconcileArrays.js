@@ -1,275 +1,320 @@
-var NOMATCH = -1,
-  NOINSERT = -2;
+const GROUPING = '__recGroup',
+  FORWARD = 'nextSibling',
+  BACKWARD = 'previousSibling';
 
-var RECONCILE_ARRAY_BATCH = 0;
-const RECONCILE_ARRAY_BITS = 16,
-  RECONCILE_ARRAY_INC = 1 << RECONCILE_ARRAY_BITS,
-  RECONCILE_ARRAY_MASK = RECONCILE_ARRAY_INC - 1;
-
-// reconcileArray is lifted almost unaltered from SurplusJS https://github.com/adamhaile/surplus
-
-// reconcile the content of parent from ns to us
-// see ivi's excellent writeup of diffing arrays in a vdom library:
-// https://github.com/ivijs/ivi/blob/2c81ead934b9128e092cc2a5ef2d3cabc73cb5dd/packages/ivi/src/vdom/implementation.ts#L1187
-// this code isn't identical, since we're diffing real dom nodes to nodes-or-strings,
-// but the core methodology of trimming ends and reversals, matching nodes, then using
-// the longest increasing subsequence to minimize DOM ops is inspired by ivi.
-export default function reconcileArrays(parent, ns, us, multiple) {
-  var ulen = us.length,
-    // n = nodes, u = updates
-    // ranges defined by min and max indices
-    nmin = 0,
-    nmax = ns.length - 1,
-    umin = 0,
-    umax = ulen - 1,
-    // start nodes of ranges
-    n    = ns[nmin],
-    u    = us[umin],
-    // end nodes of ranges
-    nx   = ns[nmax],
-    ux   = us[umax],
-    // node, if any, just after ux, used for doing .insertBefore() to put nodes at end
-    ul   = nx.nextSibling,
-    i, j, k,
-    loop = true;
-
-  // scan over common prefixes, suffixes, and simple reversals
-  fixes: while (loop) {
-    loop = false;
-
-    // common prefix, u === n
-    while (equable(u, n, umin, us)) {
-      umin++;
-      nmin++;
-      if (umin > umax || nmin > nmax) break fixes;
-      u = us[umin];
-      n = ns[nmin];
-    }
-
-    // common suffix, ux === nx
-    while (equable(ux, nx, umax, us)) {
-      ul = nx;
-      umax--;
-      nmax--;
-      if (umin > umax || nmin > nmax) break fixes;
-      ux = us[umax];
-      nx = ns[nmax];
-    }
-
-    // reversal u === nx, have to swap node forward
-    while (equable(u, nx, umin, us)) {
-      loop = true;
-      parent.insertBefore(nx, n);
-      umin++;
-      nmax--;
-      if (umin > umax || nmin > nmax) break fixes;
-      u = us[umin];
-      nx = ns[nmax];
-    }
-
-    // reversal ux === n, have to swap node back
-    while (equable(ux, n, umax, us)) {
-      loop = true;
-      if (ul === null) parent.appendChild(n);
-      else parent.insertBefore(n, ul);
-      ul = n;
-      umax--;
-      nmin++;
-      if (umin > umax || nmin > nmax) break fixes;
-      ux = us[umax];
-      n = ns[nmin];
-    }
+function step(node, direction) {
+  const key = node[GROUPING];
+  if (key) {
+    while(node[direction] && node[direction][GROUPING] === key) node = node[direction];
   }
+  return node[direction];
+}
 
-  // if that covered all updates, just need to remove any remaining nodes and we're done
-  if (umin > umax) {
-    // remove any remaining nodes
-    while (nmin <= nmax) {
-      parent.removeChild(ns[nmax]);
-      nmax--;
-    }
-    return;
-  }
+// This is almost straightforward implementation of reconcillation algorithm
+// based on ivi documentation:
+// https://github.com/localvoid/ivi/blob/2c81ead934b9128e092cc2a5ef2d3cabc73cb5dd/packages/ivi/src/vdom/implementation.ts#L1366
+// With some fast paths from Surplus implementation:
+// https://github.com/adamhaile/surplus/blob/master/src/runtime/content.ts#L86
+// And working with data directly from Stage0:
+// https://github.com/Freak613/stage0/blob/master/reconcile.js
+// This implementation is tailored for fine grained change detection and adds suupport for fragments
+export default function reconcile(parent, accessor, mapFn, afterRenderFn, options, beforeNode, afterNode) {
+  const { wrap, cleanup, root, sample } = options;
+  let disposables = [], counter = 0;
 
-  // if that covered all current nodes, just need to insert any remaining updates and we're done
-  if (nmin > nmax) {
-    // insert any remaining nodes
-    while (umin <= umax) {
-      insertOrAppend(parent, us[umin], ul, umin, us);
-      umin++;
-    }
-    return;
-  }
-
-  // simple cases don't apply, have to actually match up nodes and figure out minimum DOM ops
-  // loop through nodes and mark them with a special property indicating their order
-  // we'll then go through the updates and look for those properties
-  // in case any of the updates have order properties left over from earlier runs, we 
-  // use the low bits of the order prop to record a batch identifier.
-  // I'd much rather use a Map than a special property, but Maps of objects are really
-  // slow currently, like only 100k get/set ops / second
-  // for Text nodes, all that matters is their order, as they're easily, interchangeable
-  // so we record their positions in ntext[]
-  var ntext = [];
-
-  // update global batch identifer
-  RECONCILE_ARRAY_BATCH = (RECONCILE_ARRAY_BATCH + 1) % RECONCILE_ARRAY_INC;
-
-  for (i = nmin, j = (nmin << RECONCILE_ARRAY_BITS) + RECONCILE_ARRAY_BATCH; i <= nmax; i++, j += RECONCILE_ARRAY_INC) {
-    n = ns[i];
-    // add or update special order property
-    if (n.__sp_order === undefined) {
-      Object.defineProperty(n, '__sp_order', { value: j, writable: true });
-    } else {
-      n.__sp_order = j;
-    }
-    if (n instanceof Text) {
-      ntext.push(i);
-    }
-  }
-
-  // now loop through us, looking for the order property, otherwise recording NOMATCH
-  var src = new Array(umax - umin + 1),
-    utext = [],
-    preserved = 0;
-
-  for (i = umin; i <= umax; i++) {
-    u = us[i];
-    if (typeof u === 'string') {
-      utext.push(i);
-      src[i - umin] = NOMATCH;
-    } else if ((j = u.__sp_order) !== undefined && (j & RECONCILE_ARRAY_MASK) === RECONCILE_ARRAY_BATCH) {
-      j >>= RECONCILE_ARRAY_BITS;
-      src[i - umin] = j;
-      ns[j] = null;
-      preserved++;
-    } else {
-      src[i - umin] = NOMATCH;
-    }
-  }
-
-  if (preserved === 0 && nmin === 0 && nmax === ns.length - 1) {
-    if (multiple) {
-      for (i = 0; i <= nmax; i++) parent.removeChild(ns[i]);
-      while (umin <= umax) {
-        insertOrAppend(parent, us[umin], ul, umin, us)
-        umin++
+  function prepNodes(node) {
+    if (node.nodeType === 11) {
+      let mark = node.firstChild;
+      counter++;
+      while(mark) {
+        mark[GROUPING] = counter;
+        mark = mark.nextSibling
       }
-      return;
     }
-    // no nodes preserved, use fast clear and append
-    parent.textContent = '';
-    while (umin <= umax) {
-      insertOrAppend(parent, us[umin], null, umin, us);
-      umin++;
-    }
-    return;
+    return node;
   }
 
-  // find longest common sequence between ns and us, represented as the indices
-  // of the longest increasing subsequence in src
-  var lcs = longestPositiveIncreasingSubsequence(src);
-
-  // we know we can preserve their order, so march them as NOINSERT
-  for (i = 0; i < lcs.length; i++) {
-    src[lcs[i]] = NOINSERT;
+  function createFn(item, i) {
+    return root(disposer => (disposables[i] = disposer, prepNodes(mapFn(item, i))));
   }
 
-  /*
-          0   1   2   3   4   5   6   7
-  ns    = [ n,  n,  t,  n,  n,  n,  t,  n ]
-              |          /   /       /
-              |        /   /       /
-              +------/---/-------/----+
-                    /   /       /      |
-  us    = [ n,  s,  n,  n,  s,  n,  s,  n ]
-  src   = [-1, -1,  4,  5, -1,  7, -1,  1 ]
-  lis   = [         2,  3,      5]
-                  j
-  utext = [     1,          4,      6 ]
-              i
-  ntext = [         2,              6 ]
-                  k
-  */
-
-  // replace strings in us with Text nodes, reusing Text nodes from ns when we can do so without moving them
-  var utexti = 0,
-    lcsj  = 0,
-    ntextk  = 0;
-  for (i = 0, j = 0, k = 0; i < utext.length; i++) {
-    utexti = utext[i];
-    // need to answer qeustion "if utext[i] falls between two lcs nodes, is there an ntext between them which we can reuse?"
-    // first, find j such that lcs[j] is the first lcs node *after* utext[i]
-    while (j < lcs.length && (lcsj = lcs[j]) < utexti - umin) j++;
-    // now, find k such that ntext[k] is the first ntext *after* lcs[j-1] (or after start, if j === 0)
-    while (k < ntext.length && (ntextk = ntext[k], j !== 0) && ntextk < src[lcs[j - 1]]) k++;
-    // if ntext[k] < lcs[j], then we know ntext[k] falls between lcs[j-1] (or start) and lcs[j] (or end)
-    // that means we can re-use it without moving it
-    if (k < ntext.length && (j === lcs.length || ntextk < src[lcsj])) {
-      n = ns[ntextk];
-      u = us[utexti];
-      if (n.data !== u) n.data = u;
-      ns[ntextk] = null;
-      us[utexti] = n;
-      src[utexti] = NOINSERT;
-      k++;
-    } else {
-      // if we didn't find one to re-use, make a new Text node
-      us[utexti] = document.createTextNode(us[utexti]);
-    }
+  function afterRender() {
+    afterRenderFn && afterRenderFn(
+      beforeNode ? beforeNode.nextSibling : parent.firstChild, afterNode
+    );
   }
 
-  // remove stale nodes in ns
-  while (nmin <= nmax) {
-    n = ns[nmin];
-    if (n !== null) {
-      parent.removeChild(n);
-    }
-    nmin++;
-  }
+  cleanup(function dispose() { for (let i = 0; i < disposables.length; i++) disposables[i](); });
+  wrap((renderedValues = []) => {
+    const data = accessor();
+    parent = (beforeNode && beforeNode.parentNode) || parent;
+    return sample(() => {
+      // Fast path for clear
+      const length = data.length;
+      if (length === 0) {
+        if (beforeNode !== undefined || afterNode !== undefined) {
+          let node = beforeNode !== undefined ? beforeNode.nextSibling : parent.firstChild,
+            newAfterNode = afterNode, tmp;
 
-  // insert new nodes
-  while (umin <= umax) {
-    ux = us[umax];
-    if (src[umax - umin] !== NOINSERT) {
-      if (ul === null) parent.appendChild(ux);
-      else parent.insertBefore(ux, ul);
-    }
-    ul = ux;
-    umax--;
-  }
+          if (newAfterNode === undefined) newAfterNode = null;
+
+          while(node !== newAfterNode) {
+            tmp = node.nextSibling;
+            parent.removeChild(node);
+            node = tmp;
+          }
+        } else parent.textContent = "";
+        for (let i = 0; i < renderedValues.length; i++) disposables[i]();
+        disposables = [];
+        afterRender();
+        return [];
+      }
+
+      // Fast path for create
+      if (renderedValues.length === 0) {
+        let node, mode = (afterNode !== undefined), nextData = new Array(length);
+        for (let i = 0; i < length; i++) {
+          node = createFn(nextData[i] = data[i], i);
+          mode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
+        }
+        afterRender();
+        return nextData;
+      }
+
+      let prevStart = 0,
+        newStart = 0,
+        loop = true,
+        prevEnd = renderedValues.length-1, newEnd = length-1,
+        a, b,
+        prevStartNode = beforeNode ? beforeNode.nextSibling : parent.firstChild,
+        newStartNode = prevStartNode,
+        prevEndNode = afterNode ? afterNode.previousSibling : parent.lastChild,
+        newAfterNode = afterNode;
+
+      fixes: while(loop) {
+        loop = false;
+        let _node;
+
+        // Skip prefix
+        a = renderedValues[prevStart], b = data[newStart];
+        while(a === b) {
+          prevStart++;
+          newStart++;
+          newStartNode = prevStartNode = step(prevStartNode, FORWARD);
+          if (prevEnd < prevStart || newEnd < newStart) break fixes;
+          a = renderedValues[prevStart];
+          b = data[newStart];
+        }
+
+        // Skip suffix
+        a = renderedValues[prevEnd], b = data[newEnd];
+        while(a === b) {
+          prevEnd--;
+          newEnd--;
+          newAfterNode = prevEndNode;
+          prevEndNode = step(prevEndNode, BACKWARD);
+          if (prevEnd < prevStart || newEnd < newStart) break fixes;
+          a = renderedValues[prevEnd];
+          b = data[newEnd];
+        }
+
+        // Fast path to swap backward
+        a = renderedValues[prevEnd], b = data[newStart];
+        while(a === b) {
+          loop = true;
+          _node = step(prevEndNode, BACKWARD);
+          let mark = _node.nextSibling;
+          if (newStartNode !== mark) {
+            while (mark !== prevEndNode) {
+              let tmp = mark.nextSibling;
+              parent.insertBefore(mark, newStartNode);
+              mark = tmp;
+            }
+            parent.insertBefore(mark, newStartNode);
+            prevEndNode = _node;
+            disposables.splice(newStart, 0, disposables.splice(prevEnd, 1)[0]);
+          }
+          newStart++;
+          prevEnd--;
+          if (prevEnd < prevStart || newEnd < newStart) break fixes;
+          a = renderedValues[prevEnd];
+          b = data[newStart];
+        }
+
+        // Fast path to swap forward
+        a = renderedValues[prevStart], b = data[newEnd];
+        while(a === b) {
+          loop = true;
+          _node = step(prevStartNode, FORWARD);
+          let mark = prevStartNode, tmp;
+          if (mark !== newAfterNode) {
+            while (mark.nextSibling !== _node) {
+              tmp = mark.nextSibling;
+              parent.insertBefore(mark, newAfterNode);
+              mark = tmp;
+            }
+            parent.insertBefore(mark, newAfterNode);
+            disposables.splice(newEnd, 0, disposables.splice(prevStart, 1)[0]);
+            newAfterNode = mark;
+            prevStartNode = _node;
+          }
+          prevStart++;
+          newEnd--;
+          if (prevEnd < prevStart || newEnd < newStart) break fixes;
+          a = renderedValues[prevStart];
+          b = data[newEnd];
+        }
+      }
+
+      // Fast path for shrink
+      if (newEnd < newStart) {
+        if (prevStart <= prevEnd) {
+          let next, mark, tmp;
+          while(prevStart <= prevEnd) {
+            next = step(prevEndNode, BACKWARD);
+            mark = prevEndNode;
+            while (mark !== next) {
+              tmp = mark.previousSibling
+              parent.removeChild(mark);
+              mark = tmp;
+            }
+            prevEndNode = next;
+            disposables[prevEnd]();
+            prevEnd--;
+          }
+        }
+        disposables.length = length;
+        afterRender();
+        return data.slice(0);
+      }
+
+      // Fast path for add
+      if (prevEnd < prevStart) {
+        if (newStart <= newEnd) {
+          let node, mode = newAfterNode ? 1 : 0;
+          while(newStart <= newEnd) {
+            node = createFn(data[newStart], newStart);
+            mode ? parent.insertBefore(node, newAfterNode) : parent.appendChild(node);
+            newStart++;
+          }
+        }
+        afterRender();
+        return data.slice(0);
+      }
+
+      // Positions for reusing nodes from current DOM state
+      const P = new Array(newEnd + 1 - newStart);
+      for(let i = newStart; i <= newEnd; i++) P[i] = -1;
+
+      // Index to resolve position from current to new
+      const I = new Map();
+      for(let i = newStart; i <= newEnd; i++) I.set(data[i], i);
+
+      let reusingNodes = 0, toRemove = [];
+      for(let i = prevStart; i <= prevEnd; i++) {
+        if (I.has(renderedValues[i])) {
+          P[I.get(renderedValues[i])] = i;
+          reusingNodes++;
+        } else {
+          toRemove.push(i);
+        }
+      }
+
+      // Fast path for full replace
+      if (reusingNodes === 0) {
+        if (prevStartNode !== parent.firstChild || prevEndNode !== parent.lastChild) {
+          let node = prevStartNode, tmp, mark;
+          newAfterNode = prevEndNode.nextSibling;
+          while(node !== newAfterNode) {
+            mark = step(node, FORWARD);
+            while (node !== mark) {
+              tmp = node.nextSibling;
+              parent.removeChild(node);
+              node = tmp;
+            }
+            disposables[prevStart]();
+            prevStart++;
+          }
+        } else {
+          while(prevStart <= prevEnd) {
+            disposables[prevStart]();
+            prevStart++;
+          }
+          parent.textContent = "";
+        }
+
+        let node, mode = newAfterNode ? 1 : 0;
+        for(let i = newStart; i <= newEnd; i++) {
+          node = createFn(data[i], i);
+          mode ? parent.insertBefore(node, newAfterNode) : parent.appendChild(node);
+        }
+
+        afterRender();
+        return data.slice(0);
+      }
+
+      // What else?
+      const longestSeq = longestPositiveIncreasingSubsequence(P, newStart)
+
+      // Collect nodes to work with them
+      const nodes = [];
+      let tmpC = prevStartNode;
+      for(let i = prevStart; i <= prevEnd; i++) {
+        nodes[i] = tmpC;
+        tmpC = step(tmpC, FORWARD);
+      }
+
+      for(let i = 0; i < toRemove.length; i++) {
+        const index = toRemove[i];
+        let node = nodes[index], end = nodes[index + 1], tmp;
+        while(node !== end) {
+          tmp = node.nextSibling
+          parent.removeChild(node);
+          node = tmp;
+        }
+        disposables[index]();
+      }
+
+      let lisIdx = longestSeq.length - 1, tmpD;
+      for(let i = newEnd; i >= newStart; i--) {
+        if(longestSeq[lisIdx] === i) {
+          newAfterNode = nodes[P[longestSeq[lisIdx]]];
+          lisIdx--;
+        } else {
+          if (P[i] === -1) {
+            tmpD = createFn(data[i], i);
+            parent.insertBefore(tmpD, newAfterNode);
+          } else {
+            tmpD = nodes[P[i]];
+            let mark = tmpD, end = nodes[P[i] + 1], tmp;
+            while (mark !== end) {
+              tmp = mark.nextSibling;
+              parent.insertBefore(mark, newAfterNode);
+              mark = tmp;
+            }
+          }
+          newAfterNode = tmpD;
+        }
+      }
+
+      disposables.length = length;
+      afterRender();
+      return data.slice(0);
+    });
+  });
 }
 
-// two nodes are "equable" if they are identical (===) or if we can make them the same, i.e. they're 
-// Text nodes, which we can reuse with the new text
-function equable(u, n, i, us) {
-  if (u === n) {
-    return true;
-  } else if (typeof u === 'string' && n instanceof Text) {
-    if (n.data !== u) n.data = u;
-    us[i] = n;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function insertOrAppend(parent, node, marker, i, us) {
-  if (typeof node === 'string') {
-    node = us[i] = document.createTextNode(node);
-  }
-  if (marker === null) parent.appendChild(node);
-  else parent.insertBefore(node, marker);
-}
+// Picked from
+// https://github.com/adamhaile/surplus/blob/master/src/runtime/content.ts#L368
 
 // return an array of the indices of ns that comprise the longest increasing subsequence within ns
-function longestPositiveIncreasingSubsequence(ns) {
+function longestPositiveIncreasingSubsequence(ns, newStart) {
   var seq = [],
     is  = [],
     l   = -1,
     pre = new Array(ns.length);
 
-  for (var i = 0, len = ns.length; i < len; i++) {
+  for (var i = newStart, len = ns.length; i < len; i++) {
     var n = ns[i];
     if (n < 0) continue;
     var j = findGreatestIndexLEQ(seq, n);

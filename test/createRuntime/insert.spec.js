@@ -1,4 +1,4 @@
-const { createRuntime } = require('../../lib/index')
+const { createRuntime } = require('../../lib/createRuntime')
 const r = createRuntime({})
 
 describe("r.insert", () => {

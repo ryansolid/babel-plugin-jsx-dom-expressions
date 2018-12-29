@@ -66,6 +66,18 @@ To write a runtime you pass an object with the following methods to the createRu
 
 This is called around all expressions. This is typically where you wrap the expression with a computation in the desired library and handle any value preparsing. Your wrap method is expected to call fn with the previously evaluated value if the arity is 1 to allow for reducing computations.
 
+### root(fn) : any
+
+This indicates a new disposable context. The fn should be provided a dispose method that can be called to free all computations in the context.
+
+### sample(fn) : any
+
+A method that causes dependencies within not to be tracked.
+
+### cleanup(fn) : void
+
+This method should register a cleanup method to be called when the context is released.
+
 ## Special Binding
 
 ### ref
@@ -96,6 +108,22 @@ This takes an object and assigns all the keys as classes which are truthy.
 
 Keep in mind given the independent nature of binding updates there is no guarentee of order using spreads at this time. It's under consideration.
 
+## Control Flow
+
+Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 2 props on this component 'each' and 'when'. Where the argument is the list to iterate or the condition. The Child is a function (render prop).
+
+```jsx
+<ul>
+  <$ each={ state.users }>{
+    user => <li>
+      <div>{( user.firstName )}</div>
+      <$ when={ user.stars > 100 }>{
+        () => <div>Verified</div>
+      }</$>
+    </li>
+  }</$>
+</ul>
+```
 
 ## Work in Progress
 

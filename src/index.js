@@ -1,8 +1,6 @@
 import SyntaxJSX from '@babel/plugin-syntax-jsx';
 import Attributes from './Attributes'
 
-export { createRuntime } from './createRuntime'
-
 const VOID_ELEM_TAGS = [
   'area',
   'base',
@@ -112,6 +110,27 @@ export default (babel) => {
     results.decl = t.variableDeclaration("const", results.decl);
   }
 
+  function createPlaceholder(path, results, tempPath, i) {
+    const exprId = path.scope.generateUidIdentifier("el$");
+    results.decl.push(
+      t.variableDeclarator(exprId,
+        t.callExpression(t.memberExpression(results.id, t.identifier('insertBefore')), [
+          t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createTextNode')), [t.stringLiteral('')]),
+          t.memberExpression(t.identifier(tempPath), t.identifier(i === 0 ? 'firstChild': 'nextSibling'))
+        ])
+      )
+    );
+    return exprId;
+  }
+
+  function checkLength(children) {
+    let i = 0;
+    children.forEach(child => {
+      if (!t.isJSXText(child) || !/^\s*$/.test(child.value)) i++;
+    });
+    return i > 1;
+  }
+
   // reduce unnecessary refs
   function detectExpressions(jsx, index) {
     for (let i = index; i < jsx.children.length; i++) {
@@ -124,6 +143,20 @@ export default (babel) => {
           if (detectExpressions(jsx.children[i], 0)) return true;
       }
     }
+  }
+
+  function generateFlow(jsx) {
+    const flow = { afterRender: t.nullLiteral() };
+    jsx.openingElement.attributes.forEach(attribute => {
+      const name = attribute.name.name;
+      if (!flow.type && (name === 'each' || name === 'when')) {
+          flow.type = t.stringLiteral(name);
+          flow.condition = t.arrowFunctionExpression([], attribute.value.expression);
+          flow.render = jsx.children[0].expression;
+      }
+      if (name === 'afterRender') flow.afterRender = attribute.value.expression;
+    });
+  	return { flow, template: '', exprs: [] };
   }
 
   function generateComponent(path, jsx, opts) {
@@ -213,20 +246,19 @@ export default (babel) => {
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
-        if (jsx.children.length > 1) {
-          let exprId = path.scope.generateUidIdentifier("el$");
-          results.decl.push(
-            t.variableDeclarator(exprId,
-              t.callExpression(t.memberExpression(results.id, t.identifier('insertBefore')), [
-                t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createTextNode')), [t.stringLiteral('')]),
-                t.memberExpression(t.identifier(tempPath), t.identifier(i === 0 ? 'firstChild': 'nextSibling'))
-              ])
-            )
-          );
-          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insertM`), [results.id, child.exprs[0], t.nullLiteral(), exprId])));
+        if (checkLength(jsx.children)) {
+          let exprId = createPlaceholder(path, results, tempPath, i);
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insert`), [results.id, child.exprs[0], t.nullLiteral(), exprId])));
           tempPath = exprId.name;
           i++;
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insert`), [results.id, child.exprs[0]])));
+      } else if (child.flow) {
+        if (checkLength(jsx.children)) {
+          let exprId = createPlaceholder(path, results, tempPath, i);
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.afterRender, exprId])));
+          tempPath = exprId.name;
+          i++;
+        } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.afterRender])));
       }
     });
   }
@@ -235,6 +267,7 @@ export default (babel) => {
     if (t.isJSXElement(jsx)) {
       let tagName = getTagName(jsx),
         voidTag = VOID_ELEM_TAGS.indexOf(tagName) > -1;
+      if (tagName === '$') return generateFlow(jsx);
       if (tagName !== tagName.toLowerCase()) return generateComponent(path, jsx, opts);
       let results = { template: `<${tagName}`, decl: [], exprs: [] };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");

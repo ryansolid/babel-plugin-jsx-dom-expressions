@@ -8,16 +8,19 @@ export default [{
     '@babel/plugin-syntax-jsx'
   ],
   output: {
-    file: 'lib/index.js',
-    format: 'cjs',
-    exports: 'named'
+    file: 'lib/plugin.js',
+    format: 'cjs'
   },
   plugins,
 }, {
   input: 'src/createRuntime/index.js',
-  output: {
+  output: [{
+    file: 'lib/createRuntime.js',
+    format: 'cjs',
+    exports: 'named'
+  }, {
     file: 'dist/createRuntime.js',
     format: 'es'
-  },
+  }],
   plugins
 }]
