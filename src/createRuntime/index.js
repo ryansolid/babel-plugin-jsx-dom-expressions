@@ -52,6 +52,7 @@ export function createRuntime(options) {
           if (current !== '' && current != null) {
             parent.replaceChild(node, marker.previousSibling);
           } else parent.insertBefore(node, marker);
+          current = value;
         }
       } else {
         if (current !== '' && typeof current === 'string') {
