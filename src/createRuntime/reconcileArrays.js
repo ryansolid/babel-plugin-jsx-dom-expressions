@@ -98,6 +98,7 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         // Skip prefix
         a = renderedValues[prevStart], b = data[newStart];
         while(a === b) {
+          disposables[newStart] = disposables[prevStart];
           prevStart++;
           newStart++;
           newStartNode = prevStartNode = step(prevStartNode, FORWARD);
@@ -109,6 +110,7 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         // Skip suffix
         a = renderedValues[prevEnd], b = data[newEnd];
         while(a === b) {
+          disposables[newEnd] = disposables[prevEnd];
           prevEnd--;
           newEnd--;
           newAfterNode = prevEndNode;
@@ -266,7 +268,7 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
 
       for(let i = 0; i < toRemove.length; i++) {
         const index = toRemove[i];
-        let node = nodes[index], end = nodes[index + 1], tmp;
+        let node = nodes[index], end = step(node, FORWARD), tmp;
         while(node !== end) {
           tmp = node.nextSibling
           parent.removeChild(node);
@@ -275,18 +277,21 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         disposables[index]();
       }
 
+      const oldDisposables = disposables.slice(0);
       let lisIdx = longestSeq.length - 1, tmpD;
       for(let i = newEnd; i >= newStart; i--) {
         if(longestSeq[lisIdx] === i) {
           newAfterNode = nodes[P[longestSeq[lisIdx]]];
+          disposables[i] = oldDisposables[P[i]];
           lisIdx--;
         } else {
           if (P[i] === -1) {
             tmpD = createFn(data[i], i);
             parent.insertBefore(tmpD, newAfterNode);
           } else {
+            disposables[i] = oldDisposables[P[i]];
             tmpD = nodes[P[i]];
-            let mark = tmpD, end = nodes[P[i] + 1], tmp;
+            let mark = tmpD, end = step(mark, FORWARD), tmp;
             while (mark !== end) {
               tmp = mark.nextSibling;
               parent.insertBefore(mark, newAfterNode);
