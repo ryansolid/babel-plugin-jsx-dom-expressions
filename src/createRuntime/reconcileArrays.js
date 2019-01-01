@@ -2,12 +2,45 @@ const GROUPING = '__recGroup',
   FORWARD = 'nextSibling',
   BACKWARD = 'previousSibling';
 
+function prepNodes(node, id) {
+  if (node.nodeType === 11) {
+    let mark = node.firstChild;
+    while(mark) {
+      mark[GROUPING] = id;
+      mark = mark.nextSibling
+    }
+  } else node[GROUPING] = id;
+  return node;
+}
+
 function step(node, direction) {
   const key = node[GROUPING];
-  if (key) {
-    while(node[direction] && node[direction][GROUPING] === key) node = node[direction];
-  }
+  while(node[direction] && node[direction][GROUPING] === key) node = node[direction];
   return node[direction];
+}
+
+function removeNodes(parent, node, end) {
+  let tmp;
+  while(node !== end) {
+    tmp = node.nextSibling;
+    parent.removeChild(node);
+    node = tmp;
+  }
+}
+
+function insertNodes(parent, node, end, target) {
+  let tmp;
+  while (node !== end) {
+    tmp = node.nextSibling;
+    parent.insertBefore(node, target);
+    node = tmp;
+  }
+}
+
+function cleanNode(disposables, node) {
+  const key = node[GROUPING];
+  disposables.get(key)();
+  disposables.delete(key);
 }
 
 // This is almost straightforward implementation of reconcillation algorithm
@@ -20,22 +53,15 @@ function step(node, direction) {
 // This implementation is tailored for fine grained change detection and adds suupport for fragments
 export default function reconcile(parent, accessor, mapFn, afterRenderFn, options, beforeNode, afterNode) {
   const { wrap, cleanup, root, sample } = options;
-  let disposables = [], counter = 0;
+  let disposables = new Map(), counter = 0;
 
-  function prepNodes(node) {
-    if (node.nodeType === 11) {
-      let mark = node.firstChild;
-      counter++;
-      while(mark) {
-        mark[GROUPING] = counter;
-        mark = mark.nextSibling
-      }
-    }
-    return node;
-  }
-
-  function createFn(item, i) {
-    return root(disposer => (disposables[i] = disposer, prepNodes(mapFn(item, i))));
+  function createFn(item, i, afterNode) {
+    return root(disposer => {
+      disposables.set(++counter, disposer)
+      const node = prepNodes(mapFn(item, i), counter)
+      afterNode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
+      return node;
+    });
   }
 
   function afterRender() {
@@ -44,39 +70,33 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
     );
   }
 
-  cleanup(function dispose() { for (let i = 0; i < disposables.length; i++) disposables[i](); });
+  cleanup(function dispose() {
+    for (let i of disposables.keys()) disposables.get(i)();
+    disposables.clear();
+  });
   wrap((renderedValues = []) => {
     const data = accessor();
-    parent = (beforeNode && beforeNode.parentNode) || parent;
     return sample(() => {
-      // Fast path for clear
+      parent = (beforeNode && beforeNode.parentNode) || parent;
       const length = data.length;
+
+      // Fast path for clear
       if (length === 0) {
         if (beforeNode !== undefined || afterNode !== undefined) {
-          let node = beforeNode !== undefined ? beforeNode.nextSibling : parent.firstChild,
-            newAfterNode = afterNode, tmp;
-
-          if (newAfterNode === undefined) newAfterNode = null;
-
-          while(node !== newAfterNode) {
-            tmp = node.nextSibling;
-            parent.removeChild(node);
-            node = tmp;
-          }
+          let node = beforeNode !== undefined ? beforeNode.nextSibling : parent.firstChild;
+          removeNodes(parent, node, afterNode === undefined ? null : afterNode);
         } else parent.textContent = "";
-        for (let i = 0; i < renderedValues.length; i++) disposables[i]();
-        disposables = [];
+
+        for (let i of disposables.keys()) disposables.get(i)();
+        disposables.clear();
         afterRender();
         return [];
       }
 
       // Fast path for create
       if (renderedValues.length === 0) {
-        let node, mode = (afterNode !== undefined), nextData = new Array(length);
-        for (let i = 0; i < length; i++) {
-          node = createFn(nextData[i] = data[i], i);
-          mode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
-        }
+        let nextData = new Array(length);
+        for (let i = 0; i < length; i++) createFn(nextData[i] = data[i], i, afterNode);
         afterRender();
         return nextData;
       }
@@ -98,7 +118,6 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         // Skip prefix
         a = renderedValues[prevStart], b = data[newStart];
         while(a === b) {
-          disposables[newStart] = disposables[prevStart];
           prevStart++;
           newStart++;
           newStartNode = prevStartNode = step(prevStartNode, FORWARD);
@@ -110,7 +129,6 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         // Skip suffix
         a = renderedValues[prevEnd], b = data[newEnd];
         while(a === b) {
-          disposables[newEnd] = disposables[prevEnd];
           prevEnd--;
           newEnd--;
           newAfterNode = prevEndNode;
@@ -127,14 +145,8 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
           _node = step(prevEndNode, BACKWARD);
           let mark = _node.nextSibling;
           if (newStartNode !== mark) {
-            while (mark !== prevEndNode) {
-              let tmp = mark.nextSibling;
-              parent.insertBefore(mark, newStartNode);
-              mark = tmp;
-            }
-            parent.insertBefore(mark, newStartNode);
+            insertNodes(parent, mark, prevEndNode.nextSibling, newStartNode)
             prevEndNode = _node;
-            disposables.splice(newStart, 0, disposables.splice(prevEnd, 1)[0]);
           }
           newStart++;
           prevEnd--;
@@ -148,15 +160,9 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         while(a === b) {
           loop = true;
           _node = step(prevStartNode, FORWARD);
-          let mark = prevStartNode, tmp;
-          if (mark !== newAfterNode) {
-            while (mark.nextSibling !== _node) {
-              tmp = mark.nextSibling;
-              parent.insertBefore(mark, newAfterNode);
-              mark = tmp;
-            }
-            parent.insertBefore(mark, newAfterNode);
-            disposables.splice(newEnd, 0, disposables.splice(prevStart, 1)[0]);
+          if (prevStartNode !== newAfterNode) {
+            let mark = _node.previousSibling;
+            insertNodes(parent, prevStartNode, _node, newAfterNode);
             newAfterNode = mark;
             prevStartNode = _node;
           }
@@ -171,21 +177,15 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
       // Fast path for shrink
       if (newEnd < newStart) {
         if (prevStart <= prevEnd) {
-          let next, mark, tmp;
+          let next;
           while(prevStart <= prevEnd) {
             next = step(prevEndNode, BACKWARD);
-            mark = prevEndNode;
-            while (mark !== next) {
-              tmp = mark.previousSibling
-              parent.removeChild(mark);
-              mark = tmp;
-            }
+            removeNodes(parent, next.nextSibling, prevEndNode.nextSibling);
+            cleanNode(disposables, prevEndNode);
             prevEndNode = next;
-            disposables[prevEnd]();
             prevEnd--;
           }
         }
-        disposables.length = length;
         afterRender();
         return data.slice(0);
       }
@@ -193,10 +193,8 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
       // Fast path for add
       if (prevEnd < prevStart) {
         if (newStart <= newEnd) {
-          let node, mode = newAfterNode ? 1 : 0;
           while(newStart <= newEnd) {
-            node = createFn(data[newStart], newStart);
-            mode ? parent.insertBefore(node, newAfterNode) : parent.appendChild(node);
+            createFn(data[newStart], newStart, newAfterNode);
             newStart++;
           }
         }
@@ -224,85 +222,56 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
 
       // Fast path for full replace
       if (reusingNodes === 0) {
-        if (prevStartNode !== parent.firstChild || prevEndNode !== parent.lastChild) {
-          let node = prevStartNode, tmp, mark;
-          newAfterNode = prevEndNode.nextSibling;
-          while(node !== newAfterNode) {
-            mark = step(node, FORWARD);
-            while (node !== mark) {
-              tmp = node.nextSibling;
-              parent.removeChild(node);
-              node = tmp;
-            }
-            disposables[prevStart]();
-            prevStart++;
-          }
-        } else {
-          while(prevStart <= prevEnd) {
-            disposables[prevStart]();
-            prevStart++;
-          }
-          parent.textContent = "";
+        const doRemove = prevStartNode !== parent.firstChild || prevEndNode !== parent.lastChild;
+        let node = prevStartNode, mark;
+        newAfterNode = prevEndNode.nextSibling;
+        while(node !== newAfterNode) {
+          mark = step(node, FORWARD);
+          cleanNode(disposables, node);
+          doRemove && removeNodes(parent, node, mark);
+          node = mark;
+          prevStart++;
         }
+        !doRemove && (parent.textContent = "");
 
-        let node, mode = newAfterNode ? 1 : 0;
-        for(let i = newStart; i <= newEnd; i++) {
-          node = createFn(data[i], i);
-          mode ? parent.insertBefore(node, newAfterNode) : parent.appendChild(node);
-        }
-
+        for(let i = newStart; i <= newEnd; i++) createFn(data[i], i, newAfterNode);
         afterRender();
         return data.slice(0);
       }
 
       // What else?
-      const longestSeq = longestPositiveIncreasingSubsequence(P, newStart)
+      const longestSeq = longestPositiveIncreasingSubsequence(P, newStart),
+        nodes = [];
+      let tmpC = prevStartNode, lisIdx = longestSeq.length - 1, tmpD;
 
       // Collect nodes to work with them
-      const nodes = [];
-      let tmpC = prevStartNode;
       for(let i = prevStart; i <= prevEnd; i++) {
         nodes[i] = tmpC;
         tmpC = step(tmpC, FORWARD);
       }
 
       for(let i = 0; i < toRemove.length; i++) {
-        const index = toRemove[i];
-        let node = nodes[index], end = step(node, FORWARD), tmp;
-        while(node !== end) {
-          tmp = node.nextSibling
-          parent.removeChild(node);
-          node = tmp;
-        }
-        disposables[index]();
+        let index = toRemove[i],
+          node = nodes[index];
+        removeNodes(parent, node, step(node, FORWARD));
+        cleanNode(disposables, node);
       }
 
-      const oldDisposables = disposables.slice(0);
-      let lisIdx = longestSeq.length - 1, tmpD;
       for(let i = newEnd; i >= newStart; i--) {
         if(longestSeq[lisIdx] === i) {
           newAfterNode = nodes[P[longestSeq[lisIdx]]];
-          disposables[i] = oldDisposables[P[i]];
           lisIdx--;
         } else {
           if (P[i] === -1) {
-            tmpD = createFn(data[i], i);
-            parent.insertBefore(tmpD, newAfterNode);
+            tmpD = createFn(data[i], i, newAfterNode);
           } else {
-            disposables[i] = oldDisposables[P[i]];
             tmpD = nodes[P[i]];
-            let mark = tmpD, end = step(mark, FORWARD), tmp;
-            while (mark !== end) {
-              tmp = mark.nextSibling;
-              parent.insertBefore(mark, newAfterNode);
-              mark = tmp;
-            }
+            insertNodes(parent, tmpD, step(tmpD, FORWARD), newAfterNode);
           }
           newAfterNode = tmpD;
         }
       }
 
-      disposables.length = length;
       afterRender();
       return data.slice(0);
     });
