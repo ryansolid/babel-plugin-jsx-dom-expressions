@@ -177,10 +177,14 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
       // Fast path for shrink
       if (newEnd < newStart) {
         if (prevStart <= prevEnd) {
-          let next;
+          let next, key, node;
           while(prevStart <= prevEnd) {
-            next = step(prevEndNode, BACKWARD);
-            removeNodes(parent, next.nextSibling, prevEndNode.nextSibling);
+            // manually step to keep refs
+            node = prevEndNode;
+            key = node[GROUPING];
+            while(node.previousSibling && node.previousSibling[GROUPING] === key) node = node.previousSibling;
+            next = node.previousSibling;
+            removeNodes(parent, node, prevEndNode.nextSibling);
             cleanNode(disposables, prevEndNode);
             prevEndNode = next;
             prevEnd--;
