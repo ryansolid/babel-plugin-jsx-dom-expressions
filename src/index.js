@@ -301,6 +301,11 @@ export default (babel) => {
       JSXElement: (path, { opts }) => {
         if (opts.moduleName) moduleName = opts.moduleName;
         const result = generateHTMLNode(path, path.node, opts);
+        if (result.flow) {
+          // consider changing in the future
+          console.error('Error: Control Flow must be a child of a DOM Node');
+          return path.remove();
+        }
         if (result.id) {
           createTemplate(path, result);
           path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));

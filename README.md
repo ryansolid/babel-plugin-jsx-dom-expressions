@@ -125,11 +125,24 @@ Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to
 </ul>
 ```
 
+This plugin also supports JSX Fragments with <></> notation. This is the prefered way to add multi-node roots.
+
+```jsx
+<>
+  <$ when={ todos.length }>{
+    () => <>
+      <div>{ todo.id }</div>
+      <div>{( todo.label )}</div>
+    </>
+  }</$>
+</>
+```
+
 ## Work in Progress
 
 This is still early in the works. I'm still consolidating what methods should be helpers or end user provided. My goal here is to better understand and generalize this approach to provide non Virtual DOM alternatives to developing web applications.  In a sense when React hit the scene it brought with it tools and approaches that were light years ahead of the competition but also prematurely dismissed other approaches that were more optimized in other ways. I hope being able to leverage JSX evens the playing field a bit.
 
-I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably lack of support for SVG. I intend to get a few working examples up of library wrapper implementations.
+I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably lack of support for SVG.
 
 ## Acknowledgements
 

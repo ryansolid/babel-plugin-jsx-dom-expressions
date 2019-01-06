@@ -5,27 +5,39 @@ function normalizeIncomingArray(normalized, array) {
   for (var i = 0, len = array.length; i < len; i++) {
     var item = array[i];
     if (item instanceof Node) {
-        normalized.push(item);
+      if (item.nodeType === 11) {
+        normalizeIncomingArray(normalized, item.childNodes)
+      } else normalized.push(item);
     } else if (item == null || item === true || item === false) { // matches null, undefined, true or false
-        // skip
+      // skip
     } else if (Array.isArray(item)) {
-        normalizeIncomingArray(normalized, item);
+      normalizeIncomingArray(normalized, item);
     } else if (typeof item === 'string') {
-        normalized.push(item);
+      normalized.push(item);
     } else {
-        normalized.push(item.toString());
+      normalized.push(item.toString());
     }
   }
   return normalized;
 }
 
-function clearAll(parent, current, marker) {
+function clearAll(parent, current, marker, startNode) {
   if (!marker) return parent.textContent = '';
   if (Array.isArray(current)) {
     for (let i = 0; i < current.length; i++) {
       parent.removeChild(current[i]);
     }
-  } else if (current != null && current != '') parent.removeChild(marker.previousSibling);
+  } else if (current != null && current != '') {
+    if (startNode !== undefined) {
+      let node = marker.previousSibling, tmp;
+      while(node !== startNode) {
+        tmp = node.previousSibling;
+        parent.removeChild(node);
+        node = tmp;
+      }
+    }
+    else parent.removeChild(marker.previousSibling);
+  }
   return '';
 }
 
@@ -129,9 +141,9 @@ export function createRuntime(options) {
       });
     },
     flow(parent, type, accessor, expr, afterRender, marker) {
+      let startNode;
+      if (marker) startNode = marker.previousSibling;
       if (type === 'each') {
-        let startNode;
-        if (marker) startNode = marker.previousSibling;
         reconcileArrays(parent, accessor, expr, afterRender, options, startNode, marker);
       } else if (type === 'when') {
         let current, disposable;
@@ -140,8 +152,10 @@ export function createRuntime(options) {
           const value = accessor();
           if (value === cached) return cached;
           disposable && disposable();
+          parent = (marker && marker.parentNode) || parent;
           if (value == null || value === false) {
-            clearAll(parent, cached, marker);
+            clearAll(parent, current, marker, startNode);
+            current = null;
             return value;
           }
           root(disposer => {
