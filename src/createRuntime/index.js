@@ -57,21 +57,22 @@ export function createRuntime(options) {
     if (t === 'string' || t === 'number') {
       if (t === 'number') value = value.toString();
       if (marker) {
-        if (current !== '' && typeof current === 'string') {
-          current = marker.previousSibling.data = value;
+        if (value === '') clearAll(parent, current, marker)
+        else if (current !== '' && typeof current === 'string') {
+          marker.previousSibling.data = value;
         } else {
           const node = document.createTextNode(value);
           if (current !== '' && current != null) {
             parent.replaceChild(node, marker.previousSibling);
           } else parent.insertBefore(node, marker);
-          current = value;
         }
+        current = value;
       } else {
         if (current !== '' && typeof current === 'string') {
           current = parent.firstChild.data = value;
         } else current = parent.textContent = value;
       }
-    } else if (value == null || value === '' || t === 'boolean') {
+    } else if (value == null || t === 'boolean') {
       current = clearAll(parent, current, marker);
     } else if (t === 'function') {
       wrap(function() { current = insertExpression(parent, value(), current, marker); });
