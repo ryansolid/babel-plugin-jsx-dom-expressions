@@ -43,8 +43,8 @@ function clearAll(parent, current, marker, startNode) {
 
 function model(el) {
   let m = el.model, a = el.action, r;
-  if (!m && el.parentNode) r = model(el.parentNode);
-  return [m || r && r[0], a || r && r[1]];
+  if (m === undefined && el.parentNode) r = model(el.parentNode);
+  return [m !== undefined ? m : r && r[0], a || r && r[1]];
 }
 
 export function createRuntime(options) {

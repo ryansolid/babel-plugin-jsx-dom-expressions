@@ -131,6 +131,11 @@ export default (babel) => {
     return i > 1;
   }
 
+  // remove unnecessary JSX Text nodes
+  function filterChildren(children) {
+    return children.filter(child => !t.isJSXText(child) || !/^\s*$/.test(child.value))
+  }
+
   // reduce unnecessary refs
   function detectExpressions(jsx, index) {
     for (let i = index; i < jsx.children.length; i++) {
@@ -147,12 +152,20 @@ export default (babel) => {
 
   function generateFlow(jsx) {
     const flow = { afterRender: t.nullLiteral() };
+    let children = filterChildren(jsx.children), render;
+
+    if (t.isJSXExpressionContainer(children[0])) render = children[0].expression;
+    else if (children.length > 1) {
+      children = [t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children)];
+    }
+    if (!render) render = t.arrowFunctionExpression([], children[0]);
+
     jsx.openingElement.attributes.forEach(attribute => {
       const name = attribute.name.name;
       if (!flow.type && (name === 'each' || name === 'when')) {
-          flow.type = t.stringLiteral(name);
-          flow.condition = t.arrowFunctionExpression([], attribute.value.expression);
-          flow.render = jsx.children[0].expression;
+        flow.type = t.stringLiteral(name);
+        flow.condition = t.arrowFunctionExpression([], attribute.value.expression);
+        flow.render = render;
       }
       if (name === 'afterRender') flow.afterRender = attribute.value.expression;
     });
@@ -253,7 +266,7 @@ export default (babel) => {
           i++;
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insert`), [results.id, child.exprs[0]])));
       } else if (child.flow) {
-        if (checkLength(jsx.children)) {
+        if (t.isJSXFragment(jsx) || checkLength(jsx.children)) {
           let exprId = createPlaceholder(path, results, tempPath, i);
           results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.afterRender, exprId])));
           tempPath = exprId.name;
@@ -302,9 +315,22 @@ export default (babel) => {
         if (opts.moduleName) moduleName = opts.moduleName;
         const result = generateHTMLNode(path, path.node, opts);
         if (result.flow) {
-          // consider changing in the future
-          console.error('Error: Control Flow must be a child of a DOM Node');
-          return path.remove();
+          const id = path.scope.generateUidIdentifier("el$"),
+          	markerId = path.scope.generateUidIdentifier("el$");
+          path.replaceWithMultiple([
+          	t.variableDeclaration("const", [
+        	    t.variableDeclarator(id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createDocumentFragment')), [])),
+              t.variableDeclarator(markerId,
+                t.callExpression(t.memberExpression(id, t.identifier('insertBefore')), [
+                  t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createTextNode')), [t.stringLiteral('')]),
+                  t.memberExpression(id, t.identifier('firstChild'))
+                ])
+              )
+      		  ]),
+            t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [id, result.flow.type, result.flow.condition, result.flow.render, result.flow.afterRender, markerId])),
+            t.expressionStatement(id)
+          ])
+          return;
         }
         if (result.id) {
           createTemplate(path, result);

@@ -1,22 +1,49 @@
-const GROUPING = '__recGroup',
+const GROUPING = '__rGroup',
+  KEY = '__rid',
   FORWARD = 'nextSibling',
   BACKWARD = 'previousSibling';
+let groupCounter = 0;
 
-function prepNodes(node, id) {
-  if (node.nodeType === 11) {
-    let mark = node.firstChild;
-    while(mark) {
-      mark[GROUPING] = id;
-      mark = mark.nextSibling
+function addNode(node, parent, afterNode) {
+  if (Array.isArray(node)) {
+    if (!node.length) return;
+    let mark = node[0]
+    mark[KEY] = groupCounter;
+    if (node.length !== 1) {
+      mark[GROUPING] = groupCounter;
+      node[node.length - 1][GROUPING] = groupCounter;
+      node[node.length - 1][KEY] = groupCounter;
     }
-  } else node[GROUPING] = id;
-  return node;
+    for (let i = 0; i < node.length; i++)
+      afterNode ? parent.insertBefore(node[i], afterNode) : parent.appendChild(node[i]);
+    return mark;
+  }
+  let mark;
+  if (node.nodeType === 11) {
+    node.__mounted = { parent, marker: afterNode };
+    mark = node.firstChild;
+    if (mark) {
+      mark[KEY] = groupCounter;
+      if (mark !== node.lastChild) {
+        mark[GROUPING] = groupCounter;
+        node.lastChild[GROUPING] = groupCounter;
+        node.lastChild[KEY] = groupCounter;
+      }
+    }
+  } else node[KEY] = groupCounter;
+
+  afterNode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
+  return mark || node;
 }
 
 function step(node, direction) {
   const key = node[GROUPING];
-  while(node[direction] && node[direction][GROUPING] === key) node = node[direction];
-  return node[direction];
+  node = node[direction];
+  if (key) {
+    while(node && node[GROUPING] !== key) node = node[direction];
+    node = node[direction];
+  }
+  return node;
 }
 
 function removeNodes(parent, node, end) {
@@ -38,7 +65,7 @@ function insertNodes(parent, node, end, target) {
 }
 
 function cleanNode(disposables, node) {
-  const key = node[GROUPING];
+  const key = node[KEY];
   disposables.get(key)();
   disposables.delete(key);
 }
@@ -53,14 +80,12 @@ function cleanNode(disposables, node) {
 // This implementation is tailored for fine grained change detection and adds suupport for fragments
 export default function reconcile(parent, accessor, mapFn, afterRenderFn, options, beforeNode, afterNode) {
   const { wrap, cleanup, root, sample } = options;
-  let disposables = new Map(), counter = 0;
+  let disposables = new Map();
 
   function createFn(item, i, afterNode) {
     return root(disposer => {
-      disposables.set(++counter, disposer)
-      const node = prepNodes(mapFn(item, i), counter)
-      afterNode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
-      return node;
+      disposables.set(++groupCounter, disposer)
+      return addNode(mapFn(item, i), parent, afterNode);
     });
   }
 
@@ -77,13 +102,13 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
   wrap((renderedValues = []) => {
     const data = accessor();
     return sample(() => {
-      parent = (beforeNode && beforeNode.parentNode) || parent;
+      parent = (afterNode && afterNode.parentNode) || parent;
       const length = data.length;
 
       // Fast path for clear
       if (length === 0) {
         if (beforeNode !== undefined || afterNode !== undefined) {
-          let node = beforeNode !== undefined ? beforeNode.nextSibling : parent.firstChild;
+          let node = beforeNode != undefined ? beforeNode.nextSibling : parent.firstChild;
           removeNodes(parent, node, afterNode === undefined ? null : afterNode);
         } else parent.textContent = "";
 
@@ -181,8 +206,10 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
           while(prevStart <= prevEnd) {
             // manually step to keep refs
             node = prevEndNode;
-            key = node[GROUPING];
-            while(node.previousSibling && node.previousSibling[GROUPING] === key) node = node.previousSibling;
+            if (key = node[GROUPING]) {
+              node = node.previousSibling;
+              while(node && node[GROUPING] !== key) node = node.previousSibling;
+            }
             next = node.previousSibling;
             removeNodes(parent, node, prevEndNode.nextSibling);
             cleanNode(disposables, prevEndNode);

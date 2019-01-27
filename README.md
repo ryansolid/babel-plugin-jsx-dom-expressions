@@ -110,7 +110,7 @@ Keep in mind given the independent nature of binding updates there is no guarent
 
 ## Control Flow
 
-Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 2 props on this component 'each' and 'when'. Where the argument is the list to iterate or the condition. The Child is a function (render prop).
+Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 2 props on this component 'each' and 'when' where the argument is the list to iterate or the condition. The Child is a function (render prop). For each it passes the item and the index to the function, and for when it passes the evaluated value.
 
 ```jsx
 <ul>
@@ -124,19 +124,16 @@ Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to
   }</$>
 </ul>
 ```
-
-This plugin also supports JSX Fragments with <></> notation. This is the prefered way to add multi-node roots.
+Often for when there is no need for the argument and it can be skipped if desired using direct descendants. Since this is parsed at compile time there is no concern about the inner code running if the outer condition is not met.
 
 ```jsx
-<>
-  <$ when={ todos.length }>{
-    () => <>
-      <div>{ todo.id }</div>
-      <div>{( todo.label )}</div>
-    </>
-  }</$>
-</>
+<$ when={ todos.length }>
+  <span>{( todos.length )}</span>
+  <button onClick={ removeCompleted }>Clear Completed</button>
+</$>
 ```
+
+This plugin also supports JSX Fragments with `<></>` notation. This is the prefered way to add multi-node roots explicit arrays tend to create more HTML string templates than necessary.
 
 ## Work in Progress
 
