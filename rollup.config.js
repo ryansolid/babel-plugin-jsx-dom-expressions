@@ -13,13 +13,13 @@ export default [{
   },
   plugins,
 }, {
-  input: 'src/createRuntime/index.js',
+  input: 'src/runtime/index.js',
   output: [{
-    file: 'lib/createRuntime.js',
+    file: 'lib/runtime.js',
     format: 'cjs',
     exports: 'named'
   }, {
-    file: 'dist/createRuntime.js',
+    file: 'dist/runtime.js',
     format: 'es'
   }],
   plugins

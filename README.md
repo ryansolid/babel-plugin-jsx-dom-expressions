@@ -8,9 +8,9 @@ This plugin would allow you to take a library like KnockoutJS or MobX and use th
 
 This plugin treats all lowercase tags as html elements and mixed cased tags as Custom Functions. This enables breaking up your view into functional components. This library supports Web Component Custom Elements spec. Support for common camelcase event handlers like React, dom safe attributes like class and for, a simple ref property, and parsing of objects for style, and classList properties.
 
-In general JSX Attribute Expressions are treated as properties by default, with exception of hyphenated(-) ones that will always be set as attributes on the DOM element.
+In general JSX Attribute Expressions are treated as properties by default, with exception of hyphenated(-) ones that will always be set as attributes on the DOM element. Plain string attributes(Non expression, no {}) will be treated as attributes.
 
-**With version 0.2.0 the API has changed where dynamic expressions that are to be wrapped are represented by {( )}.**
+For dynamic expressions that should be wrapped in a computation for partial re-render use inner parenthesis in the expression ```{( )}```.
 
 ## Example
 
@@ -21,7 +21,9 @@ const view = ({ item }) =>
     <td class="col-md-4">
       <a onclick={e => select(item, e)}>{( item.label )}</a>
     </td>
-    <td class="col-md-1"><a onclick={e => del(item, e)}><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
+    <td class="col-md-1"><a onclick={e => del(item, e)}>
+      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    </a></td>
     <td class="col-md-6"></td>
   </tr>
 ```
@@ -135,13 +137,28 @@ Often for when there is no need for the argument and it can be skipped if desire
 
 This plugin also supports JSX Fragments with `<></>` notation. This is the prefered way to add multi-node roots explicit arrays tend to create more HTML string templates than necessary.
 
+## HyperScript (New/Experimental)
+
+While not as performant as it doesn't benefit from compile time optimization, including static template partitioning, this library provides a mechanism to expose a HyperScript version that doesn't require JSX compilation or Babel. Keep in mind you need to wrap expressions in functions if you want them to be observed. For attributes since wrapping in a function is the only indicator of reactivity, passing a non-event function as a value requires wrapping it in a function.
+
+```js
+import { createRuntime, createHyperScript } from 'babel-plugin-jsx-dom-expressions';
+
+const r = createRuntime(/* arguments */);
+const h = createHyperScript(r);
+
+// Later ....
+h('div.main', ["Hello", () => state.name]);
+```
+
+Components/Templates are just functions so no need to wrap them in an h function. Just call them inline. With HyperScript custom bindings need to be registered using ```h.registerBinding(key, fn)``` and control flow is handled through ```h.each(listFn, itemFn)``` and ```h.when(conditionFn, itemFn)```.
+
 ## Work in Progress
 
-This is still early in the works. I'm still consolidating what methods should be helpers or end user provided. My goal here is to better understand and generalize this approach to provide non Virtual DOM alternatives to developing web applications.  In a sense when React hit the scene it brought with it tools and approaches that were light years ahead of the competition but also prematurely dismissed other approaches that were more optimized in other ways. I hope being able to leverage JSX evens the playing field a bit.
+This is still early in the works. My goal here is to better understand and generalize this approach to provide non Virtual DOM alternatives to developing web applications.  In a sense when React hit the scene it brought with it tools and approaches that were light years ahead of the competition but also prematurely dismissed other approaches that were more optimized in other ways. I hope being able to leverage JSX evens the playing field a bit.
 
 I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably lack of support for SVG.
 
 ## Acknowledgements
 
 The concept of using JSX to DOM instead of html strings and context based binding usually found in these libraries was inspired greatly by [Surplus](https://github.com/adamhaile/surplus).
-
