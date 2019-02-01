@@ -151,7 +151,9 @@ const h = createHyperScript(r);
 h('div.main', ["Hello", () => state.name]);
 ```
 
-Components/Templates are just functions so no need to wrap them in an h function. Just call them inline. With HyperScript custom bindings need to be registered using ```h.registerBinding(key, fn)``` and control flow is handled through ```h.each(listFn, itemFn)``` and ```h.when(conditionFn, itemFn)```.
+There are also several small differences but generally follows HyperScript conventions. All attributes are props (so use className) and to indicate attributes wrap in 'attrs' object. Ref works React-like by passing a function.
+
+Components/Templates are just functions so no need to wrap them in an h function. Just call them inline. With HyperScript custom bindings need to be registered using ```h.registerBinding(key, fn)``` and control flow is handled through ```h.each(listFn, itemFn, afterRenderFn)``` and ```h.when(conditionFn, itemFn, afterRenderFn)```.
 
 ## Work in Progress
 

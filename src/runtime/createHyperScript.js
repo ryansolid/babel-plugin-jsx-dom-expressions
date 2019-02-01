@@ -74,19 +74,19 @@ export function createHyperScript(r) {
 
   h.registerBinding = (key, fn) => { bindings[key] = fn; }
 
-  h.when = (a, t) => {
+  h.when = (a, t, c) => {
     const m = e => {
       const n = e.appendChild(document.createTextNode(''));
-      r.flow(e, 'when', a, t, null, n);
+      r.flow(e, 'when', a, t, c, n);
     }
     m.flow = true;
     return m;
   }
 
-  h.each = (a, t) => {
+  h.each = (a, t, c) => {
     const m = e => {
       const n = e.appendChild(document.createTextNode(''));
-      r.flow(e, 'each', a, t, null, n)
+      r.flow(e, 'each', a, t, c, n)
     };
     m.flow = true;
     return m;
