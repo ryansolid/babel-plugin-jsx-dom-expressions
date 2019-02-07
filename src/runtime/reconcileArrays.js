@@ -7,7 +7,7 @@ let groupCounter = 0;
 function addNode(node, parent, afterNode) {
   if (Array.isArray(node)) {
     if (!node.length) return;
-    let mark = node[0]
+    let mark = node[0];
     mark[KEY] = groupCounter;
     if (node.length !== 1) {
       mark[GROUPING] = groupCounter;
@@ -20,7 +20,6 @@ function addNode(node, parent, afterNode) {
   }
   let mark;
   if (node.nodeType === 11) {
-    node.__mounted = { parent, marker: afterNode };
     mark = node.firstChild;
     if (mark) {
       mark[KEY] = groupCounter;
@@ -84,7 +83,7 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
 
   function createFn(item, i, afterNode) {
     return root(disposer => {
-      disposables.set(++groupCounter, disposer)
+      disposables.set(++groupCounter, disposer);
       return addNode(mapFn(item, i), parent, afterNode);
     });
   }
