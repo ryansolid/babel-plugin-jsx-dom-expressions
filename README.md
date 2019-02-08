@@ -62,7 +62,7 @@ The name of the runtime the compiler will output. Defaults to 'r'.
 
 ## Runtime API
 
-To write a runtime you pass an object with the following methods to the createRuntime method:
+To create a runtime you pass an object with the following methods to the createRuntime method:
 
 ### wrap(fn) : void
 
@@ -153,7 +153,7 @@ h('div.main', ["Hello", () => state.name]);
 
 There are also several small differences but generally follows HyperScript conventions. All attributes are props (so use className) and to indicate attributes wrap in 'attrs' object. Ref works React-like by passing a function.
 
-Components/Templates are just functions so no need to wrap them in an h function. Just call them inline. With HyperScript custom bindings need to be registered using ```h.registerBinding(key, fn)``` and control flow is handled through ```h.each(listFn, itemFn, afterRenderFn)``` and ```h.when(conditionFn, itemFn, afterRenderFn)```.
+Components/Templates are just functions so no need to wrap them in an h function. Just call them inline. With HyperScript custom bindings need to be registered using ```h.registerBinding(key, fn)``` and control flow is handled through ```h.each(listFn, itemFn, afterRenderFn)``` and ```h.when(conditionFn, itemFn, afterRenderFn)```. HyperScript also supports fragments. Simply pass only the children array to the h function.
 
 ## Work in Progress
 

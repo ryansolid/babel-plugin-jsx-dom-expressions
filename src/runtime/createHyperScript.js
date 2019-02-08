@@ -16,12 +16,15 @@ export function createHyperScript(r) {
         || l instanceof RegExp ) {
           e.appendChild(document.createTextNode(l.toString()));
       }
-      //there might be a better way to handle this...
-      else if (Array.isArray(l)) l.forEach(i => {
-        if (i.flow) i(e)
-        else r.insert(e, i)
-      });
-      else if(l instanceof Node) e.appendChild(l);
+      else if (Array.isArray(l)) {
+        // Support Fragments
+        if (!e) e = document.createDocumentFragment();
+        for (let i = 0; i < l.length; i++) {
+          const item = l[i];
+          if (item.flow) item(e);
+          else r.insert(e, item);
+        }
+      } else if(l instanceof Node) e.appendChild(l);
       else if ('object' === type) {
         for (const k in l) {
           if('function' === typeof l[k]) {
@@ -50,13 +53,14 @@ export function createHyperScript(r) {
       const m = string.split(/([\.#]?[^\s#.]+)/);
       if(/^\.|#/.test(m[1]))
         e = document.createElement('div');
-      m.forEach(v => {
-        const s = v.substring(1, v.length);
-        if(!v) return;
+      for (let i = 0; i < m.length; i++) {
+        const v = m[i],
+          s = v.substring(1, v.length);
+        if(!v) continue;
         if(!e) e = document.createElement(v);
         else if (v[0] === '.') e.classList.add(s);
         else if (v[0] === '#') e.setAttribute('id', s);
-      })
+      }
     }
     function parseKeyValue(k, v) {
       if(k === 'style') {
