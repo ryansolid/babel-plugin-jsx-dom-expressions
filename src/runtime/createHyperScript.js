@@ -29,11 +29,15 @@ export function createHyperScript(r) {
         for (const k in l) {
           if('function' === typeof l[k]) {
             if(/^on\w+/.test(k)) {
-              r.addEventListener(e, k.substring(2), l[k]);
+              if (k.toLowerCase() !== k) {
+                const name = k.slice(2).toLowerCase();
+                r.delegateEvents([name]);
+                e[`__${name}`] = l[k];
+              } else e[k] = l[k];
             } else if (k === 'ref') {
               l[k](e);
             } else if (k[0] === '$') {
-              bindings[k.substring(1)](e, l[k]);
+              bindings[k.slice(1)](e, l[k]);
             } else (function(k, l) { r.wrap(() => parseKeyValue(k, l[k]())); })(k, l);
           } else parseKeyValue(k, l[k]);
         }

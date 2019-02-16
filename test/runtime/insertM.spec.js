@@ -1,4 +1,4 @@
-const { createRuntime } = require('../../lib/createRuntime')
+const { createRuntime } = require('../../lib/runtime')
 const r = createRuntime({})
 
 describe("r.insert with Markers", () => {

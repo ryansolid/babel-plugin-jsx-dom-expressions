@@ -42,9 +42,9 @@ const view = ({ item }) =>
       _el$6 = _el$5.firstChild;
     r.wrap(() => _el$.className = item.id === selected ? 'danger' : '');
     r.insert(_el$2, item.id);
-    r.addEventListener(_el$4, "click", e => select(item, e));
+    _el$4.onclick = e => select(item, e));
     r.insert(_el$4, () => item.label);
-    r.addEventListener(_el$6, "click", e => del(item, e));
+    _el$6.onclick = e => del(item, e));
     return _el$;
   }()
 ```
@@ -86,13 +86,15 @@ This method should register a cleanup method to be called when the context is re
 
 This binding will assign the variable you pass to it with the DOM element
 
-### model / action
+### on(eventName) / model
 
-These bindings will assign the variable you pass to it as the data model for the DOM element. It is used for event delegation as 2nd and 3rd arguments. The syntax and usage of these is still experimental.
+These will be treated as event handlers expecting a function. All lowercase are considered directly bound events and camelCase for delegated. The syntax and usage for delegation is still experimental. The model which can be the same node or closest ancestor is passed to delegated events as second argument.
 
-### on____
-
-These will be treated as event handlers expecting a function. If the arity of the function is greater than 1, the event handler will attempt to look up a data model property and optional action on the target element or parents to pass to the handler function. This allows out of the box event delegation.
+```jsx
+<ul>
+  <$ each={list}>{ item => <li model={item.id} onClick={handler} /> }</$>
+</ul>
+```
 
 ### $____
 

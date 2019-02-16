@@ -41,7 +41,7 @@ export default (babel) => {
     return t.variableDeclaration("let", [t.variableDeclarator(name, value)])
   }
 
-  function toEventName(name) { return name.slice(2).replace(/^(.)/, $1 => $1.toLowerCase()); }
+  function toEventName(name) { return name.slice(2).toLowerCase(); }
 
   function getTagName(tag) {
     if(t.isJSXMemberExpression(tag.openingElement.name)) {
@@ -227,8 +227,11 @@ export default (babel) => {
       if (t.isJSXExpressionContainer(value)) {
         if (attribute.name.name === 'ref') {
           results.exprs.unshift(t.expressionStatement(t.assignmentExpression("=", value.expression, name)));
-        } else if (attribute.name.name.startsWith("on")) {
-          results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.addEventListener`), [name, t.stringLiteral(toEventName(attribute.name.name)), value.expression])));
+        } else if (attribute.name.name.startsWith("on") && attribute.name.name !== attribute.name.name.toLowerCase()) {
+          const ev = toEventName(attribute.name.name),
+          	events = path.scope.getProgramParent().data.events || (path.scope.getProgramParent().data.events = new Set())
+          events.add(ev);
+          results.exprs.unshift(t.expressionStatement(t.assignmentExpression('=', t.identifier(`${name.name}.__${ev}`), value.expression)));
         } else if (attribute.name.name.startsWith('$')) {
           results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(attribute.name.name.slice(1)), [name, t.arrowFunctionExpression([], value.expression)])));
         } else if (!value || checkParens(value, path)) {
@@ -342,6 +345,18 @@ export default (babel) => {
         const result = generateHTMLNode(path, path.node, opts);
         createTemplate(path, result, true);
         path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
+      },
+      Program: {
+        exit: (path) => {
+          if (path.scope.data.events) {
+            path.node.body.push(
+              t.expressionStatement(t.callExpression(
+                t.identifier(`${moduleName}.delegateEvents`),
+                [t.arrayExpression(Array.from(path.scope.data.events).map(e => t.stringLiteral(e)))]
+              ))
+            );
+          }
+        }
       }
     }
   }

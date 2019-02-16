@@ -41,10 +41,17 @@ function clearAll(parent, current, marker, startNode) {
   return '';
 }
 
-function model(el) {
-  let m = el.model, a = el.action, r;
-  if (m === undefined && el.parentNode) r = model(el.parentNode);
-  return [m !== undefined ? m : r && r[0], a || r && r[1]];
+const eventRegistry = new Set()
+function lookup(el, type) {
+  let m = el.model, e = el[type], r, p;
+  if (m === undefined && (p = el.host || el.parentNode)) r = lookup(p, type);
+  return [m !== undefined ? m : r && r[0], e || r && r[1]];
+}
+
+function eventHandler(e) {
+  const node = (e.composedPath && e.composedPath()[0]) || e.target;
+  const [model, handler] = lookup(node, `__${e.type}`);
+  return handler && handler(e, model);
 }
 
 export function createRuntime(options) {
@@ -116,12 +123,14 @@ export function createRuntime(options) {
       if (typeof accessor !== 'function') return insertExpression(parent, accessor, init, marker);
       wrap((current = init) => insertExpression(parent, accessor(), current, marker));
     },
-    addEventListener(node, eventName, handler) {
-      node.addEventListener(eventName, e => {
-        if (handler.length < 2) return handler(e);
-        const a = model(e.target);
-        handler(e, a[0], a[1]);
-      });
+    delegateEvents(eventNames) {
+      for (let i = 0, l = eventNames.length; i < l; i++) {
+        const name = eventNames[i];
+        if (!eventRegistry.has(name)) {
+          eventRegistry.add(name);
+          document.addEventListener(name, eventHandler, true);
+        }
+      }
     },
     spread(node, accessor) {
       wrap(function() {
