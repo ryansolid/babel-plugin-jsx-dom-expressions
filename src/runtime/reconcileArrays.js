@@ -4,15 +4,15 @@ const GROUPING = '__rGroup',
   BACKWARD = 'previousSibling';
 let groupCounter = 0;
 
-function addNode(node, parent, afterNode) {
+function addNode(counter, node, parent, afterNode) {
   if (Array.isArray(node)) {
     if (!node.length) return;
     let mark = node[0];
-    mark[KEY] = groupCounter;
+    mark[KEY] = counter;
     if (node.length !== 1) {
-      mark[GROUPING] = groupCounter;
-      node[node.length - 1][GROUPING] = groupCounter;
-      node[node.length - 1][KEY] = groupCounter;
+      mark[GROUPING] = counter;
+      node[node.length - 1][GROUPING] = counter;
+      node[node.length - 1][KEY] = counter;
     }
     for (let i = 0; i < node.length; i++)
       afterNode ? parent.insertBefore(node[i], afterNode) : parent.appendChild(node[i]);
@@ -22,14 +22,14 @@ function addNode(node, parent, afterNode) {
   if (node.nodeType === 11) {
     mark = node.firstChild;
     if (mark) {
-      mark[KEY] = groupCounter;
+      mark[KEY] = counter;
       if (mark !== node.lastChild) {
-        mark[GROUPING] = groupCounter;
-        node.lastChild[GROUPING] = groupCounter;
-        node.lastChild[KEY] = groupCounter;
+        mark[GROUPING] = counter;
+        node.lastChild[GROUPING] = counter;
+        node.lastChild[KEY] = counter;
       }
     }
-  } else node[KEY] = groupCounter;
+  } else node[KEY] = counter;
 
   afterNode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
   return mark || node;
@@ -84,7 +84,7 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
   function createFn(item, i, afterNode) {
     return root(disposer => {
       disposables.set(++groupCounter, disposer);
-      return addNode(mapFn(item, i), parent, afterNode);
+      return addNode(groupCounter, mapFn(item, i), parent, afterNode);
     });
   }
 
