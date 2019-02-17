@@ -95,6 +95,7 @@ These will be treated as event handlers expecting a function. All lowercase are 
   <$ each={list}>{ item => <li model={item.id} onClick={handler} /> }</$>
 </ul>
 ```
+This delegation solution works with Web Components and the Shadow DOM as well if the events are composed. That limits the list to custom events and most UA UI events like onClick, onKeyUp, onKeyDown, onDblClick, onInput, onMouseDown, onMouseUp, etc..
 
 ### $____
 

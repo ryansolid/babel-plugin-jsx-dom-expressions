@@ -51,6 +51,14 @@ function lookup(el, type) {
 function eventHandler(e) {
   const node = (e.composedPath && e.composedPath()[0]) || e.target;
   const [model, handler] = lookup(node, `__${e.type}`);
+
+  // reverse Shadow DOM retargetting
+  if (e.target !== node) {
+    Object.defineProperty(e, 'target', {
+      configurable: true,
+      value: node
+    })
+  }
   return handler && handler(e, model);
 }
 
@@ -128,7 +136,7 @@ export function createRuntime(options) {
         const name = eventNames[i];
         if (!eventRegistry.has(name)) {
           eventRegistry.add(name);
-          document.addEventListener(name, eventHandler, true);
+          document.addEventListener(name, eventHandler);
         }
       }
     },
