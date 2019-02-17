@@ -41,16 +41,17 @@ function clearAll(parent, current, marker, startNode) {
   return '';
 }
 
-const eventRegistry = new Set()
-function lookup(el, type) {
-  let m = el.model, e = el[type], r, p;
-  if (m === undefined && (p = el.host || el.parentNode)) r = lookup(p, type);
-  return [m !== undefined ? m : r && r[0], e || r && r[1]];
+const eventRegistry = new Set();
+function lookup(el, name) {
+  let h = el[name], m = el.model, r, p;
+  if ((h === undefined || (h.length > 1 && m === undefined))
+    && (p = el.host || el.parentNode)) r = lookup(p, name);
+  return [h !== undefined ? h : r && r[0], m || r && r[1]];
 }
 
 function eventHandler(e) {
   const node = (e.composedPath && e.composedPath()[0]) || e.target;
-  const [model, handler] = lookup(node, `__${e.type}`);
+  const [handler, model] = lookup(node, `__${e.type}`);
 
   // reverse Shadow DOM retargetting
   if (e.target !== node) {
