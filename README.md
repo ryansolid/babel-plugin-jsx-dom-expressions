@@ -60,6 +60,9 @@ The use of cloneNode improves repeat insert performance and precompilation reduc
 ### moduleName
 The name of the runtime the compiler will output. Defaults to 'r'.
 
+### delegateEvents
+Boolean to indicate whether to enable automatic event delegation on camelCase.
+
 ## Runtime API
 
 To create a runtime you pass an object with the following methods to the createRuntime method:
@@ -96,6 +99,8 @@ These will be treated as event handlers expecting a function. All lowercase are 
 </ul>
 ```
 This delegation solution works with Web Components and the Shadow DOM as well if the events are composed. That limits the list to custom events and most UA UI events like onClick, onKeyUp, onKeyDown, onDblClick, onInput, onMouseDown, onMouseUp, etc..
+
+Event delegates aren't cleaned up automatically off Document. If you will be completely unmounting the library and wish to remove the handlers from the current page use r.clearDelegatedEvents.
 
 ### $____
 
@@ -148,6 +153,7 @@ While not as performant as it doesn't benefit from compile time optimization, in
 import { createRuntime, createHyperScript } from 'babel-plugin-jsx-dom-expressions';
 
 const r = createRuntime(/* arguments */);
+/* createHyperScript(runtime, options = {delegateEvents: true}) */
 const h = createHyperScript(r);
 
 // Later ....

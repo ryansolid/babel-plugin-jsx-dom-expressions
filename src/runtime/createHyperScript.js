@@ -1,8 +1,10 @@
+import NonComposedEvents from '../NonComposedEvents';
+
 // Inspired by https://github.com/hyperhype/hyperscript
-export function createHyperScript(r) {
+export function createHyperScript(r, {delegateEvents = true} = {}) {
   const bindings = {};
   function h() {
-    let args = [].slice.call(arguments), e = null;
+    let args = [].slice.call(arguments), e = null, delegatedEvents = new Set();
     function item(l) {
       const type = typeof l;
       if(l == null) ;
@@ -29,11 +31,12 @@ export function createHyperScript(r) {
         for (const k in l) {
           if('function' === typeof l[k]) {
             if(/^on\w+/.test(k)) {
-              if (k.toLowerCase() !== k) {
-                const name = k.slice(2).toLowerCase();
-                r.delegateEvents([name]);
+              const lc = k.toLowerCase();
+              if (delegateEvents && lc !== k && !NonComposedEvents.has(lc.slice(2))) {
+                const name = lc.slice(2);
+                delegatedEvents.add(name);
                 e[`__${name}`] = l[k];
-              } else e[k] = l[k];
+              } else e[lc] = l[k];
             } else if (k === 'ref') {
               l[k](e);
             } else if (k[0] === '$') {
@@ -47,6 +50,7 @@ export function createHyperScript(r) {
       }
     }
     while(args.length) item(args.shift());
+    r.delegateEvents(Array.from(delegatedEvents));
     return e;
 
     function parseClass (string) {

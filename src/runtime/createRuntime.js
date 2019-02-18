@@ -141,6 +141,10 @@ export function createRuntime(options) {
         }
       }
     },
+    clearDelegatedEvents() {
+      for (let name of eventRegistry.keys()) document.removeEventListener(name, eventHandler);
+      eventRegistry.clear();
+    },
     spread(node, accessor) {
       wrap(function() {
         const props = accessor();

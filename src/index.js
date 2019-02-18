@@ -1,36 +1,12 @@
 import SyntaxJSX from '@babel/plugin-syntax-jsx';
-import Attributes from './Attributes'
-
-const VOID_ELEM_TAGS = [
-  'area',
-  'base',
-  'basefont',
-  'bgsound',
-  'br',
-  'col',
-  'command',
-  'embed',
-  'frame',
-  'hr',
-  'image',
-  'img',
-  'input',
-  'isindex',
-  'keygen',
-  'link',
-  'menuitem',
-  'meta',
-  'nextid',
-  'param',
-  'source',
-  'track',
-  'wbr'
-]
+import Attributes from './Attributes';
+import VoidElements from './VoidElements';
+import NonComposedEvents from './NonComposedEvents';
 
 export default (babel) => {
-  const { types: t } = babel,
-    setAttribute = t.identifier("setAttribute");
-  let moduleName = 'r';
+  const { types: t } = babel;
+  let moduleName = 'r',
+    delegateEvents = true;
 
   function checkParens(jsx, path) {
     const e = path.hub.file.code.slice(jsx.start+1,jsx.end-1).trim();
@@ -60,7 +36,7 @@ export default (babel) => {
       else name = attribute.alias;
 
     if (isAttribute)
-      return t.callExpression(t.memberExpression(elem, setAttribute), [t.stringLiteral(name), value]);
+      return t.callExpression(t.memberExpression(elem, t.identifier("setAttribute")), [t.stringLiteral(name), value]);
     return t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value);
   }
 
@@ -215,32 +191,35 @@ export default (babel) => {
   }
 
   function transformAttributes(path, jsx, results) {
-    let name = results.id;
+    let elem = results.id;
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
         return results.exprs.push(
-          t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.spread`), [name, t.arrowFunctionExpression([], attribute.argument)]))
+          t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.spread`), [elem, t.arrowFunctionExpression([], attribute.argument)]))
         );
       }
 
-      let value = attribute.value;
+      let value = attribute.value,
+        key = attribute.name.name;
       if (t.isJSXExpressionContainer(value)) {
-        if (attribute.name.name === 'ref') {
-          results.exprs.unshift(t.expressionStatement(t.assignmentExpression("=", value.expression, name)));
-        } else if (attribute.name.name.startsWith("on") && attribute.name.name !== attribute.name.name.toLowerCase()) {
-          const ev = toEventName(attribute.name.name),
-          	events = path.scope.getProgramParent().data.events || (path.scope.getProgramParent().data.events = new Set())
-          events.add(ev);
-          results.exprs.unshift(t.expressionStatement(t.assignmentExpression('=', t.identifier(`${name.name}.__${ev}`), value.expression)));
-        } else if (attribute.name.name.startsWith('$')) {
-          results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(attribute.name.name.slice(1)), [name, t.arrowFunctionExpression([], value.expression)])));
+        if (key === 'ref') {
+          results.exprs.unshift(t.expressionStatement(t.assignmentExpression("=", value.expression, elem)));
+        } else if (key.startsWith("on") && key !== key.toLowerCase()) {
+          const ev = toEventName(key);
+          if (delegateEvents && !NonComposedEvents.has(ev)) {
+            const events = path.scope.getProgramParent().data.events || (path.scope.getProgramParent().data.events = new Set());
+            events.add(ev);
+            results.exprs.unshift(t.expressionStatement(t.assignmentExpression('=', t.identifier(`${elem.name}.__${ev}`), value.expression)));
+          } else results.exprs.unshift(t.expressionStatement(t.assignmentExpression('=', t.identifier(`${elem.name}.on${ev}`), value.expression)));
+        } else if (key.startsWith('$')) {
+          results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(key.slice(1)), [elem, t.arrowFunctionExpression([], value.expression)])));
         } else if (!value || checkParens(value, path)) {
-          results.exprs.push(setAttrExpr(name, attribute.name.name, value.expression));
+          results.exprs.push(setAttrExpr(elem, key, value.expression));
         } else {
-          results.exprs.push(t.expressionStatement(setAttr(name, attribute.name.name, value.expression)));
+          results.exprs.push(t.expressionStatement(setAttr(elem, key, value.expression)));
         }
       } else {
-        results.template += ` ${attribute.name.name}`;
+        results.template += ` ${key}`;
         if (value) results.template += `='${value.value}'`;
       }
     });
@@ -282,7 +261,7 @@ export default (babel) => {
   function generateHTMLNode(path, jsx, opts, info = {}) {
     if (t.isJSXElement(jsx)) {
       let tagName = getTagName(jsx),
-        voidTag = VOID_ELEM_TAGS.indexOf(tagName) > -1;
+        voidTag = VoidElements.indexOf(tagName) > -1;
       if (tagName === '$') return generateFlow(jsx);
       if (tagName !== tagName.toLowerCase()) return generateComponent(path, jsx, opts);
       let results = { template: `<${tagName}`, decl: [], exprs: [] };
@@ -315,7 +294,8 @@ export default (babel) => {
     inherits: SyntaxJSX,
     visitor: {
       JSXElement: (path, { opts }) => {
-        if (opts.moduleName) moduleName = opts.moduleName;
+        if ('moduleName' in opts) moduleName = opts.moduleName;
+        if ('delegateEvents' in opts) delegateEvents = opts.delegateEvents;
         const result = generateHTMLNode(path, path.node, opts);
         if (result.flow) {
           const id = path.scope.generateUidIdentifier("el$"),
@@ -341,7 +321,8 @@ export default (babel) => {
         } else path.replaceWith(result.exprs[0]);
       },
       JSXFragment: (path, { opts }) => {
-        if (opts.moduleName) moduleName = opts.moduleName;
+        if ('moduleName' in opts) moduleName = opts.moduleName;
+        if ('delegateEvents' in opts) delegateEvents = opts.delegateEvents;
         const result = generateHTMLNode(path, path.node, opts);
         createTemplate(path, result, true);
         path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
