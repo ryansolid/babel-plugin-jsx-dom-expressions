@@ -204,9 +204,9 @@ export default (babel) => {
       if (t.isJSXExpressionContainer(value)) {
         if (key === 'ref') {
           results.exprs.unshift(t.expressionStatement(t.assignmentExpression("=", value.expression, elem)));
-        } else if (key.startsWith("on") && key !== key.toLowerCase()) {
+        } else if (key.startsWith("on")) {
           const ev = toEventName(key);
-          if (delegateEvents && !NonComposedEvents.has(ev)) {
+          if (delegateEvents && key !== key.toLowerCase() && !NonComposedEvents.has(ev)) {
             const events = path.scope.getProgramParent().data.events || (path.scope.getProgramParent().data.events = new Set());
             events.add(ev);
             results.exprs.unshift(t.expressionStatement(t.assignmentExpression('=', t.identifier(`${elem.name}.__${ev}`), value.expression)));
