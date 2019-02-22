@@ -1,17 +1,24 @@
+const _tmpl$3 = document.createElement("template");
+
+_tmpl$3.innerHTML = "<span>Editting:</span><input type='text'/>";
+
 const _tmpl$2 = document.createElement("template");
 
 _tmpl$2.innerHTML = "<div>Hurray!</div>";
 
 const _tmpl$ = document.createElement("template");
 
-_tmpl$.innerHTML = "<div></div>";
+_tmpl$.innerHTML = "<div></div><div></div>";
 const list = [{
+  id: 1,
   text: 'Shop for Groceries',
   completed: true
 }, {
+  id: 2,
   text: 'Go to Work',
   completed: false
 }];
+let editingId = 1;
 
 const template = function () {
   const _el$ = document.createDocumentFragment(),
@@ -20,15 +27,21 @@ const template = function () {
   r.flow(_el$, "each", () => list, item => function () {
     const _el$3 = _tmpl$.content.cloneNode(true),
           _el$4 = _el$3.firstChild,
-          _el$5 = _el$3.insertBefore(document.createTextNode(""), _el$4.nextSibling);
+          _el$5 = _el$4.nextSibling,
+          _el$6 = _el$3.insertBefore(document.createTextNode(""), _el$5.nextSibling);
 
     r.insert(_el$4, () => item.text);
-    r.flow(_el$3, "when", () => item.completed, () => function () {
-      const _el$6 = _tmpl$2.content.firstChild.cloneNode(true);
+    r.flow(_el$5, "when", () => item.completed, () => function () {
+      const _el$7 = _tmpl$2.content.firstChild.cloneNode(true);
 
-      return _el$6;
-    }(), null, _el$5);
+      return _el$7;
+    }(), null);
+    r.flow(_el$3, "when", () => editingId === item.id, () => function () {
+      const _el$8 = _tmpl$3.content.cloneNode(true);
+
+      return _el$8;
+    }(), null, _el$6);
     return _el$3;
-  }(), null, _el$2);
+  }(), selectWhen(() => editingId, 'editing'), _el$2);
   return _el$;
 }();

@@ -1,25 +1,5 @@
-import reconcileArrays from './reconcileArrays';
+import { reconcileArrays, normalizeIncomingArray } from './reconcileArrays';
 import Attributes from '../Attributes'
-
-function normalizeIncomingArray(normalized, array) {
-  for (var i = 0, len = array.length; i < len; i++) {
-    var item = array[i];
-    if (item instanceof Node) {
-      if (item.nodeType === 11) {
-        normalizeIncomingArray(normalized, item.childNodes)
-      } else normalized.push(item);
-    } else if (item == null || item === true || item === false) { // matches null, undefined, true or false
-      // skip
-    } else if (Array.isArray(item)) {
-      normalizeIncomingArray(normalized, item);
-    } else if (typeof item === 'string') {
-      normalized.push(item);
-    } else {
-      normalized.push(item.toString());
-    }
-  }
-  return normalized;
-}
 
 function clearAll(parent, current, marker, startNode) {
   if (!marker) return parent.textContent = '';
@@ -113,10 +93,7 @@ export function createRuntime(options) {
       clearAll(parent, current, marker);
       if (array.length !== 0) {
         for (let i = 0, len = array.length; i < len; i++) {
-          let node = array[i];
-          if (!(node instanceof Node))
-            node = array[i] = document.createTextNode(node);
-          parent.insertBefore(node, marker);
+          parent.insertBefore(array[i], marker);
         }
       }
       current = array;

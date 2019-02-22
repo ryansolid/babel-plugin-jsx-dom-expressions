@@ -4,9 +4,30 @@ const GROUPING = '__rGroup',
   BACKWARD = 'previousSibling';
 let groupCounter = 0;
 
+export function normalizeIncomingArray(normalized, array) {
+  for (var i = 0, len = array.length; i < len; i++) {
+    var item = array[i];
+    if (item instanceof Node) {
+      if (item.nodeType === 11) {
+        normalizeIncomingArray(normalized, item.childNodes)
+      } else normalized.push(item);
+    } else if (item == null || item === true || item === false) { // matches null, undefined, true or false
+      // skip
+    } else if (Array.isArray(item)) {
+      normalizeIncomingArray(normalized, item);
+    } else if (typeof item === 'string') {
+      normalized.push(document.createTextNode(item));
+    } else {
+      normalized.push(document.createTextNode(item.toString()));
+    }
+  }
+  return normalized;
+}
+
 function addNode(counter, node, parent, afterNode) {
   if (Array.isArray(node)) {
     if (!node.length) return;
+    node = normalizeIncomingArray([], node);
     let mark = node[0];
     mark[KEY] = counter;
     if (node.length !== 1) {
@@ -19,6 +40,7 @@ function addNode(counter, node, parent, afterNode) {
     return mark;
   }
   let mark;
+  if (typeof node === 'string') node = document.createTextNode(node);
   if (node.nodeType === 11) {
     mark = node.firstChild;
     if (mark) {
@@ -35,14 +57,13 @@ function addNode(counter, node, parent, afterNode) {
   return mark || node;
 }
 
-function step(node, direction) {
+function step(node, direction, inner) {
   const key = node[GROUPING];
-  node = node[direction];
   if (key) {
-    while(node && node[GROUPING] !== key) node = node[direction];
     node = node[direction];
+    while(node && node[GROUPING] !== key) node = node[direction];
   }
-  return node;
+  return inner ? node : node[direction];
 }
 
 function removeNodes(parent, node, end) {
@@ -77,7 +98,7 @@ function cleanNode(disposables, node) {
 // And working with data directly from Stage0:
 // https://github.com/Freak613/stage0/blob/master/reconcile.js
 // This implementation is tailored for fine grained change detection and adds suupport for fragments
-export default function reconcile(parent, accessor, mapFn, afterRenderFn, options, beforeNode, afterNode) {
+export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options, beforeNode, afterNode) {
   const { wrap, cleanup, root, sample } = options;
   let disposables = new Map();
 
@@ -155,8 +176,8 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         while(a === b) {
           prevEnd--;
           newEnd--;
-          newAfterNode = prevEndNode;
-          prevEndNode = step(prevEndNode, BACKWARD);
+          newAfterNode = step(prevEndNode, BACKWARD, true);
+          prevEndNode = newAfterNode.previousSibling;
           if (prevEnd < prevStart || newEnd < newStart) break fixes;
           a = renderedValues[prevEnd];
           b = data[newEnd];
@@ -203,12 +224,7 @@ export default function reconcile(parent, accessor, mapFn, afterRenderFn, option
         if (prevStart <= prevEnd) {
           let next, key, node;
           while(prevStart <= prevEnd) {
-            // manually step to keep refs
-            node = prevEndNode;
-            if (key = node[GROUPING]) {
-              node = node.previousSibling;
-              while(node && node[GROUPING] !== key) node = node.previousSibling;
-            }
+            node = step(prevEndNode, BACKWARD, true);
             next = node.previousSibling;
             removeNodes(parent, node, prevEndNode.nextSibling);
             cleanNode(disposables, prevEndNode);

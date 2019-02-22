@@ -28,7 +28,9 @@ const someProps = {
 };
 
 const template = function () {
-  const _el$6 = _tmpl$3.content.firstChild.cloneNode(true);
+  const _el$6 = _tmpl$3.content.firstChild.cloneNode(true),
+        _el$8 = _el$6.insertBefore(document.createTextNode(""), _el$6.firstChild),
+        _el$9 = _el$6.insertBefore(document.createTextNode(""), _el$8.nextSibling);
 
   r.insert(_el$6, Child(Object.assign({
     name: 'John'
@@ -38,6 +40,14 @@ const template = function () {
 
       return _el$7;
     })()]
-  })));
+  })), null, _el$8);
+  r.insert(_el$6, Context.Consumer({
+    children: [context => context]
+  }), null, _el$9);
   return _el$6;
 }();
+
+const template2 = Child({
+  name: 'Jake',
+  dynamic: someValue
+});

@@ -12,5 +12,12 @@ const template = (
     <Child name='John' {...someProps}>
       <div>From Parent</div>
     </Child>
+    <Context.Consumer>{ context =>
+      context
+    }</Context.Consumer>
   </div>
+)
+
+const template2 = (
+  <Child name='Jake' dynamic={someValue} />
 )

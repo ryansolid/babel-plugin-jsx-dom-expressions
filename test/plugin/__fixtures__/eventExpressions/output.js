@@ -1,6 +1,6 @@
 const _tmpl$ = document.createElement("template");
 
-_tmpl$.innerHTML = "<div id='main'><button>\n      Click Native\n    </button><button>\n      Click Delegated\n    </button></div>";
+_tmpl$.innerHTML = "<div id='main'><button>Click Native</button><button>Click Delegated</button></div>";
 
 const template = function () {
   const _el$ = _tmpl$.content.firstChild.cloneNode(true),
