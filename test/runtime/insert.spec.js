@@ -1,5 +1,5 @@
-const { createRuntime } = require('../../lib/runtime')
-const r = createRuntime({})
+const { createRuntime } = require('../../lib/runtime');
+const r = createRuntime({wrap: fn => fn()});
 
 describe("r.insert", () => {
   // <div>before<!-- insert -->after</div>
@@ -75,6 +75,16 @@ describe("r.insert", () => {
     expect(first.innerHTML).toBe("");
     expect(second.innerHTML).toBe("<span>foo</span>");
   });
+
+  it('can spread over element', () => {
+    const node = document.createElement("span");
+    r.spread(node, () => ({href: '/', for: 'id', classList: {danger: true}, style: {color: 'red'}, something: 'good'}))
+    expect(node.getAttribute('href')).toBe('/');
+    expect(node.htmlFor).toBe('id');
+    expect(node.className).toBe('danger');
+    expect(node.style.color).toBe('red');
+    expect(node.something).toBe('good');
+  })
 
   it("can insert an array of strings", () => {
     expect(insert(["foo", "bar"]).innerHTML).toBe("foobar", "array of strings");

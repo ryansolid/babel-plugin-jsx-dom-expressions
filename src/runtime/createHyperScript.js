@@ -21,11 +21,21 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
       else if (Array.isArray(l)) {
         // Support Fragments
         if (!e) e = document.createDocumentFragment();
+        let multi = false;
         for (let i = 0; i < l.length; i++) {
-          const item = l[i];
-          if (item.flow) item(e);
-          else r.insert(e, item);
+          if(typeof l[i] === 'function') {
+            multi = true;
+            break;
+          }
         }
+        if (multi) {
+          for (let i = 0; i < l.length; i++) {
+            const item = l[i];
+            const n = e.appendChild(document.createTextNode(''));
+            if (item.flow) item(e, n);
+            else r.insert(e, item, undefined, n);
+          }
+        } else r.insert(e, l);
       } else if(l instanceof Node) e.appendChild(l);
       else if ('object' === type) {
         for (const k in l) {
@@ -87,19 +97,13 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
   h.registerBinding = (key, fn) => { bindings[key] = fn; }
 
   h.when = (a, t, c) => {
-    const m = e => {
-      const n = e.appendChild(document.createTextNode(''));
-      r.flow(e, 'when', a, t, c, n);
-    }
+    const m = (e, n) => r.flow(e, 'when', a, t, c, n);
     m.flow = true;
     return m;
   }
 
   h.each = (a, t, c) => {
-    const m = e => {
-      const n = e.appendChild(document.createTextNode(''));
-      r.flow(e, 'each', a, t, c, n)
-    };
+    const m = (e, n) => r.flow(e, 'each', a, t, c, n);
     m.flow = true;
     return m;
   }
