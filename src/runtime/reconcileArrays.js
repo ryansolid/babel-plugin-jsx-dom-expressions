@@ -1,5 +1,4 @@
 const GROUPING = '__rGroup',
-  KEY = '__rid',
   FORWARD = 'nextSibling',
   BACKWARD = 'previousSibling';
 let groupCounter = 0;
@@ -24,34 +23,21 @@ export function normalizeIncomingArray(normalized, array) {
   return normalized;
 }
 
-function addNode(counter, node, parent, afterNode) {
+function addNode(node, parent, afterNode, counter) {
   if (Array.isArray(node)) {
     if (!node.length) return;
     node = normalizeIncomingArray([], node);
     let mark = node[0];
-    mark[KEY] = counter;
-    if (node.length !== 1) {
-      mark[GROUPING] = counter;
-      node[node.length - 1][GROUPING] = counter;
-      node[node.length - 1][KEY] = counter;
-    }
+    if (node.length !== 1) mark[GROUPING] = node[node.length - 1][GROUPING] = counter;
     for (let i = 0; i < node.length; i++)
       afterNode ? parent.insertBefore(node[i], afterNode) : parent.appendChild(node[i]);
     return mark;
   }
   let mark;
   if (typeof node === 'string') node = document.createTextNode(node);
-  if (node.nodeType === 11) {
-    mark = node.firstChild;
-    if (mark) {
-      mark[KEY] = counter;
-      if (mark !== node.lastChild) {
-        mark[GROUPING] = counter;
-        node.lastChild[GROUPING] = counter;
-        node.lastChild[KEY] = counter;
-      }
-    }
-  } else node[KEY] = counter;
+  else if (node.nodeType === 11 && (mark = node.firstChild) && mark !== node.lastChild) {
+    mark[GROUPING] = node.lastChild[GROUPING] = counter;
+  }
 
   afterNode ? parent.insertBefore(node, afterNode) : parent.appendChild(node);
   return mark || node;
@@ -85,9 +71,8 @@ function insertNodes(parent, node, end, target) {
 }
 
 function cleanNode(disposables, node) {
-  const key = node[KEY];
-  disposables.get(key)();
-  disposables.delete(key);
+  disposables.get(node)();
+  disposables.delete(node);
 }
 
 // This is almost straightforward implementation of reconcillation algorithm
@@ -104,8 +89,9 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
 
   function createFn(item, i, afterNode) {
     return root(disposer => {
-      disposables.set(++groupCounter, disposer);
-      return addNode(groupCounter, mapFn(item, i), parent, afterNode);
+      const node = addNode(mapFn(item, i), parent, afterNode, ++groupCounter);
+      disposables.set(node, disposer);
+      return node;
     });
   }
 
@@ -222,12 +208,12 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
       // Fast path for shrink
       if (newEnd < newStart) {
         if (prevStart <= prevEnd) {
-          let next, key, node;
+          let next, node;
           while(prevStart <= prevEnd) {
             node = step(prevEndNode, BACKWARD, true);
             next = node.previousSibling;
             removeNodes(parent, node, prevEndNode.nextSibling);
-            cleanNode(disposables, prevEndNode);
+            cleanNode(disposables, node);
             prevEndNode = next;
             prevEnd--;
           }
@@ -261,9 +247,7 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
         if (I.has(renderedValues[i])) {
           P[I.get(renderedValues[i])] = i;
           reusingNodes++;
-        } else {
-          toRemove.push(i);
-        }
+        } else toRemove.push(i);
       }
 
       // Fast path for full replace
