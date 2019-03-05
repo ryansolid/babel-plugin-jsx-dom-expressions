@@ -5,9 +5,9 @@ const r = createRuntime({wrap: S.makeComputationNode, root: S.root, cleanup: S.c
 const h = createHyperScript(r);
 
 const FIXTURES = [
-  '<div id="main"><h1>Welcome</h1><label for="entry">Edit:</label><input id="entry" type="text"></div>',
+  '<div id="main"><h1>Welcome</h1><label class="name" for="entry">Edit:</label><input id="entry" type="text"></div>',
   '<div id="main" class="selected"><h1 title="hello"><a href="/">Welcome</a></h1></div>',
-  '<div id="main"><button>Click Native</button><button>Click Delegated</button></div>',
+  '<div id="main"><button>Click Bound</button><button>Click Delegated</button><button>Click Listener</button></div>',
   '<div>First</div>middle<div>Last</div>',
   '<div>Shop for Groceries</div><div><div>Hurray!</div></div><span>Editing:</span><input type="text"><div>Go to Work</div><div></div>'
 ]
@@ -16,7 +16,7 @@ describe('Test HyperScript', () => {
   test('Simple Elements', () => {
     const template = h('#main', [
       h('h1', 'Welcome'),
-      h('label', {attrs: {for: 'entry'}}, 'Edit:'),
+      h('label.name', {attrs: {for: 'entry'}}, 'Edit:'),
       h('input#entry', {type: 'text'})
     ]);
     expect(template.outerHTML).toBe(FIXTURES[0]);
@@ -48,8 +48,9 @@ describe('Test HyperScript', () => {
     const exec = {};
 
     const template = h('#main', [
-      h('button', { onclick: () => exec.native = true }, 'Click Native'),
-      h('button', { onClick: () => exec.delegated = true }, 'Click Delegated')
+      h('button', { onclick: () => exec.bound = true }, 'Click Bound'),
+      h('button', { onClick: () => exec.delegated = true }, 'Click Delegated'),
+      h('button', { events: { click: () => exec.listener = true }}, 'Click Listener')
     ]);
     expect(template.outerHTML).toBe(FIXTURES[2]);
     document.body.appendChild(template);
@@ -57,9 +58,12 @@ describe('Test HyperScript', () => {
     template.firstChild.dispatchEvent(event);
     event = new MouseEvent('click', { bubbles: true });
     template.firstChild.nextSibling.dispatchEvent(event);
+    event = new MouseEvent('click', { bubbles: true });
+    template.firstChild.nextSibling.nextSibling.dispatchEvent(event);
 
-    expect(exec.native).toBe(true);
+    expect(exec.bound).toBe(true);
     expect(exec.delegated).toBe(true);
+    expect(exec.listener).toBe(true);
     document.body.textContent = '';
     r.clearDelegatedEvents();
   });

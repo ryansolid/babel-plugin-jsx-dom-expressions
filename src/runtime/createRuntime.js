@@ -132,6 +132,8 @@ export function createRuntime(options) {
             Object.assign(node.style, value);
           } else if (prop === 'classList') {
             for (const className in value) node.classList.toggle(className, value[className]);
+          } else if (prop === 'events') {
+            for (const eventName in value) node.addEventListener(eventName, value[eventName]);
           } else if (info = Attributes[prop]) {
             if (info.type === 'attribute') {
               node.setAttribute(prop, value)

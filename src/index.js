@@ -221,6 +221,10 @@ export default (babel) => {
             events.add(ev);
             results.exprs.unshift(t.expressionStatement(t.assignmentExpression('=', t.identifier(`${elem.name}.__${ev}`), value.expression)));
           } else results.exprs.unshift(t.expressionStatement(t.assignmentExpression('=', t.identifier(`${elem.name}.on${ev}`), value.expression)));
+        } else if (key === 'events') {
+          value.expression.properties.forEach(prop =>
+          	results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(elem, t.identifier('addEventListener')), [t.stringLiteral(prop.key.name || prop.key.value), prop.value])))
+          );
         } else if (key.startsWith('$')) {
           results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(key.slice(1)), [elem, t.arrowFunctionExpression([], value.expression)])));
         } else if (!value || checkParens(value, path)) {

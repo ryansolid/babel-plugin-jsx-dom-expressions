@@ -98,7 +98,7 @@ This binding will assign the variable you pass to it with the DOM element
 
 ### on(eventName) / model
 
-These will be treated as event handlers expecting a function. All lowercase are considered directly bound events and camelCase for delegated. The syntax and usage for delegation is still experimental. The model which can be the same node or closest ancestor is passed to delegated events as second argument.
+These will be treated as event handlers expecting a function. All lowercase are considered directly bound events(Level 1) and camelCase for delegated. The syntax and usage for delegation is still experimental. The model which can be the same node or closest ancestor is passed to delegated events as second argument.
 
 ```jsx
 <ul>
@@ -107,7 +107,10 @@ These will be treated as event handlers expecting a function. All lowercase are 
 ```
 This delegation solution works with Web Components and the Shadow DOM as well if the events are composed. That limits the list to custom events and most UA UI events like onClick, onKeyUp, onKeyDown, onDblClick, onInput, onMouseDown, onMouseUp, etc..
 
-Event delegates aren't cleaned up automatically off Document. If you will be completely unmounting the library and wish to remove the handlers from the current page use r.clearDelegatedEvents.
+Important:
+* To allow for casing to work all custom events should follow the all lowercase convention of native events. If you want to use different event convention (or use Level 3 Events "addEventListener") use the events binding.
+
+* Event delegates aren't cleaned up automatically off Document. If you will be completely unmounting the library and wish to remove the handlers from the current page use r.clearDelegatedEvents.
 
 ### $____
 
@@ -120,10 +123,19 @@ where valueAccessor is function wrapping the expression.
 ### classList
 
 This takes an object and assigns all the keys as classes which are truthy.
+```jsx
+<div classList={{ selected: isSelected(), editing: isEditing() }} />
+```
+### events
+
+Generic event method for Level 3 "addEventListener" events. Experimental.
+```jsx
+<div events={{ "Weird-Event": e => alert(e.detail) }} />
+```
 
 ### ... (spreads)
 
-Keep in mind given the independent nature of binding updates there is no guarentee of order using spreads at this time. It's under consideration.
+Keep in mind given the independent nature of binding updates there is no guarantee of order using spreads at this time. It's under consideration.
 
 ## Control Flow
 

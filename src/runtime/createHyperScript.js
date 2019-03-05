@@ -88,6 +88,8 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
         }
       } else if(k === 'classList') {
         for (const c in v) e.classList.toggle(c, v[c]);
+      } else if(k === 'events') {
+        for (const c in v) e.addEventListener(c, v[c]);
       } else if(k === 'attrs') {
         for (const a in v) e.setAttribute(a, v[a]);
       } else e[k] = v;
