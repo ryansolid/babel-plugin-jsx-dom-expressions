@@ -242,8 +242,8 @@ export default (babel) => {
   function transformChildren(path, jsx, opts, results) {
     let tempPath = results.id && results.id.name,
       i = 0;
-    jsx.children.forEach((child, index) => {
-      child = generateHTMLNode(path, child, opts, {skipId: !results.id || !detectExpressions(jsx, index)});
+    jsx.children.forEach((jsxChild, index) => {
+      const child = generateHTMLNode(path, jsxChild, opts, {skipId: !results.id || !detectExpressions(jsx, index)});
       if (!child) return;
       results.template += child.template;
       if (child.id) {
@@ -255,7 +255,7 @@ export default (babel) => {
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
-        if (checkLength(jsx.children)) {
+        if ((t.isJSXFragment(jsx) && checkParens(jsxChild, path)) || checkLength(jsx.children)) {
           let exprId = createPlaceholder(path, results, tempPath, i);
           results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.insert`), [results.id, child.exprs[0], t.nullLiteral(), exprId])));
           tempPath = exprId.name;
