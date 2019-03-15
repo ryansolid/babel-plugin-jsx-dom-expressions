@@ -82,10 +82,12 @@ function cleanNode(disposables, node) {
 // https://github.com/adamhaile/surplus/blob/master/src/runtime/content.ts#L86
 // And working with data directly from Stage0:
 // https://github.com/Freak613/stage0/blob/master/reconcile.js
-// This implementation is tailored for fine grained change detection and adds suupport for fragments
-export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options, beforeNode, afterNode) {
-  const { wrap, cleanup, root, sample } = options;
-  let disposables = new Map();
+// This implementation is tailored for fine grained change detection and adds support for fragments
+export function reconcileArrays(parent, accessor, mapFn, options, library, beforeNode, afterNode) {
+  const { wrap, cleanup, root, sample } = library,
+    { afterRender, fallback } = options;
+  let disposables = new Map(),
+    isFallback = false;
 
   function createFn(item, i, afterNode) {
     return root(disposer => {
@@ -95,8 +97,8 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
     });
   }
 
-  function afterRender() {
-    afterRenderFn && afterRenderFn(
+  function after() {
+    afterRender && afterRender(
       beforeNode ? beforeNode.nextSibling : parent.firstChild, afterNode
     );
   }
@@ -111,6 +113,17 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
       parent = (afterNode && afterNode.parentNode) || parent;
       const length = data.length;
 
+      // clear fallback
+      if (isFallback) {
+        if (beforeNode !== undefined || afterNode !== undefined) {
+          let node = beforeNode != undefined ? beforeNode.nextSibling : parent.firstChild;
+          removeNodes(parent, node, afterNode === undefined ? null : afterNode);
+        } else parent.textContent = "";
+        for (let i of disposables.keys()) disposables.get(i)();
+        disposables.clear();
+        isFallback = false;
+      }
+
       // Fast path for clear
       if (length === 0) {
         if (beforeNode !== undefined || afterNode !== undefined) {
@@ -120,7 +133,15 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
 
         for (let i of disposables.keys()) disposables.get(i)();
         disposables.clear();
-        afterRender();
+        after();
+        if (fallback) {
+          isFallback = true;
+          root(disposer => {
+            const node = addNode(fallback(), parent, afterNode, ++groupCounter);
+            disposables.set(node, disposer);
+            return node;
+          });
+        }
         return [];
       }
 
@@ -128,7 +149,7 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
       if (renderedValues.length === 0) {
         let nextData = new Array(length);
         for (let i = 0; i < length; i++) createFn(nextData[i] = data[i], i, afterNode);
-        afterRender();
+        after();
         return nextData;
       }
 
@@ -218,7 +239,7 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
             prevEnd--;
           }
         }
-        afterRender();
+        after();
         return data.slice(0);
       }
 
@@ -230,7 +251,7 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
             newStart++;
           }
         }
-        afterRender();
+        after();
         return data.slice(0);
       }
 
@@ -265,7 +286,7 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
         !doRemove && (parent.textContent = "");
 
         for(let i = newStart; i <= newEnd; i++) createFn(data[i], i, newAfterNode);
-        afterRender();
+        after();
         return data.slice(0);
       }
 
@@ -302,7 +323,7 @@ export function reconcileArrays(parent, accessor, mapFn, afterRenderFn, options,
         }
       }
 
-      afterRender();
+      after();
       return data.slice(0);
     });
   });

@@ -306,3 +306,29 @@ describe('Testing an only child each control flow with array children', () => {
 
   test('dispose', () => disposer());
 });
+
+
+describe('Testing each control flow with fallback', () => {
+  let div, disposer;
+  const n1 = 'a',
+    n2 = 'b',
+    n3 = 'c',
+    n4 = 'd';
+  const list = S.data([]);
+  const Component = () =>
+    <div ref={div}><$ each={list()} fallback={'Empty'}>{ item => item}</$></div>
+
+  test('Create each control flow', () => {
+    S.root(dispose => {
+      disposer = dispose;
+      <Component />
+    });
+    expect(div.innerHTML).toBe('Empty');
+    list([n1, n2, n3, n4])
+    expect(div.innerHTML).toBe('abcd');
+    list([])
+    expect(div.innerHTML).toBe('Empty');
+  });
+
+  test('dispose', () => disposer());
+});

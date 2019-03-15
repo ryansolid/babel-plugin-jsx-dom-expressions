@@ -43,8 +43,8 @@ function eventHandler(e) {
   return handler && handler(e, model);
 }
 
-export function createRuntime(options) {
-  const { wrap, cleanup, root } = options;
+export function createRuntime(config) {
+  const { wrap, cleanup, root } = config;
 
   function insertExpression(parent, value, current, marker) {
     if (value === current) return current;
@@ -142,22 +142,30 @@ export function createRuntime(options) {
         }
       });
     },
-    flow(parent, type, accessor, expr, afterRender, marker) {
+    flow(parent, type, accessor, expr, options, marker) {
       let startNode;
       if (marker) startNode = marker.previousSibling;
       if (type === 'each') {
-        reconcileArrays(parent, accessor, expr, afterRender, options, startNode, marker);
+        reconcileArrays(parent, accessor, expr, options, config, startNode, marker);
       } else if (type === 'when') {
         let current, disposable;
+        const { afterRender, fallback } = options;
         cleanup(function dispose() { disposable && disposable(); });
         wrap(cached => {
           const value = accessor();
           if (value === cached) return cached;
-          disposable && disposable();
           parent = (marker && marker.parentNode) || parent;
+          disposable && disposable();
           if (value == null || value === false) {
             clearAll(parent, current, marker, startNode);
             current = null;
+            afterRender && afterRender(current, marker);
+            if (fallback) {
+              root(disposer => {
+                disposable = disposer;
+                current = insertExpression(parent, fallback(), current, marker)
+              });
+            }
             return value;
           }
           root(disposer => {
@@ -169,5 +177,5 @@ export function createRuntime(options) {
         })
       }
     }
-  }, options);
+  }, config);
 }

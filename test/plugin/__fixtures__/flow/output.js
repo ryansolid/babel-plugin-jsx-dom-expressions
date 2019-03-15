@@ -1,6 +1,10 @@
+const _tmpl$4 = document.createElement("template");
+
+_tmpl$4.innerHTML = "<span>Editing:</span><input type='text'/>";
+
 const _tmpl$3 = document.createElement("template");
 
-_tmpl$3.innerHTML = "<span>Editting:</span><input type='text'/>";
+_tmpl$3.innerHTML = "<div>Do it!</div>";
 
 const _tmpl$2 = document.createElement("template");
 
@@ -35,13 +39,21 @@ const template = function () {
       const _el$7 = _tmpl$2.content.firstChild.cloneNode(true);
 
       return _el$7;
-    }(), null);
-    r.flow(_el$3, "when", () => editingId === item.id, () => function () {
-      const _el$8 = _tmpl$3.content.cloneNode(true);
+    }(), {
+      fallback: () => function () {
+        const _el$8 = _tmpl$3.content.firstChild.cloneNode(true);
 
-      return _el$8;
-    }(), null, _el$6);
+        return _el$8;
+      }()
+    });
+    r.flow(_el$3, "when", () => editingId === item.id, () => function () {
+      const _el$9 = _tmpl$4.content.cloneNode(true);
+
+      return _el$9;
+    }(), {}, _el$6);
     return _el$3;
-  }(), selectWhen(() => editingId, 'editing'), _el$2);
+  }(), {
+    afterRender: selectWhen(() => editingId, 'editing')
+  }, _el$2);
   return _el$;
 }();

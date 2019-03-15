@@ -137,7 +137,8 @@ export default (babel) => {
   }
 
   function generateFlow(jsx) {
-    const flow = { afterRender: t.nullLiteral() };
+    const flow = {},
+      flowOptions = [];
     let children = filterChildren(jsx.children), render;
 
     if (t.isJSXExpressionContainer(children[0])) render = children[0].expression;
@@ -153,8 +154,12 @@ export default (babel) => {
         flow.condition = t.arrowFunctionExpression([], attribute.value.expression);
         flow.render = render;
       }
-      if (name === 'afterRender') flow.afterRender = attribute.value.expression;
+      if (name === 'afterRender')
+        flowOptions.push(t.objectProperty(t.identifier(name), attribute.value.expression));
+      if (name === 'fallback')
+        flowOptions.push(t.objectProperty(t.identifier(name), t.arrowFunctionExpression([], attribute.value.expression)));
     });
+    flow.options = t.objectExpression(flowOptions);
   	return { flow, template: '', exprs: [] };
   }
 
@@ -264,10 +269,10 @@ export default (babel) => {
       } else if (child.flow) {
         if (t.isJSXFragment(jsx) || checkLength(jsx.children)) {
           let exprId = createPlaceholder(path, results, tempPath, i);
-          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.afterRender, exprId])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.options, exprId])));
           tempPath = exprId.name;
           i++;
-        } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.afterRender])));
+        } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.options])));
       }
     });
   }
@@ -324,7 +329,7 @@ export default (babel) => {
                 ])
               )
       		  ]),
-            t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [id, result.flow.type, result.flow.condition, result.flow.render, result.flow.afterRender, markerId])),
+            t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.flow`), [id, result.flow.type, result.flow.condition, result.flow.render, result.flow.options, markerId])),
             t.expressionStatement(id)
           ])
           return;

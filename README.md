@@ -156,7 +156,22 @@ Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to
 Often for when there is no need for the argument and it can be skipped if desired using direct descendants. Since this is parsed at compile time there is no concern about the inner code running if the outer condition is not met.
 
 ```jsx
-<$ when={ todos.length }>
+<$ when={ todos.length > 0 }>
+  <span>{( todos.length )}</span>
+  <button onClick={ removeCompleted }>Clear Completed</button>
+</$>
+```
+
+Control flow also has some additional options that can be passed as attributes.
+
+### afterRender
+Pass in a function that will be called after each update with the first element and next sibling of the inserted nodes.
+
+### fallback
+If the condition is falsy this fallback content will rendered instead.
+
+```jsx
+<$ when={ todos.length > 0 } fallback={ <span>Loading...</span> }>
   <span>{( todos.length )}</span>
   <button onClick={ removeCompleted }>Clear Completed</button>
 </$>
@@ -181,7 +196,7 @@ h('div.main', ["Hello", () => state.name]);
 
 There are also several small differences but generally follows HyperScript conventions. All attributes are props (so use className) and to indicate attributes wrap in 'attrs' object. Ref works React-like by passing a function.
 
-Components/Templates are just functions so no need to wrap them in an h function. Just call them inline. With HyperScript custom bindings need to be registered using ```h.registerBinding(key, fn)``` and control flow is handled through ```h.each(listFn, itemFn, afterRenderFn)``` and ```h.when(conditionFn, itemFn, afterRenderFn)```. HyperScript also supports fragments. Simply pass only the children array to the h function.
+Components/Templates are just functions so no need to wrap them in an h function. Just call them inline. With HyperScript custom bindings need to be registered using ```h.registerBinding(key, fn)``` and control flow is handled through ```h.each(listFn, itemFn, options)``` and ```h.when(conditionFn, itemFn, options)```. HyperScript also supports fragments. Simply pass only the children array to the h function.
 
 ## Work in Progress
 

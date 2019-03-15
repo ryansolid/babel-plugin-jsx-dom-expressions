@@ -98,14 +98,14 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
 
   h.registerBinding = (key, fn) => { bindings[key] = fn; }
 
-  h.when = (a, t, c) => {
-    const m = (e, n) => r.flow(e, 'when', a, t, c, n);
+  h.when = (a, t, o = {}) => {
+    const m = (e, n) => r.flow(e, 'when', a, t, o, n);
     m.flow = true;
     return m;
   }
 
-  h.each = (a, t, c) => {
-    const m = (e, n) => r.flow(e, 'each', a, t, c, n);
+  h.each = (a, t, o = {}) => {
+    const m = (e, n) => r.flow(e, 'each', a, t, o, n);
     m.flow = true;
     return m;
   }

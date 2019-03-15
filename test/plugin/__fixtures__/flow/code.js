@@ -10,12 +10,12 @@ const template = (
     <>
       <div>{( item.text )}</div>
       <div>
-        <$ when={item.completed}>
+        <$ when={item.completed} fallback={<div>Do it!</div>}>
           <div>Hurray!</div>
         </$>
       </div>
       <$ when={editingId === item.id}>
-        <span>Editting:</span>
+        <span>Editing:</span>
         <input type='text' />
       </$>
     </>
