@@ -181,9 +181,9 @@ Pass in a function that will be called after each update with the first element 
 If the condition is falsy this fallback content will rendered instead.
 
 ```jsx
-<$ each={ todos } fallback={<span>Loading...</span>}>
+<$ each={ todos } fallback={<span>Loading...</span>}>{ todo =>
   <div>{todo.title}</div>
-</$>
+}</$>
 ```
 
 This plugin also supports JSX Fragments with `<></>` notation. This is the prefered way to add multi-node roots explicit arrays tend to create more HTML string templates than necessary.
