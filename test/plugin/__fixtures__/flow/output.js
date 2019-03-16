@@ -1,3 +1,11 @@
+const _tmpl$6 = document.createElement("template");
+
+_tmpl$6.innerHTML = "<div>Loading...</div>";
+
+const _tmpl$5 = document.createElement("template");
+
+_tmpl$5.innerHTML = "<div></div>";
+
 const _tmpl$4 = document.createElement("template");
 
 _tmpl$4.innerHTML = "<span>Editing:</span><input type='text'/>";
@@ -22,6 +30,9 @@ const list = [{
   text: 'Go to Work',
   completed: false
 }];
+const state = {
+  loading: true
+};
 let editingId = 1;
 
 const template = function () {
@@ -56,4 +67,23 @@ const template = function () {
     afterRender: selectWhen(() => editingId, 'editing')
   }, _el$2);
   return _el$;
+}();
+
+const template2 = function () {
+  const _el$10 = document.createDocumentFragment(),
+        _el$11 = _el$10.insertBefore(document.createTextNode(""), _el$10.firstChild);
+
+  r.flow(_el$10, "suspend", () => state.loading, () => function () {
+    const _el$12 = _tmpl$5.content.firstChild.cloneNode(true);
+
+    r.insert(_el$12, state.asyncContent);
+    return _el$12;
+  }(), {
+    fallback: () => function () {
+      const _el$13 = _tmpl$6.content.firstChild.cloneNode(true);
+
+      return _el$13;
+    }()
+  }, _el$11);
+  return _el$10;
 }();

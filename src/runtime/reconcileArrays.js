@@ -33,8 +33,8 @@ function addNode(node, parent, afterNode, counter) {
       afterNode ? parent.insertBefore(node[i], afterNode) : parent.appendChild(node[i]);
     return mark;
   }
-  let mark;
-  if (typeof node === 'string') node = document.createTextNode(node);
+  let mark, t = typeof node;
+  if (t === 'string' || t === 'number') node = document.createTextNode(node);
   else if (node.nodeType === 11 && (mark = node.firstChild) && mark !== node.lastChild) {
     mark[GROUPING] = node.lastChild[GROUPING] = counter;
   }
@@ -139,7 +139,6 @@ export function reconcileArrays(parent, accessor, mapFn, options, library, befor
           root(disposer => {
             const node = addNode(fallback(), parent, afterNode, ++groupCounter);
             disposables.set(node, disposer);
-            return node;
           });
         }
         return [];

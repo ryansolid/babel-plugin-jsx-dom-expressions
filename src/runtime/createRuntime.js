@@ -44,7 +44,7 @@ function eventHandler(e) {
 }
 
 export function createRuntime(config) {
-  const { wrap, cleanup, root } = config;
+  const { wrap, cleanup, root, sample } = config;
 
   function insertExpression(parent, value, current, marker) {
     if (value === current) return current;
@@ -171,8 +171,55 @@ export function createRuntime(config) {
           root(disposer => {
             disposable = disposer;
             current = insertExpression(parent, expr(value), current, marker)
-            afterRender && afterRender(current, marker);
           });
+          afterRender && afterRender(current, marker);
+          return value;
+        })
+      } else if (type === 'suspend') {
+        const { fallback } = options,
+          doc = document.implementation.createHTMLDocument();
+        let disposable, current,
+          first = true,
+          rendered = sample(expr);
+        console.log('RR', rendered)
+        // link to this parent
+        Object.defineProperty(doc.body, 'host', { get() { return parent; } });
+        cleanup(function dispose() { disposable && disposable(); });
+        wrap(cached => {
+          const value = !!accessor();
+          let node;
+          if (value === cached) return cached;
+          parent = (marker && marker.parentNode) || parent;
+          if (value) {
+            if (first) {
+              insertExpression(doc.body, rendered);
+              first = false;
+            } else {
+              node = startNode ? startNode.nextSibling : parent.firstChild;
+              while (node && node !== marker) {
+                const next = node.nextSibling;
+                doc.body.appendChild(node);
+                node = next;
+              }
+            }
+            if (fallback) {
+              root(disposer => {
+                disposable = disposer;
+                current = insertExpression(parent, fallback(), null, marker)
+              });
+            }
+            return value;
+          }
+          if (first) {
+            insertExpression(parent, rendered, null, marker);
+            first = false;
+          } else {
+            if (disposable) {
+              disposable();
+              clearAll(parent, current, marker, startNode);
+            }
+            while (node = doc.body.firstChild) parent.insertBefore(node, marker);
+          }
           return value;
         })
       }

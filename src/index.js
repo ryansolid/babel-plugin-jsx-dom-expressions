@@ -149,7 +149,7 @@ export default (babel) => {
 
     jsx.openingElement.attributes.forEach(attribute => {
       const name = attribute.name.name;
-      if (!flow.type && (name === 'each' || name === 'when')) {
+      if (!flow.type && (name === 'each' || name === 'when' || name === 'suspend')) {
         flow.type = t.stringLiteral(name);
         flow.condition = t.arrowFunctionExpression([], attribute.value.expression);
         flow.render = render;

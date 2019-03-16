@@ -3,6 +3,8 @@ const list = [
   {id: 2, text: 'Go to Work', completed: false}
 ];
 
+const state = { loading: true };
+
 let editingId = 1;
 
 const template = (
@@ -20,4 +22,10 @@ const template = (
       </$>
     </>
   }</$>
-)
+);
+
+const template2 = (
+  <$ suspend={state.loading} fallback={<div>Loading...</div>}>
+    <div>{state.asyncContent}</div>
+  </$>
+);
