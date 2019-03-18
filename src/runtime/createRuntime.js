@@ -177,13 +177,11 @@ export function createRuntime(config) {
         })
       } else if (type === 'suspend') {
         const { fallback } = options,
-          doc = document.implementation.createHTMLDocument();
-        let disposable, current,
-          first = true,
+          doc = document.implementation.createHTMLDocument(),
           rendered = sample(expr);
-        console.log('RR', rendered)
-        // link to this parent
-        Object.defineProperty(doc.body, 'host', { get() { return parent; } });
+        let disposable, current, first = true;
+        for (let name of eventRegistry.keys()) doc.addEventListener(name, eventHandler);
+        Object.defineProperty(doc.body, 'host', { get() { return (marker && marker.parentNode) || parent; } });
         cleanup(function dispose() { disposable && disposable(); });
         wrap(cached => {
           const value = !!accessor();
@@ -215,13 +213,25 @@ export function createRuntime(config) {
             first = false;
           } else {
             if (disposable) {
-              disposable();
               clearAll(parent, current, marker, startNode);
+              disposable();
             }
             while (node = doc.body.firstChild) parent.insertBefore(node, marker);
           }
           return value;
         })
+      } else if (type === 'portal') {
+        const { useShadow } = options,
+          container =  document.createElement('div'),
+          anchor = sample(accessor) || document.body,
+          renderRoot = (useShadow && container.attachShadow) ? container.attachShadow({ mode: 'open' }) : container;
+        Object.defineProperty(container, 'host', { get() { return (marker && marker.parentNode) || parent; } });
+        const nodes = sample(() => expr(container));
+        insertExpression(container, nodes);
+        // ShadyDOM polyfill doesn't handle mutationObserver on shadowRoot properly
+        if (container !== renderRoot) Promise.resolve().then(() => { while(container.firstChild) renderRoot.appendChild(container.firstChild); });
+        anchor.appendChild(container);
+        cleanup(() => anchor.removeChild(container));
       }
     }
   }, config);

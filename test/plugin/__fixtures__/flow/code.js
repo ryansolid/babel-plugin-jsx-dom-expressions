@@ -13,7 +13,7 @@ const template = (
       <div>{( item.text )}</div>
       <div>
         <$ when={item.completed} fallback={<div>Do it!</div>}>
-          <div>Hurray!</div>
+          Hurray!
         </$>
       </div>
       <$ when={editingId === item.id}>
@@ -27,5 +27,12 @@ const template = (
 const template2 = (
   <$ suspend={state.loading} fallback={<div>Loading...</div>}>
     <div>{state.asyncContent}</div>
+  </$>
+);
+
+const template3 = (
+  <$ portal useShadow={true}>
+    <style>{'.isolated { color: red; }'}</style>
+    <div class='isolated'>In a Portal</div>
   </$>
 );

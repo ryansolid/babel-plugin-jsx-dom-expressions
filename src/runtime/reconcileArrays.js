@@ -108,7 +108,7 @@ export function reconcileArrays(parent, accessor, mapFn, options, library, befor
     disposables.clear();
   });
   wrap((renderedValues = []) => {
-    const data = accessor();
+    const data = accessor() || [];
     return sample(() => {
       parent = (afterNode && afterNode.parentNode) || parent;
       const length = data.length;

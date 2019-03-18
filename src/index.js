@@ -73,15 +73,20 @@ export default (babel) => {
   }
 
   function createTemplate(path, results, isFragment) {
-    const templateId = path.scope.generateUidIdentifier("tmpl$"),
-      decl = t.variableDeclarator(results.id, t.callExpression(t.memberExpression(templateId, t.identifier(isFragment ? 'content.cloneNode' : 'content.firstChild.cloneNode')), [t.booleanLiteral(true)])),
-      program = path.findParent(t => t.isProgram()).node;
-    program.body.unshift(
-      t.variableDeclaration("const", [
-        t.variableDeclarator(templateId, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createElement')), [t.stringLiteral('template')]))
-      ]),
-      t.expressionStatement(t.assignmentExpression('=', t.memberExpression(templateId, t.identifier('innerHTML')), t.stringLiteral(results.template)))
-    );
+    let decl;
+    if (results.template.length) {
+      const templateId = path.scope.generateUidIdentifier("tmpl$"),
+        program = path.findParent(t => t.isProgram()).node;
+      decl = t.variableDeclarator(results.id, t.callExpression(t.memberExpression(templateId, t.identifier(isFragment ? 'content.cloneNode' : 'content.firstChild.cloneNode')), [t.booleanLiteral(true)]));
+      program.body.unshift(
+        t.variableDeclaration("const", [
+          t.variableDeclarator(templateId, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createElement')), [t.stringLiteral('template')]))
+        ]),
+        t.expressionStatement(t.assignmentExpression('=', t.memberExpression(templateId, t.identifier('innerHTML')), t.stringLiteral(results.template)))
+      );
+    } else {
+      decl = t.variableDeclarator(results.id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createDocumentFragment')), []));
+    }
     results.decl.unshift(decl);
     results.decl = t.variableDeclaration("const", results.decl);
   }
@@ -144,17 +149,17 @@ export default (babel) => {
     if (t.isJSXExpressionContainer(children[0])) render = children[0].expression;
     else if (children.length > 1) {
       children = [t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children)];
-    }
+    } else if (t.isJSXText(children[0])) children[0] = t.stringLiteral(trimWhitespace(children[0].value));
     if (!render) render = t.arrowFunctionExpression([], children[0]);
 
     jsx.openingElement.attributes.forEach(attribute => {
       const name = attribute.name.name;
-      if (!flow.type && (name === 'each' || name === 'when' || name === 'suspend')) {
+      if (!flow.type && (name === 'each' || name === 'when' || name === 'suspend' || name === 'portal')) {
         flow.type = t.stringLiteral(name);
-        flow.condition = t.arrowFunctionExpression([], attribute.value.expression);
+        flow.condition = t.arrowFunctionExpression([], attribute.value ? attribute.value.expression : t.nullLiteral());
         flow.render = render;
       }
-      if (name === 'afterRender')
+      if (name === 'afterRender' || name === 'useShadow')
         flowOptions.push(t.objectProperty(t.identifier(name), attribute.value.expression));
       if (name === 'fallback')
         flowOptions.push(t.objectProperty(t.identifier(name), t.arrowFunctionExpression([], attribute.value.expression)));
@@ -336,7 +341,9 @@ export default (babel) => {
         }
         if (result.id) {
           createTemplate(path, result);
-          path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
+          if (!result.exprs.length && result.decl.declarations.length === 1)
+            path.replaceWith(result.decl.declarations[0].init)
+          else path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
         } else path.replaceWith(result.exprs[0]);
       },
       JSXFragment: (path, { opts }) => {
@@ -344,7 +351,9 @@ export default (babel) => {
         if ('delegateEvents' in opts) delegateEvents = opts.delegateEvents;
         const result = generateHTMLNode(path, path.node, opts);
         createTemplate(path, result, true);
-        path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
+        if (!result.exprs.length && result.decl.declarations.length === 1)
+          path.replaceWith(result.decl.declarations[0].init)
+        else path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
       },
       Program: {
         exit: (path) => {

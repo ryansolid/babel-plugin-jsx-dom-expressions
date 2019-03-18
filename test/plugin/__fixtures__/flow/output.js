@@ -1,22 +1,22 @@
 const _tmpl$6 = document.createElement("template");
 
-_tmpl$6.innerHTML = "<div>Loading...</div>";
+_tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
 
 const _tmpl$5 = document.createElement("template");
 
-_tmpl$5.innerHTML = "<div></div>";
+_tmpl$5.innerHTML = "<div>Loading...</div>";
 
 const _tmpl$4 = document.createElement("template");
 
-_tmpl$4.innerHTML = "<span>Editing:</span><input type='text'/>";
+_tmpl$4.innerHTML = "<div></div>";
 
 const _tmpl$3 = document.createElement("template");
 
-_tmpl$3.innerHTML = "<div>Do it!</div>";
+_tmpl$3.innerHTML = "<span>Editing:</span><input type='text'/>";
 
 const _tmpl$2 = document.createElement("template");
 
-_tmpl$2.innerHTML = "<div>Hurray!</div>";
+_tmpl$2.innerHTML = "<div>Do it!</div>";
 
 const _tmpl$ = document.createElement("template");
 
@@ -46,22 +46,10 @@ const template = function () {
           _el$6 = _el$3.insertBefore(document.createTextNode(""), _el$5.nextSibling);
 
     r.insert(_el$4, () => item.text);
-    r.flow(_el$5, "when", () => item.completed, () => function () {
-      const _el$7 = _tmpl$2.content.firstChild.cloneNode(true);
-
-      return _el$7;
-    }(), {
-      fallback: () => function () {
-        const _el$8 = _tmpl$3.content.firstChild.cloneNode(true);
-
-        return _el$8;
-      }()
+    r.flow(_el$5, "when", () => item.completed, () => "Hurray!", {
+      fallback: () => _tmpl$2.content.firstChild.cloneNode(true)
     });
-    r.flow(_el$3, "when", () => editingId === item.id, () => function () {
-      const _el$9 = _tmpl$4.content.cloneNode(true);
-
-      return _el$9;
-    }(), {}, _el$6);
+    r.flow(_el$3, "when", () => editingId === item.id, () => _tmpl$3.content.cloneNode(true), {}, _el$6);
     return _el$3;
   }(), {
     afterRender: selectWhen(() => editingId, 'editing')
@@ -70,20 +58,32 @@ const template = function () {
 }();
 
 const template2 = function () {
-  const _el$10 = document.createDocumentFragment(),
-        _el$11 = _el$10.insertBefore(document.createTextNode(""), _el$10.firstChild);
+  const _el$9 = document.createDocumentFragment(),
+        _el$10 = _el$9.insertBefore(document.createTextNode(""), _el$9.firstChild);
 
-  r.flow(_el$10, "suspend", () => state.loading, () => function () {
-    const _el$12 = _tmpl$5.content.firstChild.cloneNode(true);
+  r.flow(_el$9, "suspend", () => state.loading, () => function () {
+    const _el$11 = _tmpl$4.content.firstChild.cloneNode(true);
 
-    r.insert(_el$12, state.asyncContent);
-    return _el$12;
+    r.insert(_el$11, state.asyncContent);
+    return _el$11;
   }(), {
-    fallback: () => function () {
-      const _el$13 = _tmpl$6.content.firstChild.cloneNode(true);
+    fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
+  }, _el$10);
+  return _el$9;
+}();
 
-      return _el$13;
-    }()
-  }, _el$11);
-  return _el$10;
+const template3 = function () {
+  const _el$13 = document.createDocumentFragment(),
+        _el$14 = _el$13.insertBefore(document.createTextNode(""), _el$13.firstChild);
+
+  r.flow(_el$13, "portal", () => null, () => function () {
+    const _el$15 = _tmpl$6.content.cloneNode(true),
+          _el$16 = _el$15.firstChild;
+
+    r.insert(_el$16, '.isolated { color: red; }');
+    return _el$15;
+  }(), {
+    useShadow: true
+  }, _el$14);
+  return _el$13;
 }();

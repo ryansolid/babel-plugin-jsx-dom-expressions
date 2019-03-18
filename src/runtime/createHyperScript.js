@@ -1,5 +1,7 @@
 import NonComposedEvents from '../NonComposedEvents';
 
+const FLOW_METHODS = ['each', 'when', 'suspend', 'portal'];
+
 // Inspired by https://github.com/hyperhype/hyperscript
 export function createHyperScript(r, {delegateEvents = true} = {}) {
   const bindings = {};
@@ -98,17 +100,13 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
 
   h.registerBinding = (key, fn) => { bindings[key] = fn; }
 
-  h.when = (a, t, o = {}) => {
-    const m = (e, n) => r.flow(e, 'when', a, t, o, n);
-    m.flow = true;
-    return m;
-  }
-
-  h.each = (a, t, o = {}) => {
-    const m = (e, n) => r.flow(e, 'each', a, t, o, n);
-    m.flow = true;
-    return m;
-  }
+  FLOW_METHODS.forEach(key =>
+    h[key] = (a, t, o = {}) => {
+      const m = (e, n) => r.flow(e, key, a, t, o, n);
+      m.flow = true;
+      return m;
+    }
+  );
 
   return h;
 }

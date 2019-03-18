@@ -139,7 +139,7 @@ Keep in mind given the independent nature of binding updates there is no guarant
 
 ## Control Flow
 
-Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 3 props on this component 'each', 'when', and 'suspend' where the argument is the list to iterate or the condition. The Child is a function (render prop). For each it passes the item and the index to the function, and for when it passes the evaluated value.
+Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 3 props on this component 'each', 'when', 'suspend', and 'portal' where the argument is the list to iterate or the condition. The Child is a function (render prop). For each it passes the item and the index to the function, and for when it passes the evaluated value.
 
 ```jsx
 <ul>
@@ -164,11 +164,18 @@ Often for when there is no need for the argument and it can be skipped if desire
 
 Suspend(Experimental) works almost the opposite of when where a truthy value will put the child in suspense. It differs from when in that instead of not rendering the child content it attaches it to a foreign document(important to fire connectedCallbacks on Web Components). This is useful if you still want load child components but don't wish to attach them to the current DOM until your are ready and display some fallback content instead. Useful for upstream handling of loading mechanisms when fetching data.
 
-*Note: While in suspense Synthetic DOM Events are not captured.
-
 ```jsx
 <$ suspend={ state.loading } fallback={<div>Loading...</div>}>
   <MyComp query={ state.query } onLoaded={() => setState({ loading: false })} />
+</$>
+```
+Portal(Experimental) renders to a different than the current rendering tree. This is useful for handling modals. By default it will create a div under document.body but the target can be set by passing an argument. To support isolated styles there is an option to useShadow to stick the portal in an isolated ShadowRoot.
+```jsx
+<$ portal>
+  <MyModal>
+    <h1>Header</h1>
+    <p>Lorem ipsum ...</p>
+  </MyModal>
 </$>
 ```
 
@@ -176,9 +183,15 @@ Control flow also has some additional options that can be passed as attributes.
 
 ### afterRender
 Pass in a function that will be called after each update with the first element and next sibling of the inserted nodes. Useful for postprocessing nodes on mass. Like a batch ref.
+Supported by: each, when
 
 ### fallback
 If the condition is falsy this fallback content will rendered instead.
+Supported by: each, when, suspend
+
+### useShadow
+Uses a Shadow Root for portals.
+Supported by: portal
 
 ```jsx
 <$ each={ todos } fallback={<span>Loading...</span>}>{ todo =>
