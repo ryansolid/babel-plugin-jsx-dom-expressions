@@ -93,14 +93,8 @@ export default (babel) => {
 
   function createPlaceholder(path, results, tempPath, i) {
     const exprId = path.scope.generateUidIdentifier("el$");
-    results.decl.push(
-      t.variableDeclarator(exprId,
-        t.callExpression(t.memberExpression(results.id, t.identifier('insertBefore')), [
-          t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createTextNode')), [t.stringLiteral('')]),
-          t.memberExpression(t.identifier(tempPath), t.identifier(i === 0 ? 'firstChild': 'nextSibling'))
-        ])
-      )
-    );
+    results.template += `<!--${exprId.name.slice(4)}-->`;
+    results.decl.push(t.variableDeclarator(exprId, t.memberExpression(t.identifier(tempPath), t.identifier(i === 0 ? 'firstChild': 'nextSibling'))));
     return exprId;
   }
 

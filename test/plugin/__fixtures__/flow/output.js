@@ -20,7 +20,7 @@ _tmpl$2.innerHTML = "<div>Do it!</div>";
 
 const _tmpl$ = document.createElement("template");
 
-_tmpl$.innerHTML = "<div></div><div></div>";
+_tmpl$.innerHTML = "<div></div><div></div><!--6-->";
 const list = [{
   id: 1,
   text: 'Shop for Groceries',
@@ -43,7 +43,7 @@ const template = function () {
     const _el$3 = _tmpl$.content.cloneNode(true),
           _el$4 = _el$3.firstChild,
           _el$5 = _el$4.nextSibling,
-          _el$6 = _el$3.insertBefore(document.createTextNode(""), _el$5.nextSibling);
+          _el$6 = _el$5.nextSibling;
 
     r.insert(_el$4, () => item.text);
     r.flow(_el$5, "when", () => item.completed, () => "Hurray!", {
