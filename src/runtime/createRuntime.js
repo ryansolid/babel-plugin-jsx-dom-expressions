@@ -154,27 +154,29 @@ export function createRuntime(config) {
         wrap(cached => {
           const value = accessor();
           if (value === cached) return cached;
-          parent = (marker && marker.parentNode) || parent;
-          disposable && disposable();
-          if (value == null || value === false) {
-            clearAll(parent, current, marker, startNode);
-            current = null;
-            afterRender && afterRender(current, marker);
-            if (fallback) {
-              root(disposer => {
-                disposable = disposer;
-                current = insertExpression(parent, fallback(), current, marker)
-              });
+          return sample(() => {
+            parent = (marker && marker.parentNode) || parent;
+            disposable && disposable();
+            if (value == null || value === false) {
+              clearAll(parent, current, marker, startNode);
+              current = null;
+              afterRender && afterRender(current, marker);
+              if (fallback) {
+                root(disposer => {
+                  disposable = disposer;
+                  current = insertExpression(parent, fallback(), current, marker)
+                });
+              }
+              return value;
             }
+            root(disposer => {
+              disposable = disposer;
+              current = insertExpression(parent, expr(value), current, marker)
+            });
+            afterRender && afterRender(current, marker);
             return value;
-          }
-          root(disposer => {
-            disposable = disposer;
-            current = insertExpression(parent, expr(value), current, marker)
           });
-          afterRender && afterRender(current, marker);
-          return value;
-        })
+        });
       } else if (type === 'suspend') {
         const { fallback } = options,
           doc = document.implementation.createHTMLDocument(),
@@ -201,10 +203,10 @@ export function createRuntime(config) {
               }
             }
             if (fallback) {
-              root(disposer => {
+              sample(() => root(disposer => {
                 disposable = disposer;
                 current = insertExpression(parent, fallback(), null, marker)
-              });
+              }));
             }
             return value;
           }
