@@ -21,6 +21,14 @@ function clearAll(parent, current, marker, startNode) {
   return '';
 }
 
+function dynamicProp(props, key) {
+  const src = props[key];
+  Object.defineProperty(props, key, {
+    get() { return src(); },
+    enumerable: true
+  });
+}
+
 const eventRegistry = new Set();
 function lookup(el, name) {
   let h = el[name], m = el.model, r, p;
@@ -108,6 +116,12 @@ export function createRuntime(config) {
     insert(parent, accessor, init, marker) {
       if (typeof accessor !== 'function') return insertExpression(parent, accessor, init, marker);
       wrap((current = init) => insertExpression(parent, accessor(), current, marker));
+    },
+    createComponent(Comp, props, dynamicKeys) {
+      if (dynamicKeys) {
+        for (let i = 0; i < dynamicKeys.length; i++) dynamicProp(props, dynamicKeys[i]);
+      }
+      return Comp(props);
     },
     delegateEvents(eventNames) {
       for (let i = 0, l = eventNames.length; i < l; i++) {

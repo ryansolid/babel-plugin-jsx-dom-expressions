@@ -1,6 +1,10 @@
+const _tmpl$4 = document.createElement("template");
+
+_tmpl$4.innerHTML = "<div><!--8--><!--10--><!--11--></div>";
+
 const _tmpl$3 = document.createElement("template");
 
-_tmpl$3.innerHTML = "<div><!--8--><!--9--></div>";
+_tmpl$3.innerHTML = "<div></div>";
 
 const _tmpl$2 = document.createElement("template");
 
@@ -28,26 +32,33 @@ const someProps = {
 };
 
 const template = function () {
-  const _el$6 = _tmpl$3.content.firstChild.cloneNode(true),
+  const _el$6 = _tmpl$4.content.firstChild.cloneNode(true),
         _el$8 = _el$6.firstChild,
-        _el$9 = _el$8.nextSibling;
+        _el$10 = _el$8.nextSibling,
+        _el$11 = _el$10.nextSibling;
 
   r.insert(_el$6, Child(Object.assign({
     name: 'John'
   }, someProps, {
-    children: [(() => {
-      const _el$7 = _tmpl$2.content.firstChild.cloneNode(true);
-
-      return _el$7;
-    })()]
+    children: [_tmpl$2.content.firstChild.cloneNode(true)]
   })), null, _el$8);
+  r.insert(_el$6, Child({
+    name: 'Jason',
+    children: [(() => {
+      const _el$9 = _tmpl$3.content.firstChild.cloneNode(true);
+
+      r.insert(_el$9, state.content);
+      return _el$9;
+    })()]
+  }), null, _el$10);
   r.insert(_el$6, Context.Consumer({
     children: [context => context]
-  }), null, _el$9);
+  }), null, _el$11);
   return _el$6;
 }();
 
-const template2 = Child({
+const template2 = r.createComponent(Child, {
   name: 'Jake',
-  dynamic: someValue
-});
+  dynamic: () => state.data,
+  handleClick: clickHandler
+}, ["dynamic"]);

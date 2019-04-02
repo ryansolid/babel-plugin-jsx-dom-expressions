@@ -12,6 +12,9 @@ const template = (
     <Child name='John' {...someProps}>
       <div>From Parent</div>
     </Child>
+    <Child name='Jason'>
+      <div>{state.content}</div>
+    </Child>
     <Context.Consumer>{ context =>
       context
     }</Context.Consumer>
@@ -19,5 +22,5 @@ const template = (
 )
 
 const template2 = (
-  <Child name='Jake' dynamic={someValue} />
+  <Child name='Jake' dynamic={( state.data )} handleClick={ clickHandler } />
 )

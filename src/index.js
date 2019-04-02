@@ -165,6 +165,8 @@ export default (babel) => {
   function generateComponent(path, jsx, opts) {
     let props = [],
       runningObject = [],
+      exprs,
+      dynamic = [],
       children = [];
 
     jsx.openingElement.attributes.forEach(attribute => {
@@ -177,7 +179,10 @@ export default (babel) => {
       } else {
         const value = attribute.value;
         if (t.isJSXExpressionContainer(value))
-          runningObject.push(t.objectProperty(t.identifier(attribute.name.name), value.expression));
+          if (checkParens(value, path)) {
+            dynamic.push(t.stringLiteral(attribute.name.name));
+            runningObject.push(t.objectProperty(t.identifier(attribute.name.name), t.arrowFunctionExpression([], value.expression)));
+          } else runningObject.push(t.objectProperty(t.identifier(attribute.name.name), value.expression));
         else
           runningObject.push(t.objectProperty(t.identifier(attribute.name.name), value));
       }
@@ -188,7 +193,9 @@ export default (babel) => {
       if (child == null) return;
       if (child.id) {
         createTemplate(path, child);
-        children.push(t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), []));
+        if (!child.exprs.length && child.decl.declarations.length === 1)
+          children.push(child.decl.declarations[0].init);
+        else children.push(t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), []));
       } else children.push(child.exprs[0]);
     });
 
@@ -201,7 +208,12 @@ export default (babel) => {
     if (props.length > 1)
       props = [t.callExpression(t.identifier("Object.assign"), props)];
 
-    return { exprs: [t.callExpression(t.identifier(getTagName(jsx)), props)], template: '' }
+    if (dynamic.length) {
+      exprs = [t.callExpression(t.identifier(`${moduleName}.createComponent`), [
+        t.identifier(getTagName(jsx)), props[0], t.arrayExpression(dynamic)
+      ])];
+    } else exprs = [t.callExpression(t.identifier(getTagName(jsx)), props)];
+    return { exprs, template: '' }
   }
 
   function transformAttributes(path, jsx, results) {
