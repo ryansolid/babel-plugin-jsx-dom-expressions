@@ -166,7 +166,7 @@ Suspend(Experimental) works almost the opposite of when where a truthy value wil
 
 ```jsx
 <$ suspend={ state.loading } fallback={<div>Loading...</div>}>
-  <MyComp query={ state.query } onLoaded={() => setState({ loading: false })} />
+  <MyComp query={( state.query )} onLoaded={() => setState({ loading: false })} />
 </$>
 ```
 Portal(Experimental) renders to a different than the current rendering tree. This is useful for handling modals. By default it will create a div under document.body but the target can be set by passing an argument. To support isolated styles there is an option to useShadow to stick the portal in an isolated ShadowRoot.
