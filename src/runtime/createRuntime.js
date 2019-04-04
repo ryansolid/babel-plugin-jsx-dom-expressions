@@ -112,6 +112,24 @@ export function createRuntime(config) {
     return current;
   }
 
+  function spreadExpression(node, props) {
+    let info;
+    for (const prop in props) {
+      const value = props[prop];
+      if (prop === 'style') {
+        Object.assign(node.style, value);
+      } else if (prop === 'classList') {
+        for (const className in value) node.classList.toggle(className, value[className]);
+      } else if (prop === 'events') {
+        for (const eventName in value) node.addEventListener(eventName, value[eventName]);
+      } else if (info = Attributes[prop]) {
+        if (info.type === 'attribute') {
+          node.setAttribute(prop, value)
+        } else node[info.alias] = value;
+      } else node[prop] = value;
+    }
+  }
+
   return Object.assign({
     insert(parent, accessor, init, marker) {
       if (typeof accessor !== 'function') return insertExpression(parent, accessor, init, marker);
@@ -137,24 +155,8 @@ export function createRuntime(config) {
       eventRegistry.clear();
     },
     spread(node, accessor) {
-      wrap(function() {
-        const props = accessor();
-        let info;
-        for (const prop in props) {
-          const value = props[prop];
-          if (prop === 'style') {
-            Object.assign(node.style, value);
-          } else if (prop === 'classList') {
-            for (const className in value) node.classList.toggle(className, value[className]);
-          } else if (prop === 'events') {
-            for (const eventName in value) node.addEventListener(eventName, value[eventName]);
-          } else if (info = Attributes[prop]) {
-            if (info.type === 'attribute') {
-              node.setAttribute(prop, value)
-            } else node[info.alias] = value;
-          } else node[prop] = value;
-        }
-      });
+      if (typeof accessor !== 'function') return spreadExpression(node, accessor);
+      wrap(() => spreadExpression(node, accessor()));
     },
     flow(parent, type, accessor, expr, options, marker) {
       let startNode;

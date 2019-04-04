@@ -175,11 +175,32 @@ export default (babel) => {
           props.push(t.objectExpression(runningObject));
           runningObject = [];
         }
-        props.push(attribute.argument);
+        if (attribute.argument.extra && attribute.argument.extra.parenthesized) {
+          const key = t.identifier('k$'),
+            memo = t.identifier('m$');
+          dynamic.push(t.spreadElement(t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('keys')), [attribute.argument])));
+          props.push(
+            t.callExpression(t.memberExpression(t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('keys')), [attribute.argument]), t.identifier('reduce')), [
+              t.arrowFunctionExpression([memo, key],
+              	t.assignmentExpression('=',
+              	t.memberExpression(memo, key, true),
+              	t.arrowFunctionExpression([], t.memberExpression(attribute.argument,key, true))
+              )),
+              t.objectExpression([])
+            ])
+          );
+        } else props.push(attribute.argument);
       } else {
         const value = attribute.value;
         if (t.isJSXExpressionContainer(value))
-          if (checkParens(value, path)) {
+          if (attribute.name.name === 'ref') {
+            runningObject.push(t.objectProperty(
+              t.identifier('ref'),
+              t.arrowFunctionExpression([t.identifier('r$')], t.assignmentExpression('=', value.expression, t.identifier('r$')))
+            ));
+          } else if (attribute.name.name === 'forwardRef') {
+            runningObject.push(t.objectProperty(t.identifier('ref'), value.expression));
+          } else if (checkParens(value, path)) {
             dynamic.push(t.stringLiteral(attribute.name.name));
             runningObject.push(t.objectProperty(t.identifier(attribute.name.name), t.arrowFunctionExpression([], value.expression)));
           } else runningObject.push(t.objectProperty(t.identifier(attribute.name.name), value.expression));
@@ -220,9 +241,12 @@ export default (babel) => {
     let elem = results.id;
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
-        return results.exprs.push(
-          t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.spread`), [elem, t.arrowFunctionExpression([], attribute.argument)]))
-        );
+        if (attribute.argument.extra && attribute.argument.extra.parenthesized) {
+          results.exprs.push(
+            t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.spread`), [elem, t.arrowFunctionExpression([], attribute.argument)]))
+          );
+        } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier(`${moduleName}.spread`), [elem, attribute.argument])));
+        return;
       }
 
       let value = attribute.value,
@@ -230,6 +254,8 @@ export default (babel) => {
       if (t.isJSXExpressionContainer(value)) {
         if (key === 'ref') {
           results.exprs.unshift(t.expressionStatement(t.assignmentExpression("=", value.expression, elem)));
+        } else if (key === 'forwardRef') {
+          results.exprs.unshift(t.expressionStatement(t.logicalExpression('&&', value.expression, t.callExpression(value.expression, [elem]))));
         } else if (key.startsWith("on")) {
           const ev = toEventName(key);
           if (delegateEvents && key !== key.toLowerCase() && !NonComposedEvents.has(ev)) {

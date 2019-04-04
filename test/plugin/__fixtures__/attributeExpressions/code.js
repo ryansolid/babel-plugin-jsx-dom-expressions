@@ -9,7 +9,8 @@ let link;
 const template = (
   <div id="main" classList={({ selected: selected })} $custom={binding}>
     <h1
-      {...props}
+      {...(props)}
+      {...results}
       title={( welcoming )}
       style={({ backgroundColor: color })}
     >

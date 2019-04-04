@@ -28,6 +28,7 @@ const template = function () {
     for (let i = 0; i < classKeys.length; i++) _el$.classList.toggle(classKeys[i], classNames[classKeys[i]]);
   });
   r.spread(_el$2, () => props);
+  r.spread(_el$2, results);
   r.wrap(() => _el$2.title = welcoming);
   r.wrap(() => Object.assign(_el$2.style, {
     backgroundColor: color

@@ -17,7 +17,7 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 In general JSX Attribute Expressions are treated as properties by default, with exception of hyphenated(-) ones that will always be set as attributes on the DOM element. Plain string attributes(Non expression, no {}) will be treated as attributes.
 
-For dynamic expressions that should be wrapped in a computation for partial re-render use inner parenthesis in the expression ```{( )}```.
+<b>For dynamic expressions that should be wrapped in a computation for partial re-render use inner parenthesis in the expression ```{( )}```.</b>
 
 ## Example
 
@@ -94,7 +94,20 @@ This method should register a cleanup method to be called when the context is re
 
 ### ref
 
-This binding will assign the variable you pass to it with the DOM element
+This binding will assign the variable you pass to it with the DOM element.
+
+### forwardRef
+
+This binding takes a props.ref for Function Components and forwards a Real DOM reference.
+
+```jsx
+const Child = props => <div forwardRef={props.ref} />
+
+const Parent = () => {
+  let ref;
+  return <Child ref={ref} />
+}
+```
 
 ### on(eventName) / model
 
@@ -124,7 +137,7 @@ where valueAccessor is function wrapping the expression.
 
 This takes an object and assigns all the keys as classes which are truthy.
 ```jsx
-<div classList={{ selected: isSelected(), editing: isEditing() }} />
+<div classList={({ selected: isSelected(), editing: isEditing() })} />
 ```
 ### events
 
@@ -135,11 +148,34 @@ Generic event method for Level 3 "addEventListener" events. Experimental.
 
 ### ... (spreads)
 
+Spreads let you pass multiple props at once. If you wish dynamic updating remember to wrap with a parenthesis:
+
+```jsx
+<div {...static} {...(dynamic)} />
+```
+
 Keep in mind given the independent nature of binding updates there is no guarantee of order using spreads at this time. It's under consideration.
+
+## Components
+
+Components are just Capital Cased tags. The same rules around dynamic wrapping apply. Instead of wrapping with computation dynamic props will just be getter accessors. * Remember property access triggers so don't destructure outside of computations.
+
+```jsx
+const MyComp = props => (
+  <>
+    <div>{( props.param )}</div>
+    <div>{ props.static }</div>
+  </>
+);
+
+<MyComp param={( dynamic() )} other={ static } />
+```
+
+Components may have children. This is available as props.children and is always an array.
 
 ## Control Flow
 
-Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 3 props on this component 'each', 'when', 'suspend', and 'portal' where the argument is the list to iterate or the condition. The Child is a function (render prop). For each it passes the item and the index to the function, and for when it passes the evaluated value.
+Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 4 props on this component 'each', 'when', 'suspend', and 'portal' where the argument is the list to iterate or the condition. The Child is a function (render prop). For each it passes the item and the index to the function, and for when it passes the evaluated value.
 
 ```jsx
 <ul>
