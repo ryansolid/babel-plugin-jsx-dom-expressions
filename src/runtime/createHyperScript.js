@@ -6,7 +6,11 @@ const FLOW_METHODS = ['each', 'when', 'suspend', 'portal'];
 export function createHyperScript(r, {delegateEvents = true} = {}) {
   const bindings = {};
   function h() {
-    let args = [].slice.call(arguments), e = null, delegatedEvents = new Set();
+    let args = [].slice.call(arguments),
+      e = null,
+      multiExpression = false,
+      delegatedEvents = new Set();
+
     function item(l) {
       const type = typeof l;
       if(l == null) ;
@@ -23,22 +27,15 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
       else if (Array.isArray(l)) {
         // Support Fragments
         if (!e) e = document.createDocumentFragment();
-        let multi = false;
-        for (let i = 0; i < l.length; i++) {
-          if(typeof l[i] === 'function') {
-            multi = true;
-            break;
-          }
-        }
-        if (multi) {
-          for (let i = 0; i < l.length; i++) {
-            const item = l[i];
-            const n = e.appendChild(document.createTextNode(''));
-            if (item.flow) item(e, n);
-            else r.insert(e, item, undefined, n);
-          }
+        if (multiExpression) {
+          for (let i = 0; i < l.length; i++) item(l[i]);
         } else r.insert(e, l);
-      } else if(l instanceof Node) e.appendChild(l);
+      } else if(l instanceof Node) {
+        if (multiExpression) {
+          const n = e.appendChild(document.createTextNode(''));
+          r.insert(e, l, undefined, n);
+        } else e.appendChild(l);
+      }
       else if ('object' === type) {
         for (const k in l) {
           if('function' === typeof l[k]) {
@@ -57,10 +54,13 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
           } else parseKeyValue(k, l[k]);
         }
       } else if ('function' === typeof l) {
-        if (l.flow) l(e);
-        else r.insert(e, l);
+        let n = multiExpression ? e.appendChild(document.createTextNode('')) : undefined;
+        if (l.flow) {
+          l(e, n);
+        } else r.insert(e, l, undefined, n);
       }
     }
+    detectMultiExpression(args);
     while(args.length) item(args.shift());
     r.delegateEvents(Array.from(delegatedEvents));
     return e;
@@ -95,6 +95,16 @@ export function createHyperScript(r, {delegateEvents = true} = {}) {
       } else if(k === 'attrs') {
         for (const a in v) e.setAttribute(a, v[a]);
       } else e[k] = v;
+    }
+    function detectMultiExpression(list) {
+      for (let i = 0;  i < list.length; i++) {
+        if(typeof list[i] === 'function') {
+          multiExpression = true;
+          return;
+        } else if (Array.isArray(list[i])) {
+          detectMultiExpression(list[i]);
+        }
+      }
     }
   }
 
