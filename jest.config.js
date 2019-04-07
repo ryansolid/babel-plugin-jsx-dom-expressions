@@ -1,6 +1,6 @@
 module.exports = {
   "collectCoverageFrom": [
-    "./lib/*.{js,jsx}"
+    "./index.js"
   ],
   "transform": {
     "^.+\\.jsx?$": "babel-jest"

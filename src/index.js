@@ -1,7 +1,6 @@
 import SyntaxJSX from '@babel/plugin-syntax-jsx';
-import Attributes from './Attributes';
+import { Attributes, NonComposedEvents } from 'dom-expressions';
 import VoidElements from './VoidElements';
-import NonComposedEvents from './NonComposedEvents';
 
 export default (babel) => {
   const { types: t } = babel;
