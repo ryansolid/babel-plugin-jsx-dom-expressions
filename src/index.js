@@ -174,7 +174,7 @@ export default (babel) => {
       const name = attribute.name.name;
       if (!flow.type && (name === 'each' || name === 'when' || name === 'suspend' || name === 'portal')) {
         flow.type = t.stringLiteral(name);
-        flow.condition = t.arrowFunctionExpression([], attribute.value ? attribute.value.expression : t.nullLiteral());
+        flow.condition = attribute.value ? t.arrowFunctionExpression([], attribute.value.expression) : t.nullLiteral();
         flow.render = render;
       }
       if (name === 'afterRender' || name === 'useShadow')

@@ -56,9 +56,9 @@ const view = ({ item }) =>
 The use of cloneNode improves repeat insert performance and precompilation reduces the number of references to the minimal traversal path. This is a basic example which doesn't leverage event delegation or any of the more advanced features described below.
 
 ## Example Implementations
+* [Solid](https://github.com/ryansolid/solid): A declarative JavaScript library for building user interfaces.
 * [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
 * [mobx-jsx](https://github.com/ryansolid/mobx-jsx): Ever wondered how much more performant MobX is without React? A lot.
-* [Solid](https://github.com/ryansolid/solid): A declarative JavaScript library for building user interfaces.
 
 ## Plugin Options
 
@@ -217,9 +217,7 @@ This plugin also supports JSX Fragments with `<></>` notation. This is the prefe
 
 ## Work in Progress
 
-This is still early in the works. My goal here is to better understand and generalize this approach to provide non Virtual DOM alternatives to developing web applications.  In a sense when React hit the scene it brought with it tools and approaches that were light years ahead of the competition but also prematurely dismissed other approaches that were more optimized in other ways. I hope being able to leverage JSX evens the playing field a bit.
-
-I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably lack of support for SVG.
+I'm mostly focusing early on where I can make the biggest conceptual gain so the plugin lacks in a few key places most noticeably lack of complete SVG.
 
 ## Acknowledgements
 

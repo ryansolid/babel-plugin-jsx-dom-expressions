@@ -76,7 +76,7 @@ const template3 = function () {
   const _el$13 = document.createDocumentFragment(),
         _el$14 = _el$13.insertBefore(document.createTextNode(""), _el$13.firstChild);
 
-  r.flow(_el$13, "portal", () => null, () => function () {
+  r.flow(_el$13, "portal", null, () => function () {
     const _el$15 = _tmpl$6.content.cloneNode(true),
           _el$16 = _el$15.firstChild;
 
