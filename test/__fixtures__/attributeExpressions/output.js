@@ -19,14 +19,9 @@ const template = function () {
         _el$3 = _el$2.firstChild;
 
   custom(_el$, () => binding);
-  r.wrap(() => {
-    let classNames = {
-      selected: selected
-    };
-    let classKeys = Object.keys(classNames);
-
-    for (let i = 0; i < classKeys.length; i++) _el$.classList.toggle(classKeys[i], classNames[classKeys[i]]);
-  });
+  r.wrap(() => r.classList(_el$, {
+    selected: selected
+  }));
   r.spread(_el$2, () => props);
   r.spread(_el$2, results);
   r.wrap(() => _el$2.title = welcoming);

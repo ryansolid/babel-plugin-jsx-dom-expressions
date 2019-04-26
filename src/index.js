@@ -52,25 +52,11 @@ export default (babel) => {
             )
           ];
         case 'classList':
-          const iter = t.identifier('i'),
-          list = t.identifier('classNames'),
-          keys = t.identifier('classKeys');
           return [
-            t.arrowFunctionExpression([], t.blockStatement([
-              declare(list, value),
-              declare(keys, t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('keys')), [list])),
-              t.forStatement(
-                declare(iter, t.numericLiteral(0)),
-                t.binaryExpression('<', iter, t.memberExpression(keys, t.identifier('length'))),
-                t.updateExpression('++', iter),
-                t.expressionStatement(t.callExpression(
-                  t.memberExpression(t.memberExpression(elem, t.identifier("classList")), t.identifier("toggle")), [
-                    t.memberExpression(keys, iter, true),
-                    t.memberExpression(list, t.memberExpression(keys, iter, true), true)
-                  ]
-                ))
-              )
-            ]))
+            t.arrowFunctionExpression([], t.callExpression(
+              t.memberExpression(t.identifier(moduleName), t.identifier('classList')),
+              [elem, value]
+            ))
           ];
         default:
           return [t.arrowFunctionExpression([], setAttr(elem, name, value))];
