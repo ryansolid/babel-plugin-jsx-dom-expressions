@@ -19,14 +19,20 @@ const template = function () {
         _el$3 = _el$2.firstChild;
 
   custom(_el$, () => binding);
-  r.wrap(() => r.classList(_el$, {
+  r.classList(_el$, {
     selected: selected
-  }));
+  });
+  Object.assign(_el$.style, {
+    color
+  });
   r.spread(_el$2, () => props);
   r.spread(_el$2, results);
   r.wrap(() => _el$2.title = welcoming);
   r.wrap(() => Object.assign(_el$2.style, {
     backgroundColor: color
+  }));
+  r.wrap(() => r.classList(_el$2, {
+    selected: selected
   }));
   link = _el$3;
 

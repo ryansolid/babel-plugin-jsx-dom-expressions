@@ -12,10 +12,6 @@ export default (babel) => {
     return e[0] === '(' && e[e.length - 1]=== ')';
   }
 
-  function declare(name, value) {
-    return t.variableDeclaration("let", [t.variableDeclarator(name, value)])
-  }
-
   function toEventName(name) { return name.slice(2).toLowerCase(); }
 
   function getTagName(tag) {
@@ -27,6 +23,20 @@ export default (babel) => {
   }
 
   function setAttr(elem, name, value) {
+    if (name === 'style') {
+      return t.callExpression(
+        t.memberExpression(t.identifier("Object"), t.identifier('assign')),
+        [t.memberExpression(elem, t.identifier(name)), value]
+      );
+    }
+
+    if (name === 'classList') {
+      return t.callExpression(
+        t.memberExpression(t.identifier(moduleName), t.identifier('classList')),
+        [elem, value]
+      );
+    }
+
     let isAttribute = name.indexOf('-') > -1,
       attribute = Attributes[name];
     if (attribute)
@@ -40,30 +50,9 @@ export default (babel) => {
   }
 
   function setAttrExpr(elem, name, value) {
-    const content = (function() {
-      switch (name) {
-        case 'style':
-          return [
-            t.arrowFunctionExpression(
-              [], t.callExpression(
-                t.memberExpression(t.identifier("Object"), t.identifier('assign')),
-                [t.memberExpression(elem, t.identifier(name)), value]
-              )
-            )
-          ];
-        case 'classList':
-          return [
-            t.arrowFunctionExpression([], t.callExpression(
-              t.memberExpression(t.identifier(moduleName), t.identifier('classList')),
-              [elem, value]
-            ))
-          ];
-        default:
-          return [t.arrowFunctionExpression([], setAttr(elem, name, value))];
-      }
-    })();
-
-    return t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier("wrap")), content));
+    return t.expressionStatement(t.callExpression(t.memberExpression(
+      t.identifier(moduleName), t.identifier("wrap")
+    ), [t.arrowFunctionExpression([], setAttr(elem, name, value))]));
   }
 
   function createTemplate(path, results, isFragment) {

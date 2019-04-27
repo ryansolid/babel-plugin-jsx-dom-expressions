@@ -7,12 +7,13 @@ const binding = (el, accessor) => el.custom = accessor();
 let link;
 
 const template = (
-  <div id="main" classList={({ selected: selected })} $custom={binding}>
+  <div id="main" classList={{ selected: selected }} style={{ color }} $custom={binding}>
     <h1
       {...(props)}
       {...results}
       title={( welcoming )}
       style={({ backgroundColor: color })}
+      classList={({ selected: selected })}
     >
       <a href={'/'} ref={link}>Welcome</a>
     </h1>
