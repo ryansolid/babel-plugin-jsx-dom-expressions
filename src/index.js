@@ -98,13 +98,7 @@ export default (babel) => {
   }
 
   function trimWhitespace(text) {
-    return text.split('\n').map((t, i) => {
-      if (/^\s*$/.test(t)) return '';
-      if (i === 0) return t.replace(/\s+/g, ' ');
-      return t
-        .replace(/^\s+/g, '')
-        .replace(/\s+/g, ' ');
-    }).join('');
+    return text.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
   }
 
   function checkLength(children) {
@@ -337,8 +331,9 @@ export default (babel) => {
       transformChildren(path, jsx, opts, results);
       return results;
     } else if (t.isJSXText(jsx)) {
-      if (/^\s*$/.test(jsx.value)) return null;
-      let results = { template: trimWhitespace(jsx.value), decl: [], exprs: [] };
+      const text = trimWhitespace(jsx.value);
+      if (!text.length) return null;
+      const results = { template: text, decl: [], exprs: [] };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$")
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
