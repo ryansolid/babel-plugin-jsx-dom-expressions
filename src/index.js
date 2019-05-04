@@ -123,8 +123,10 @@ export default (babel) => {
   // reduce unnecessary refs
   function detectExpressions(jsx, index) {
     for (let i = index; i < jsx.children.length; i++) {
-      if (t.isJSXExpressionContainer(jsx.children[i])) return true;
-      if (t.isJSXElement(jsx.children[i])) {
+      if (t.isJSXExpressionContainer(jsx.children[i])) {
+        if (!t.isJSXEmptyExpression(jsx.children[i].expression)) return true;
+      }
+      else if (t.isJSXElement(jsx.children[i])) {
         const tagName = getTagName(jsx.children[i]);
         if (tagName.toLowerCase() !== tagName) return true;
         if (jsx.children[i].openingElement.attributes.some(attr => t.isJSXSpreadAttribute(attr) || t.isJSXExpressionContainer(attr.value))) return true;
@@ -340,6 +342,7 @@ export default (babel) => {
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$")
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
+      if (t.isJSXEmptyExpression(jsx.expression)) return null;
       if (!checkParens(jsx, path)) return { exprs: [jsx.expression], template: '' }
       return { exprs: [t.arrowFunctionExpression([], jsx.expression)], template: '' }
     }

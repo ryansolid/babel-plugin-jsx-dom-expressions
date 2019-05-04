@@ -15,6 +15,7 @@ const template = props => {
         <div>From Parent</div>
       </Child>
       <Child name='Jason' {...(props)} forwardRef={props.ref}>
+        {/* Comment Node */}
         <div>{state.content}</div>
       </Child>
       <Context.Consumer>{ context =>
