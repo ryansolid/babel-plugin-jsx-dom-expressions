@@ -1,3 +1,5 @@
+import { insert as _$insert } from "r-dom";
+
 const _tmpl$9 = document.createElement("template");
 
 _tmpl$9.innerHTML = "<span>Hello John</span>";
@@ -47,7 +49,8 @@ const trailingExpr = function () {
         _el$5 = _el$4.firstChild,
         _el$6 = _el$5.nextSibling;
 
-  r.insert(_el$4, name, null, _el$6);
+  _$insert(_el$4, name, null, _el$6);
+
   return _el$4;
 }();
 
@@ -55,7 +58,8 @@ const leadingExpr = function () {
   const _el$7 = _tmpl$5.content.firstChild.cloneNode(true),
         _el$8 = _el$7.firstChild;
 
-  r.insert(_el$7, greeting, null, _el$8);
+  _$insert(_el$7, greeting, null, _el$8);
+
   return _el$7;
 }();
 
@@ -65,8 +69,10 @@ const multiExpr = function () {
         _el$11 = _el$10.nextSibling,
         _el$12 = _el$11.nextSibling;
 
-  r.insert(_el$9, greeting, null, _el$10);
-  r.insert(_el$9, name, null, _el$12);
+  _$insert(_el$9, greeting, null, _el$10);
+
+  _$insert(_el$9, name, null, _el$12);
+
   return _el$9;
 }();
 
@@ -77,8 +83,10 @@ const multiExprSpaced = function () {
         _el$16 = _el$15.nextSibling,
         _el$17 = _el$16.nextSibling;
 
-  r.insert(_el$13, greeting, null, _el$15);
-  r.insert(_el$13, name, null, _el$17);
+  _$insert(_el$13, greeting, null, _el$15);
+
+  _$insert(_el$13, name, null, _el$17);
+
   return _el$13;
 }();
 

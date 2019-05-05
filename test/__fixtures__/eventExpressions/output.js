@@ -1,3 +1,5 @@
+import { delegatedEvents as _$delegatedEvents } from "r-dom";
+
 const _tmpl$ = document.createElement("template");
 
 _tmpl$.innerHTML = "<div id='main'><button>Click Bound</button><button>Click Delegated</button><button>Click Listener</button></div>";
@@ -19,4 +21,4 @@ const template = function () {
   return _el$;
 }();
 
-r.delegateEvents(["click"]);
+_$delegateEvents(["click"]);

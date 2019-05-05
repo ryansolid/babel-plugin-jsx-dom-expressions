@@ -1,3 +1,9 @@
+import { portal as _$portal } from "r-dom";
+import { suspend as _$suspend } from "r-dom";
+import { when as _$when } from "r-dom";
+import { insert as _$insert } from "r-dom";
+import { each as _$each } from "r-dom";
+
 const _tmpl$6 = document.createElement("template");
 
 _tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
@@ -39,21 +45,25 @@ const template = function () {
   const _el$ = document.createDocumentFragment(),
         _el$2 = _el$.insertBefore(document.createTextNode(""), _el$.firstChild);
 
-  r.each(_el$, () => list, item => function () {
+  _$each(_el$, () => list, item => function () {
     const _el$3 = _tmpl$.content.cloneNode(true),
           _el$4 = _el$3.firstChild,
           _el$5 = _el$4.nextSibling,
           _el$6 = _el$5.nextSibling;
 
-    r.insert(_el$4, () => item.text);
-    r.when(_el$5, () => item.completed, () => "Hurray!", {
+    _$insert(_el$4, () => item.text);
+
+    _$when(_el$5, () => item.completed, () => "Hurray!", {
       fallback: () => _tmpl$2.content.firstChild.cloneNode(true)
     });
-    r.when(_el$3, () => editingId === item.id, () => _tmpl$3.content.cloneNode(true), {}, _el$6);
+
+    _$when(_el$3, () => editingId === item.id, () => _tmpl$3.content.cloneNode(true), {}, _el$6);
+
     return _el$3;
   }(), {
     afterRender: selectWhen(() => editingId, 'editing')
   }, _el$2);
+
   return _el$;
 }();
 
@@ -61,14 +71,16 @@ const template2 = function () {
   const _el$9 = document.createDocumentFragment(),
         _el$10 = _el$9.insertBefore(document.createTextNode(""), _el$9.firstChild);
 
-  r.suspend(_el$9, () => state.loading, () => function () {
+  _$suspend(_el$9, () => state.loading, () => function () {
     const _el$11 = _tmpl$4.content.firstChild.cloneNode(true);
 
-    r.insert(_el$11, state.asyncContent);
+    _$insert(_el$11, state.asyncContent);
+
     return _el$11;
   }(), {
     fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
   }, _el$10);
+
   return _el$9;
 }();
 
@@ -76,14 +88,16 @@ const template3 = function () {
   const _el$13 = document.createDocumentFragment(),
         _el$14 = _el$13.insertBefore(document.createTextNode(""), _el$13.firstChild);
 
-  r.portal(_el$13, null, () => function () {
+  _$portal(_el$13, null, () => function () {
     const _el$15 = _tmpl$6.content.cloneNode(true),
           _el$16 = _el$15.firstChild;
 
-    r.insert(_el$16, '.isolated { color: red; }');
+    _$insert(_el$16, '.isolated { color: red; }');
+
     return _el$15;
   }(), {
     useShadow: true
   }, _el$14);
+
   return _el$13;
 }();

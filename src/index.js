@@ -1,15 +1,24 @@
 import SyntaxJSX from '@babel/plugin-syntax-jsx';
+import { addNamed } from "@babel/helper-module-imports";
 import { Attributes, NonComposedEvents } from 'dom-expressions';
 import VoidElements from './VoidElements';
 
 export default (babel) => {
   const { types: t } = babel;
-  let moduleName = 'r',
+  let moduleName = 'dom',
     delegateEvents = true;
 
   function checkParens(jsx, path) {
     const e = path.hub.file.code.slice(jsx.start+1,jsx.end-1).trim();
     return e[0] === '(' && e[e.length - 1]=== ')';
+  }
+
+  function registerImportMethod(path, name) {
+    const imports = path.scope.getProgramParent().data.imports || (path.scope.getProgramParent().data.imports = new Set());
+    if (!imports.has(name)) {
+      addNamed(path, name, moduleName, { nameHint: `_$${name}` });
+      imports.add(name);
+    }
   }
 
   function toEventName(name) { return name.slice(2).toLowerCase(); }
@@ -22,7 +31,7 @@ export default (babel) => {
     }
   }
 
-  function setAttr(elem, name, value) {
+  function setAttr(path, elem, name, value) {
     if (name === 'style') {
       return t.callExpression(
         t.memberExpression(t.identifier("Object"), t.identifier('assign')),
@@ -31,8 +40,9 @@ export default (babel) => {
     }
 
     if (name === 'classList') {
+      registerImportMethod(path, 'classList');
       return t.callExpression(
-        t.memberExpression(t.identifier(moduleName), t.identifier('classList')),
+        t.identifier('_$classList'),
         [elem, value]
       );
     }
@@ -49,10 +59,12 @@ export default (babel) => {
     return t.assignmentExpression('=', t.memberExpression(elem, t.identifier(name)), value);
   }
 
-  function setAttrExpr(elem, name, value) {
-    return t.expressionStatement(t.callExpression(t.memberExpression(
-      t.identifier(moduleName), t.identifier("wrap")
-    ), [t.arrowFunctionExpression([], setAttr(elem, name, value))]));
+  function setAttrExpr(path, elem, name, value) {
+    registerImportMethod(path, 'wrap');
+    return t.expressionStatement(t.callExpression(
+      t.identifier("_$wrap"),
+      [t.arrowFunctionExpression([], setAttr(path, elem, name, value))]
+    ));
   }
 
   function createTemplate(path, results, isFragment) {
@@ -225,7 +237,8 @@ export default (babel) => {
       props = [t.callExpression(t.memberExpression(t.identifier("Object"), t.identifier("assign")), props)];
 
     if (dynamic.length) {
-      exprs = [t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier("createComponent")), [
+      registerImportMethod(path, 'createComponent');
+      exprs = [t.callExpression(t.identifier("_$createComponent"), [
         t.identifier(getTagName(jsx)), props[0], t.arrayExpression(dynamic)
       ])];
     } else exprs = [t.callExpression(t.identifier(getTagName(jsx)), props)];
@@ -234,9 +247,10 @@ export default (babel) => {
 
   function transformAttributes(path, jsx, results) {
     let elem = results.id;
-    const spread = t.memberExpression(t.identifier(moduleName), t.identifier('spread'));
+    const spread = t.identifier('_$spread');
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
+        registerImportMethod(path, 'spread');
         if (attribute.argument.extra && attribute.argument.extra.parenthesized) {
           results.exprs.push(
             t.expressionStatement(t.callExpression(spread, [elem, t.arrowFunctionExpression([], attribute.argument)]))
@@ -266,9 +280,9 @@ export default (babel) => {
         } else if (key.startsWith('$')) {
           results.exprs.unshift(t.expressionStatement(t.callExpression(t.identifier(key.slice(1)), [elem, t.arrowFunctionExpression([], value.expression)])));
         } else if (!value || checkParens(value, path)) {
-          results.exprs.push(setAttrExpr(elem, key, value.expression));
+          results.exprs.push(setAttrExpr(path, elem, key, value.expression));
         } else {
-          results.exprs.push(t.expressionStatement(setAttr(elem, key, value.expression)));
+          results.exprs.push(t.expressionStatement(setAttr(path, elem, key, value.expression)));
         }
       } else {
         results.template += ` ${key}`;
@@ -293,19 +307,21 @@ export default (babel) => {
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
+        registerImportMethod(path, 'insert');
         if ((t.isJSXFragment(jsx) && checkParens(jsxChild, path)) || checkLength(jsx.children)) {
           let exprId = createPlaceholder(path, results, tempPath, i);
-          results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier("insert")), [results.id, child.exprs[0], t.nullLiteral(), exprId])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], t.nullLiteral(), exprId])));
           tempPath = exprId.name;
           i++;
-        } else results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier("insert")), [results.id, child.exprs[0]])));
+        } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0]])));
       } else if (child.flow) {
+        registerImportMethod(path, child.flow.type);
         if (t.isJSXFragment(jsx) || checkLength(jsx.children)) {
           let exprId = createPlaceholder(path, results, tempPath, i);
-          results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier(child.flow.type)), [results.id, child.flow.condition, child.flow.render, child.flow.options, exprId])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options, exprId])));
           tempPath = exprId.name;
           i++;
-        } else results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier(child.flow.type)), [results.id, child.flow.condition, child.flow.render, child.flow.options])));
+        } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options])));
       }
     });
   }
@@ -353,7 +369,8 @@ export default (babel) => {
         const result = generateHTMLNode(path, path.node, opts);
         if (result.flow) {
           const id = path.scope.generateUidIdentifier("el$"),
-          	markerId = path.scope.generateUidIdentifier("el$");
+            markerId = path.scope.generateUidIdentifier("el$");
+          registerImportMethod(path, result.flow.type);
           path.replaceWithMultiple([
           	t.variableDeclaration("const", [
         	    t.variableDeclarator(id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createDocumentFragment')), [])),
@@ -364,7 +381,7 @@ export default (babel) => {
                 ])
               )
       		  ]),
-            t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier(result.flow.type)), [id, result.flow.condition, result.flow.render, result.flow.options, markerId])),
+            t.expressionStatement(t.callExpression(t.identifier("_$"+result.flow.type), [id, result.flow.condition, result.flow.render, result.flow.options, markerId])),
             t.expressionStatement(id)
           ])
           return;
@@ -388,9 +405,10 @@ export default (babel) => {
       Program: {
         exit: (path) => {
           if (path.scope.data.events) {
+            registerImportMethod(path, 'delegatedEvents');
             path.node.body.push(
               t.expressionStatement(t.callExpression(
-                t.memberExpression(t.identifier(moduleName), t.identifier("delegateEvents")),
+                t.identifier("_$delegateEvents"),
                 [t.arrayExpression(Array.from(path.scope.data.events).map(e => t.stringLiteral(e)))]
               ))
             );

@@ -1,3 +1,5 @@
+import { insert as _$insert } from "r-dom";
+
 const _tmpl$3 = document.createElement("template");
 
 _tmpl$3.innerHTML = "<!--7-->";
@@ -18,14 +20,16 @@ const multiExpression = function () {
         _el$3 = _el$2.firstChild,
         _el$4 = _el$3.nextSibling;
 
-  r.insert(_el$2, inserted, null, _el$4);
+  _$insert(_el$2, inserted, null, _el$4);
+
   return _el$2;
 }();
 
 const singleExpression = function () {
   const _el$5 = document.createDocumentFragment();
 
-  r.insert(_el$5, inserted);
+  _$insert(_el$5, inserted);
+
   return _el$5;
 }();
 
@@ -33,6 +37,7 @@ const singleDynamic = function () {
   const _el$6 = _tmpl$3.content.cloneNode(true),
         _el$7 = _el$6.firstChild;
 
-  r.insert(_el$6, () => inserted, null, _el$7);
+  _$insert(_el$6, () => inserted, null, _el$7);
+
   return _el$6;
 }();

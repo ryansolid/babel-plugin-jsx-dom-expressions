@@ -5,7 +5,7 @@ const plugin = require('../index');
 pluginTester({
   plugin,
   pluginOptions: {
-    moduleName: 'r',
+    moduleName: 'r-dom',
     delegateEvents: true
   },
   title: 'Convert JSX',

@@ -1,3 +1,7 @@
+import { wrap as _$wrap } from "r-dom";
+import { spread as _$spread } from "r-dom";
+import { classList as _$classList } from "r-dom";
+
 const _tmpl$ = document.createElement("template");
 
 _tmpl$.innerHTML = "<div id='main'><h1><a>Welcome</a></h1></div>";
@@ -19,21 +23,29 @@ const template = function () {
         _el$3 = _el$2.firstChild;
 
   custom(_el$, () => binding);
-  r.classList(_el$, {
+
+  _$classList(_el$, {
     selected: selected
   });
+
   Object.assign(_el$.style, {
     color
   });
-  r.spread(_el$2, () => props);
-  r.spread(_el$2, results);
-  r.wrap(() => _el$2.title = welcoming);
-  r.wrap(() => Object.assign(_el$2.style, {
+
+  _$spread(_el$2, () => props);
+
+  _$spread(_el$2, results);
+
+  _$wrap(() => _el$2.title = welcoming);
+
+  _$wrap(() => Object.assign(_el$2.style, {
     backgroundColor: color
   }));
-  r.wrap(() => r.classList(_el$2, {
+
+  _$wrap(() => _$classList(_el$2, {
     selected: selected
   }));
+
   link = _el$3;
 
   _el$3.setAttribute("href", '/');
