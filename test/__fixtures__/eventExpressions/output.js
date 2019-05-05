@@ -1,4 +1,4 @@
-import { delegatedEvents as _$delegatedEvents } from "r-dom";
+import { delegateEvents as _$delegateEvents } from "r-dom";
 
 const _tmpl$ = document.createElement("template");
 

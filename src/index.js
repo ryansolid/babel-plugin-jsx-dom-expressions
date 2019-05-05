@@ -405,7 +405,7 @@ export default (babel) => {
       Program: {
         exit: (path) => {
           if (path.scope.data.events) {
-            registerImportMethod(path, 'delegatedEvents');
+            registerImportMethod(path, 'delegateEvents');
             path.node.body.push(
               t.expressionStatement(t.callExpression(
                 t.identifier("_$delegateEvents"),
