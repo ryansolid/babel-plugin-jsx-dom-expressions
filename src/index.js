@@ -144,7 +144,7 @@ export default (babel) => {
     jsx.openingElement.attributes.forEach(attribute => {
       const name = attribute.name.name;
       if (!flow.type && (name === 'each' || name === 'when' || name === 'suspend' || name === 'portal')) {
-        flow.type = t.stringLiteral(name);
+        flow.type = name;
         flow.condition = attribute.value ? t.arrowFunctionExpression([], attribute.value.expression) : t.nullLiteral();
         flow.render = render;
       }
@@ -302,10 +302,10 @@ export default (babel) => {
       } else if (child.flow) {
         if (t.isJSXFragment(jsx) || checkLength(jsx.children)) {
           let exprId = createPlaceholder(path, results, tempPath, i);
-          results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier("flow")), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.options, exprId])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier(child.flow.type)), [results.id, child.flow.condition, child.flow.render, child.flow.options, exprId])));
           tempPath = exprId.name;
           i++;
-        } else results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier("flow")), [results.id, child.flow.type, child.flow.condition, child.flow.render, child.flow.options])));
+        } else results.exprs.push(t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier(child.flow.type)), [results.id, child.flow.condition, child.flow.render, child.flow.options])));
       }
     });
   }
@@ -364,7 +364,7 @@ export default (babel) => {
                 ])
               )
       		  ]),
-            t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier("flow")), [id, result.flow.type, result.flow.condition, result.flow.render, result.flow.options, markerId])),
+            t.expressionStatement(t.callExpression(t.memberExpression(t.identifier(moduleName), t.identifier(result.flow.type)), [id, result.flow.condition, result.flow.render, result.flow.options, markerId])),
             t.expressionStatement(id)
           ])
           return;
