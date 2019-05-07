@@ -35,23 +35,27 @@ const view = ({ item }) =>
 Compiles to:
 
 ```jsx
+import { insert as _$insert } from "dom";
+import { wrap as _$wrap } from "dom";
+
 const _tmpl$ = document.createElement("template");
 _tmpl$.innerHTML = "<tr><td class='col-md-1'></td><td class='col-md-4'><a></a></td><td class='col-md-1'><a><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></a></td><td class='col-md-6'></td></tr>";
+
 const view = ({ item }) =>
-  function() {
+  function () {
     const _el$ = _tmpl$.content.firstChild.cloneNode(true),
-      _el$2 = _el$.firstChild,
-      _el$3 = _el$2.nextSibling,
-      _el$4 = _el$3.firstChild,
-      _el$5 = _el$3.nextSibling,
-      _el$6 = _el$5.firstChild;
-    r.wrap(() => _el$.className = item.id === selected ? 'danger' : '');
-    r.insert(_el$2, item.id);
-    _el$4.onclick = e => select(item, e));
-    r.insert(_el$4, () => item.label);
-    _el$6.onclick = e => del(item, e));
+          _el$2 = _el$.firstChild,
+          _el$3 = _el$2.nextSibling,
+          _el$4 = _el$3.firstChild,
+          _el$5 = _el$3.nextSibling,
+          _el$6 = _el$5.firstChild;
+    _$wrap(() => _el$.className = item.id === selected ? 'danger' : '');
+    _$insert(_el$2, item.id);
+    _el$4.onclick = e => select(item, e);
+    _$insert(_el$4, () => item.label);
+    _el$6.onclick = e => del(item, e);
     return _el$;
-  }()
+  }();
 ```
 The use of cloneNode improves repeat insert performance and precompilation reduces the number of references to the minimal traversal path. This is a basic example which doesn't leverage event delegation or any of the more advanced features described below.
 
@@ -63,7 +67,7 @@ The use of cloneNode improves repeat insert performance and precompilation reduc
 ## Plugin Options
 
 ### moduleName
-The name of the runtime the compiler will output. Defaults to 'r'.
+The name of the runtime module to import the methods from. Required.
 
 ### delegateEvents
 Boolean to indicate whether to enable automatic event delegation on camelCase.
