@@ -21,6 +21,36 @@ export default (babel) => {
     }
   }
 
+  function registerTemplate(path, results, isFragment) {
+    let decl;
+    if (results.template.length) {
+      const templateId = path.scope.generateUidIdentifier("tmpl$");
+      const templates = path.scope.getProgramParent().data.templates || (path.scope.getProgramParent().data.templates = []);
+      decl = t.variableDeclarator(
+        results.id,
+        t.callExpression(
+          isFragment ? t.memberExpression(
+              t.memberExpression(templateId, t.identifier('content')),
+              t.identifier('cloneNode')
+            ) : t.memberExpression(
+              t.memberExpression(
+                t.memberExpression(templateId, t.identifier('content')),
+                t.identifier('firstChild')
+              ),
+              t.identifier('cloneNode')
+            )
+          ,
+          [t.booleanLiteral(true)]
+        )
+      );
+      templates.push({id: templateId, template: results.template});
+    } else {
+      decl = t.variableDeclarator(results.id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createDocumentFragment')), []));
+    }
+    results.decl.unshift(decl);
+    results.decl = t.variableDeclaration("const", results.decl);
+  }
+
   function toEventName(name) { return name.slice(2).toLowerCase(); }
 
   function getTagName(tag) {
@@ -65,41 +95,6 @@ export default (babel) => {
       t.identifier("_$wrap"),
       [t.arrowFunctionExpression([], setAttr(path, elem, name, value))]
     ));
-  }
-
-  function createTemplate(path, results, isFragment) {
-    let decl;
-    if (results.template.length) {
-      const templateId = path.scope.generateUidIdentifier("tmpl$"),
-        program = path.findParent(t => t.isProgram()).node;
-      decl = t.variableDeclarator(
-        results.id,
-        t.callExpression(
-          isFragment ? t.memberExpression(
-              t.memberExpression(templateId, t.identifier('content')),
-              t.identifier('cloneNode')
-            ) : t.memberExpression(
-              t.memberExpression(
-                t.memberExpression(templateId, t.identifier('content')),
-                t.identifier('firstChild')
-              ),
-              t.identifier('cloneNode')
-            )
-          ,
-          [t.booleanLiteral(true)]
-        )
-      );
-      program.body.unshift(
-        t.variableDeclaration("const", [
-          t.variableDeclarator(templateId, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createElement')), [t.stringLiteral('template')]))
-        ]),
-        t.expressionStatement(t.assignmentExpression('=', t.memberExpression(templateId, t.identifier('innerHTML')), t.stringLiteral(results.template)))
-      );
-    } else {
-      decl = t.variableDeclarator(results.id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createDocumentFragment')), []));
-    }
-    results.decl.unshift(decl);
-    results.decl = t.variableDeclaration("const", results.decl);
   }
 
   function createPlaceholder(path, results, tempPath, i) {
@@ -220,7 +215,7 @@ export default (babel) => {
       child = generateHTMLNode(path, child, opts);
       if (child == null) return;
       if (child.id) {
-        createTemplate(path, child);
+        registerTemplate(path, child);
         if (!child.exprs.length && child.decl.declarations.length === 1)
           children.push(child.decl.declarations[0].init);
         else children.push(t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), []));
@@ -387,7 +382,7 @@ export default (babel) => {
           return;
         }
         if (result.id) {
-          createTemplate(path, result);
+          registerTemplate(path, result);
           if (!result.exprs.length && result.decl.declarations.length === 1)
             path.replaceWith(result.decl.declarations[0].init)
           else path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
@@ -397,7 +392,7 @@ export default (babel) => {
         if ('moduleName' in opts) moduleName = opts.moduleName;
         if ('delegateEvents' in opts) delegateEvents = opts.delegateEvents;
         const result = generateHTMLNode(path, path.node, opts);
-        createTemplate(path, result, true);
+        registerTemplate(path, result, true);
         if (!result.exprs.length && result.decl.declarations.length === 1)
           path.replaceWith(result.decl.declarations[0].init)
         else path.replaceWithMultiple([result.decl].concat(result.exprs, t.expressionStatement(result.id)));
@@ -411,6 +406,18 @@ export default (babel) => {
                 t.identifier("_$delegateEvents"),
                 [t.arrayExpression(Array.from(path.scope.data.events).map(e => t.stringLiteral(e)))]
               ))
+            );
+          }
+          if (path.scope.data.templates) {
+            const declarators = path.scope.data.templates.map(template =>
+              t.variableDeclarator(template.id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createElement')), [t.stringLiteral('template')]))
+            )
+            const assignments = path.scope.data.templates.map(template =>
+              t.expressionStatement(t.assignmentExpression('=', t.memberExpression(template.id, t.identifier('innerHTML')), t.stringLiteral(template.template)))
+            )
+            path.node.body.unshift(
+              t.variableDeclaration("const", declarators),
+              ...assignments
             );
           }
         }

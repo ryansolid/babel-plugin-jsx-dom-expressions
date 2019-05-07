@@ -1,16 +1,12 @@
 import { insert as _$insert } from "r-dom";
 
-const _tmpl$3 = document.createElement("template");
-
-_tmpl$3.innerHTML = "<!--7-->";
-
-const _tmpl$2 = document.createElement("template");
-
-_tmpl$2.innerHTML = "<div>First</div><!--4--><div>Last</div>";
-
-const _tmpl$ = document.createElement("template");
+const _tmpl$ = document.createElement("template"),
+      _tmpl$2 = document.createElement("template"),
+      _tmpl$3 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div>First</div><div>Last</div>";
+_tmpl$2.innerHTML = "<div>First</div><!--4--><div>Last</div>";
+_tmpl$3.innerHTML = "<!--7-->";
 const inserted = 'middle';
 
 const multiStatic = _tmpl$.content.cloneNode(true);

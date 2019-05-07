@@ -4,29 +4,19 @@ import { when as _$when } from "r-dom";
 import { insert as _$insert } from "r-dom";
 import { each as _$each } from "r-dom";
 
-const _tmpl$6 = document.createElement("template");
-
-_tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
-
-const _tmpl$5 = document.createElement("template");
-
-_tmpl$5.innerHTML = "<div>Loading...</div>";
-
-const _tmpl$4 = document.createElement("template");
-
-_tmpl$4.innerHTML = "<div></div>";
-
-const _tmpl$3 = document.createElement("template");
-
-_tmpl$3.innerHTML = "<span>Editing:</span><input type='text'/>";
-
-const _tmpl$2 = document.createElement("template");
-
-_tmpl$2.innerHTML = "<div>Do it!</div>";
-
-const _tmpl$ = document.createElement("template");
+const _tmpl$ = document.createElement("template"),
+      _tmpl$2 = document.createElement("template"),
+      _tmpl$3 = document.createElement("template"),
+      _tmpl$4 = document.createElement("template"),
+      _tmpl$5 = document.createElement("template"),
+      _tmpl$6 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div></div><div></div><!--6-->";
+_tmpl$2.innerHTML = "<div>Do it!</div>";
+_tmpl$3.innerHTML = "<span>Editing:</span><input type='text'/>";
+_tmpl$4.innerHTML = "<div></div>";
+_tmpl$5.innerHTML = "<div>Loading...</div>";
+_tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
 const list = [{
   id: 1,
   text: 'Shop for Groceries',
