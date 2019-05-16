@@ -13,7 +13,7 @@ const _tmpl$ = document.createElement("template"),
 
 _tmpl$.innerHTML = "<div></div><div></div><!--6-->";
 _tmpl$2.innerHTML = "<div>Do it!</div>";
-_tmpl$3.innerHTML = "<span>Editing:</span><input type='text'/>";
+_tmpl$3.innerHTML = "<span>Editing:</span> <input type='text'/>";
 _tmpl$4.innerHTML = "<div></div>";
 _tmpl$5.innerHTML = "<div>Loading...</div>";
 _tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";

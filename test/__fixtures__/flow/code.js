@@ -17,7 +17,7 @@ const template = (
         </$>
       </div>
       <$ when={editingId === item.id}>
-        <span>Editing:</span>
+        <span>Editing:</span> 
         <input type='text' />
       </$>
     </>

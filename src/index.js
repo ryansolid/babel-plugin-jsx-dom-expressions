@@ -118,7 +118,27 @@ export default (babel) => {
 
   // remove unnecessary JSX Text nodes
   function filterChildren(children) {
-    return children.filter(child => !t.isJSXText(child) || !/^\s*$/.test(child.value))
+    return children.filter(child =>
+      !(t.isJSXExpressionContainer(child) && t.isJSXEmptyExpression(child.expression))
+      && (!t.isJSXText(child) || !/^\s*$/.test(child.value))
+    );
+  }
+
+  function transformComponentChildren(path, children, opts) {
+    const filteredChildren = filterChildren(children);
+    if (!filteredChildren.length) return;
+    let child = filteredChildren.length === 1 ?
+      filteredChildren[0] :
+      t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children);
+    child = generateHTMLNode(path, child, opts);
+    if (child == null) return;
+    if (child.id) {
+      registerTemplate(path, child, filteredChildren.length !== 1);
+      if (!child.exprs.length && child.decl.declarations.length === 1)
+        return child.decl.declarations[0].init;
+      else return t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), []);
+    }
+    return child.exprs[0];
   }
 
   // reduce unnecessary refs
@@ -144,7 +164,7 @@ export default (babel) => {
 
     if (t.isJSXExpressionContainer(children[0])) render = children[0].expression;
     else if (children.length > 1) {
-      children = [t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children)];
+      children = [t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), jsx.children)];
     } else if (t.isJSXText(children[0])) children[0] = t.stringLiteral(trimWhitespace(children[0].value));
     if (!render) render = t.arrowFunctionExpression([], children[0]);
 
@@ -168,8 +188,7 @@ export default (babel) => {
     let props = [],
       runningObject = [],
       exprs,
-      dynamic = [],
-      children = [];
+      dynamic = [];
 
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
@@ -211,19 +230,9 @@ export default (babel) => {
       }
     });
 
-    jsx.children.forEach(child => {
-      child = generateHTMLNode(path, child, opts);
-      if (child == null) return;
-      if (child.id) {
-        registerTemplate(path, child);
-        if (!child.exprs.length && child.decl.declarations.length === 1)
-          children.push(child.decl.declarations[0].init);
-        else children.push(t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), []));
-      } else children.push(child.exprs[0]);
-    });
-
-    if (children.length)
-      runningObject.push(t.objectProperty(t.identifier("children"), t.arrayExpression(children)));
+    const children = transformComponentChildren(path, jsx.children, opts);
+    if (children)
+      runningObject.push(t.objectProperty(t.identifier("children"), children));
 
     if (runningObject.length)
       props.push(t.objectExpression(runningObject));

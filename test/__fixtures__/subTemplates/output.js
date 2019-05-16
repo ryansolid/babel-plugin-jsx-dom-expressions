@@ -4,12 +4,16 @@ import { insert as _$insert } from "r-dom";
 const _tmpl$ = document.createElement("template"),
       _tmpl$2 = document.createElement("template"),
       _tmpl$3 = document.createElement("template"),
-      _tmpl$4 = document.createElement("template");
+      _tmpl$4 = document.createElement("template"),
+      _tmpl$5 = document.createElement("template"),
+      _tmpl$6 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div>Hello <!--4--></div><div></div>";
 _tmpl$2.innerHTML = "<div>From Parent</div>";
 _tmpl$3.innerHTML = "<div></div>";
 _tmpl$4.innerHTML = "<div><!--8--><!--10--><!--11--></div>";
+_tmpl$5.innerHTML = "<div></div><div></div><div></div>";
+_tmpl$6.innerHTML = "<div></div>";
 
 const Child = props => function () {
   const _el$ = _tmpl$.content.cloneNode(true),
@@ -44,24 +48,24 @@ const template = props => {
       name: 'John'
     }, props, {
       ref: r$ => childRef = r$,
-      children: [_tmpl$2.content.firstChild.cloneNode(true)]
+      children: _tmpl$2.content.firstChild.cloneNode(true)
     })), null, _el$8);
 
     _$insert(_el$6, _$createComponent(Child, Object.assign({
       name: 'Jason'
     }, Object.keys(props).reduce((m$, k$) => m$[k$] = () => props[k$], {}), {
       ref: props.ref,
-      children: [(() => {
+      children: (() => {
         const _el$9 = _tmpl$3.content.firstChild.cloneNode(true);
 
         _$insert(_el$9, state.content);
 
         return _el$9;
-      })()]
+      })()
     }), [...Object.keys(props)]), null, _el$10);
 
     _$insert(_el$6, Context.Consumer({
-      children: [context => context]
+      children: context => context
     }), null, _el$11);
 
     return _el$6;
@@ -73,3 +77,10 @@ const template2 = _$createComponent(Child, {
   dynamic: () => state.data,
   handleClick: clickHandler
 }, ["dynamic"]);
+
+const template3 = Child({
+  children: _tmpl$5.content.cloneNode(true)
+});
+const template4 = Child({
+  children: () => _tmpl$6.content.firstChild.cloneNode(true)
+});

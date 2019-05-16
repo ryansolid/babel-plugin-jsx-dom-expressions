@@ -28,3 +28,17 @@ const template = props => {
 const template2 = (
   <Child name='Jake' dynamic={( state.data )} handleClick={ clickHandler } />
 )
+
+const template3 = (
+  <Child>
+    <div />
+    <div />
+    <div />
+  </Child>
+)
+
+const template4 = (
+  <Child>{() =>
+    <div />
+  }</Child>
+)
