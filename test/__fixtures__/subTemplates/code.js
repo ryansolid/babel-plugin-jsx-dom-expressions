@@ -42,3 +42,7 @@ const template4 = (
     <div />
   }</Child>
 )
+
+const template5 = (
+  <Child>{( dynamicValue )}</Child>
+)

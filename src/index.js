@@ -127,18 +127,21 @@ export default (babel) => {
   function transformComponentChildren(path, children, opts) {
     const filteredChildren = filterChildren(children);
     if (!filteredChildren.length) return;
-    let child = filteredChildren.length === 1 ?
-      filteredChildren[0] :
-      t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children);
+    let child, dynamic;
+    if (filteredChildren.length === 1) {
+      if (t.isJSXExpressionContainer(filteredChildren[0])) dynamic = checkParens(filteredChildren[0], path)
+      child = filteredChildren[0]
+    } else child = t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children);
+
     child = generateHTMLNode(path, child, opts);
     if (child == null) return;
     if (child.id) {
       registerTemplate(path, child, filteredChildren.length !== 1);
       if (!child.exprs.length && child.decl.declarations.length === 1)
-        return child.decl.declarations[0].init;
-      else return t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), []);
+        return [child.decl.declarations[0].init];
+      else return [t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), [])];
     }
-    return child.exprs[0];
+    return [child.exprs[0], dynamic];
   }
 
   // reduce unnecessary refs
@@ -230,9 +233,11 @@ export default (babel) => {
       }
     });
 
-    const children = transformComponentChildren(path, jsx.children, opts);
-    if (children)
-      runningObject.push(t.objectProperty(t.identifier("children"), children));
+    const childResult = transformComponentChildren(path, jsx.children, opts);
+    if (childResult && childResult[0]) {
+      childResult[1] && dynamic.push(t.stringLiteral('children'))
+      runningObject.push(t.objectProperty(t.identifier("children"), childResult[0]));
+    }
 
     if (runningObject.length)
       props.push(t.objectExpression(runningObject));

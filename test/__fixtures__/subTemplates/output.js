@@ -84,3 +84,7 @@ const template3 = Child({
 const template4 = Child({
   children: () => _tmpl$6.content.firstChild.cloneNode(true)
 });
+
+const template5 = _$createComponent(Child, {
+  children: () => dynamicValue
+}, ["children"]);
