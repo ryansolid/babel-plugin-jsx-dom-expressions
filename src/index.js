@@ -6,6 +6,7 @@ import VoidElements from './VoidElements';
 export default (babel) => {
   const { types: t } = babel;
   let moduleName = 'dom',
+    contextToCustomElements = true,
     delegateEvents = true;
 
   function checkParens(jsx, path) {
@@ -153,6 +154,7 @@ export default (babel) => {
       else if (t.isJSXElement(jsx.children[i])) {
         const tagName = getTagName(jsx.children[i]);
         if (tagName.toLowerCase() !== tagName) return true;
+        if (contextToCustomElements && tagName.indexOf('-') > -1) return true;
         if (jsx.children[i].openingElement.attributes.some(attr => t.isJSXSpreadAttribute(attr) || t.isJSXExpressionContainer(attr.value))) return true;
         if (jsx.children[i].children.length)
           if (detectExpressions(jsx.children[i], 0)) return true;
@@ -173,12 +175,12 @@ export default (babel) => {
 
     jsx.openingElement.attributes.forEach(attribute => {
       const name = attribute.name.name;
-      if (!flow.type && (name === 'each' || name === 'when' || name === 'suspend' || name === 'portal')) {
+      if (!flow.type && (name === 'each' || name === 'when' || name === 'suspend' || name === 'portal' || name === 'provide')) {
         flow.type = name;
         flow.condition = attribute.value ? t.arrowFunctionExpression([], attribute.value.expression) : t.nullLiteral();
         flow.render = render;
       }
-      if (name === 'afterRender' || name === 'useShadow')
+      if (name === 'afterRender' || name === 'useShadow' || name === 'value')
         flowOptions.push(t.objectProperty(t.identifier(name), attribute.value.expression));
       if (name === 'fallback')
         flowOptions.push(t.objectProperty(t.identifier(name), t.arrowFunctionExpression([], attribute.value.expression)));
@@ -344,6 +346,10 @@ export default (babel) => {
       let results = { template: `<${tagName}`, decl: [], exprs: [] };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       transformAttributes(path, jsx, results);
+      if (contextToCustomElements && tagName.indexOf('-') > -1) {
+        registerImportMethod(path, 'currentContext');
+        results.exprs.push(t.expressionStatement(t.assignmentExpression('=', t.memberExpression(results.id, t.identifier('_context')), t.callExpression(t.identifier('_$currentContext'), []))))
+      }
       if (!voidTag) {
         results.template += '>';
         transformChildren(path, jsx, opts, results);
@@ -375,6 +381,7 @@ export default (babel) => {
       JSXElement: (path, { opts }) => {
         if ('moduleName' in opts) moduleName = opts.moduleName;
         if ('delegateEvents' in opts) delegateEvents = opts.delegateEvents;
+        if ('contextToCustomElements' in opts) contextToCustomElements = opts.contextToCustomElements;
         const result = generateHTMLNode(path, path.node, opts);
         if (result.flow) {
           const id = path.scope.generateUidIdentifier("el$"),
@@ -405,6 +412,7 @@ export default (babel) => {
       JSXFragment: (path, { opts }) => {
         if ('moduleName' in opts) moduleName = opts.moduleName;
         if ('delegateEvents' in opts) delegateEvents = opts.delegateEvents;
+        if ('contextToCustomElements' in opts) contextToCustomElements = opts.contextToCustomElements;
         const result = generateHTMLNode(path, path.node, opts);
         registerTemplate(path, result, true);
         if (!result.exprs.length && result.decl.declarations.length === 1)

@@ -27,6 +27,9 @@ const template = (
 const template2 = (
   <$ suspend={state.loading} fallback={<div>Loading...</div>}>
     <div>{state.asyncContent}</div>
+    <$ suspend fallback={<div>Loading...</div>}>
+      <AsyncChild />
+    </$>
   </$>
 );
 
@@ -36,3 +39,9 @@ const template3 = (
     <div class='isolated'>In a Portal</div>
   </$>
 );
+
+const template4 = (
+  <$ provide={ThemeContext} value={'dark'}>
+    <Child />
+  </$>
+)

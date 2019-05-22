@@ -1,3 +1,4 @@
+import { provide as _$provide } from "r-dom";
 import { portal as _$portal } from "r-dom";
 import { suspend as _$suspend } from "r-dom";
 import { when as _$when } from "r-dom";
@@ -9,14 +10,16 @@ const _tmpl$ = document.createElement("template"),
       _tmpl$3 = document.createElement("template"),
       _tmpl$4 = document.createElement("template"),
       _tmpl$5 = document.createElement("template"),
-      _tmpl$6 = document.createElement("template");
+      _tmpl$6 = document.createElement("template"),
+      _tmpl$7 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div></div><div></div><!--6-->";
 _tmpl$2.innerHTML = "<div>Do it!</div>";
 _tmpl$3.innerHTML = "<span>Editing:</span> <input type='text'/>";
-_tmpl$4.innerHTML = "<div></div>";
+_tmpl$4.innerHTML = "<div></div><!--13-->";
 _tmpl$5.innerHTML = "<div>Loading...</div>";
-_tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
+_tmpl$6.innerHTML = "<div>Loading...</div>";
+_tmpl$7.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
 const list = [{
   id: 1,
   text: 'Shop for Groceries',
@@ -62,32 +65,49 @@ const template2 = function () {
         _el$10 = _el$9.insertBefore(document.createTextNode(""), _el$9.firstChild);
 
   _$suspend(_el$9, () => state.loading, () => function () {
-    const _el$11 = _tmpl$4.content.firstChild.cloneNode(true);
+    const _el$11 = _tmpl$4.content.cloneNode(true),
+          _el$12 = _el$11.firstChild,
+          _el$13 = _el$12.nextSibling;
 
-    _$insert(_el$11, state.asyncContent);
+    _$insert(_el$12, state.asyncContent);
+
+    _$suspend(_el$11, null, () => AsyncChild(), {
+      fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
+    }, _el$13);
 
     return _el$11;
   }(), {
-    fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
+    fallback: () => _tmpl$6.content.firstChild.cloneNode(true)
   }, _el$10);
 
   return _el$9;
 }();
 
 const template3 = function () {
-  const _el$13 = document.createDocumentFragment(),
-        _el$14 = _el$13.insertBefore(document.createTextNode(""), _el$13.firstChild);
+  const _el$16 = document.createDocumentFragment(),
+        _el$17 = _el$16.insertBefore(document.createTextNode(""), _el$16.firstChild);
 
-  _$portal(_el$13, null, () => function () {
-    const _el$15 = _tmpl$6.content.cloneNode(true),
-          _el$16 = _el$15.firstChild;
+  _$portal(_el$16, null, () => function () {
+    const _el$18 = _tmpl$7.content.cloneNode(true),
+          _el$19 = _el$18.firstChild;
 
-    _$insert(_el$16, '.isolated { color: red; }');
+    _$insert(_el$19, '.isolated { color: red; }');
 
-    return _el$15;
+    return _el$18;
   }(), {
     useShadow: true
-  }, _el$14);
+  }, _el$17);
 
-  return _el$13;
+  return _el$16;
+}();
+
+const template4 = function () {
+  const _el$20 = document.createDocumentFragment(),
+        _el$21 = _el$20.insertBefore(document.createTextNode(""), _el$20.firstChild);
+
+  _$provide(_el$20, () => ThemeContext, () => Child(), {
+    value: 'dark'
+  }, _el$21);
+
+  return _el$20;
 }();
