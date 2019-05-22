@@ -179,8 +179,14 @@ Often for when there is no need for the argument and it can be skipped if desire
   <button onClick={ removeCompleted }>Clear Completed</button>
 </$>
 ```
+Provide(Experimental) is used with a Context API to allow for hierarchically resolved dependency injection. The value provided will be either passed to an initializer function defined or will be the provided context.
 
-Suspend(Experimental) works almost the opposite of when where a truthy value will put the child in suspense. It differs from when in that instead of not rendering the child content it attaches it to a foreign document(important to fire connectedCallbacks on Web Components). This is useful if you still want load child components but don't wish to attach them to the current DOM until your are ready and display some fallback content instead. Useful for upstream handling of loading mechanisms when fetching data.
+```jsx
+<$ provide={ ThemeContext } value= { 'dark' }>
+  <ThemedComponent />
+</$>
+```
+Suspend(Experimental) works almost the opposite of when where a truthy value will put the child in suspense. It differs from when in that instead of not rendering the child content it attaches it to a foreign document(important to fire connectedCallbacks on Web Components). This is useful if you still want load child components but don't wish to attach them to the current DOM until your are ready and display some fallback content instead. Useful for upstream handling of loading mechanisms when fetching data. It either takes a specific boolean accessor or uses a defined Suspense Context provided by the library.
 
 ```jsx
 <$ suspend={ state.loading } fallback={<div>Loading...</div>}>
@@ -188,6 +194,7 @@ Suspend(Experimental) works almost the opposite of when where a truthy value wil
 </$>
 ```
 Portal(Experimental) renders to a different than the current rendering tree. This is useful for handling modals. By default it will create a div under document.body but the target can be set by passing an argument. To support isolated styles there is an option to useShadow to stick the portal in an isolated ShadowRoot.
+
 ```jsx
 <$ portal>
   <MyModal>
