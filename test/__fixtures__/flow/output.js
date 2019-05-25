@@ -10,16 +10,14 @@ const _tmpl$ = document.createElement("template"),
       _tmpl$3 = document.createElement("template"),
       _tmpl$4 = document.createElement("template"),
       _tmpl$5 = document.createElement("template"),
-      _tmpl$6 = document.createElement("template"),
-      _tmpl$7 = document.createElement("template");
+      _tmpl$6 = document.createElement("template");
 
-_tmpl$.innerHTML = "<div></div><div></div><!--6-->";
+_tmpl$.innerHTML = "<div></div><div></div><!---->";
 _tmpl$2.innerHTML = "<div>Do it!</div>";
 _tmpl$3.innerHTML = "<span>Editing:</span> <input type='text'/>";
-_tmpl$4.innerHTML = "<div></div><!--13-->";
+_tmpl$4.innerHTML = "<div></div><!---->";
 _tmpl$5.innerHTML = "<div>Loading...</div>";
-_tmpl$6.innerHTML = "<div>Loading...</div>";
-_tmpl$7.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
+_tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
 const list = [{
   id: 1,
   text: 'Shop for Groceries',
@@ -77,7 +75,7 @@ const template2 = function () {
 
     return _el$11;
   }(), {
-    fallback: () => _tmpl$6.content.firstChild.cloneNode(true)
+    fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
   }, _el$10);
 
   return _el$9;
@@ -88,7 +86,7 @@ const template3 = function () {
         _el$17 = _el$16.insertBefore(document.createTextNode(""), _el$16.firstChild);
 
   _$portal(_el$16, null, () => function () {
-    const _el$18 = _tmpl$7.content.cloneNode(true),
+    const _el$18 = _tmpl$6.content.cloneNode(true),
           _el$19 = _el$18.firstChild;
 
     _$insert(_el$19, '.isolated { color: red; }');

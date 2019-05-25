@@ -5,15 +5,13 @@ const _tmpl$ = document.createElement("template"),
       _tmpl$2 = document.createElement("template"),
       _tmpl$3 = document.createElement("template"),
       _tmpl$4 = document.createElement("template"),
-      _tmpl$5 = document.createElement("template"),
-      _tmpl$6 = document.createElement("template");
+      _tmpl$5 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div>Hello </div><div></div>";
 _tmpl$2.innerHTML = "<div>From Parent</div>";
 _tmpl$3.innerHTML = "<div></div>";
-_tmpl$4.innerHTML = "<div><!--8--><!--9--></div>";
+_tmpl$4.innerHTML = "<div><!----><!----></div>";
 _tmpl$5.innerHTML = "<div></div><div></div><div></div>";
-_tmpl$6.innerHTML = "<div></div>";
 
 const Child = props => function () {
   const _el$ = _tmpl$.content.cloneNode(true),
@@ -80,7 +78,7 @@ const template3 = Child({
   children: _tmpl$5.content.cloneNode(true)
 });
 const template4 = Child({
-  children: () => _tmpl$6.content.firstChild.cloneNode(true)
+  children: () => _tmpl$3.content.firstChild.cloneNode(true)
 });
 
 const template5 = _$createComponent(Child, {

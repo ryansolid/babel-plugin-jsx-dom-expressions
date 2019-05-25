@@ -25,8 +25,14 @@ export default (babel) => {
   function registerTemplate(path, results, isFragment) {
     let decl;
     if (results.template.length) {
-      const templateId = path.scope.generateUidIdentifier("tmpl$");
       const templates = path.scope.getProgramParent().data.templates || (path.scope.getProgramParent().data.templates = []);
+      let templateDef, templateId;
+      if (templateDef = templates.find(t => t.template === results.template)) {
+        templateId = templateDef.id;
+      } else {
+        templateId = path.scope.generateUidIdentifier("tmpl$");
+        templates.push({id: templateId, template: results.template});
+      }
       decl = t.variableDeclarator(
         results.id,
         t.callExpression(
@@ -44,7 +50,6 @@ export default (babel) => {
           [t.booleanLiteral(true)]
         )
       );
-      templates.push({id: templateId, template: results.template});
     } else {
       decl = t.variableDeclarator(results.id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createDocumentFragment')), []));
     }
@@ -100,7 +105,7 @@ export default (babel) => {
 
   function createPlaceholder(path, results, tempPath, i) {
     const exprId = path.scope.generateUidIdentifier("el$");
-    results.template += `<!--${exprId.name.slice(4)}-->`;
+    results.template += `<!---->`;
     results.decl.push(t.variableDeclarator(exprId, t.memberExpression(t.identifier(tempPath), t.identifier(i === 0 ? 'firstChild': 'nextSibling'))));
     return exprId;
   }
@@ -330,7 +335,7 @@ export default (babel) => {
         registerImportMethod(path, 'insert');
         const parenthesized = checkParens(jsxChild, path);
         // JSX parent and dynamic || adjacent dynamic nodes or Components || boxed by textNodes
-        if ((t.isJSXFragment(jsx) && parenthesized)
+        if ((t.isJSXFragment(jsx) && (parenthesized || child.component))
           || ((parenthesized || child.component) && children[index + 1] && !children[index + 1].id && (checkParens(jsxChildren[index + 1], path) || children[index + 1].component))
           || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
         ) {

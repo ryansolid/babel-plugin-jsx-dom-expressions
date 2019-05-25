@@ -22,3 +22,11 @@ const singleExpression = (
 const singleDynamic = (
   <>{(inserted)}</>
 );
+
+const lastDynamic = (
+  <><div/>{(inserted)}</>
+);
+
+const lastComponent = (
+  <><div/><Component /></>
+);
