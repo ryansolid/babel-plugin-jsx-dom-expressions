@@ -8,10 +8,10 @@ const _tmpl$ = document.createElement("template"),
       _tmpl$5 = document.createElement("template"),
       _tmpl$6 = document.createElement("template");
 
-_tmpl$.innerHTML = "<div>Hello <!--4--></div><div></div>";
+_tmpl$.innerHTML = "<div>Hello </div><div></div>";
 _tmpl$2.innerHTML = "<div>From Parent</div>";
 _tmpl$3.innerHTML = "<div></div>";
-_tmpl$4.innerHTML = "<div><!--8--><!--10--><!--11--></div>";
+_tmpl$4.innerHTML = "<div><!--8--><!--9--></div>";
 _tmpl$5.innerHTML = "<div></div><div></div><div></div>";
 _tmpl$6.innerHTML = "<div></div>";
 
@@ -19,14 +19,13 @@ const Child = props => function () {
   const _el$ = _tmpl$.content.cloneNode(true),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.firstChild,
-        _el$4 = _el$3.nextSibling,
-        _el$5 = _el$2.nextSibling;
+        _el$4 = _el$2.nextSibling;
 
   props.ref && props.ref(_el$2);
 
-  _$insert(_el$2, props.name, null, _el$4);
+  _$insert(_el$2, props.name, undefined, null);
 
-  _$insert(_el$5, props.children);
+  _$insert(_el$4, props.children);
 
   return _el$;
 }();
@@ -39,36 +38,35 @@ const someProps = {
 const template = props => {
   let childRef;
   return function () {
-    const _el$6 = _tmpl$4.content.firstChild.cloneNode(true),
-          _el$8 = _el$6.firstChild,
-          _el$10 = _el$8.nextSibling,
-          _el$11 = _el$10.nextSibling;
+    const _el$5 = _tmpl$4.content.firstChild.cloneNode(true),
+          _el$8 = _el$5.firstChild,
+          _el$9 = _el$8.nextSibling;
 
-    _$insert(_el$6, Child(Object.assign({
+    _$insert(_el$5, Child(Object.assign({
       name: 'John'
     }, props, {
       ref: r$ => childRef = r$,
       children: _tmpl$2.content.firstChild.cloneNode(true)
-    })), null, _el$8);
+    })), undefined, _el$8);
 
-    _$insert(_el$6, _$createComponent(Child, Object.assign({
+    _$insert(_el$5, _$createComponent(Child, Object.assign({
       name: 'Jason'
     }, Object.keys(props).reduce((m$, k$) => m$[k$] = () => props[k$], {}), {
       ref: props.ref,
       children: (() => {
-        const _el$9 = _tmpl$3.content.firstChild.cloneNode(true);
+        const _el$7 = _tmpl$3.content.firstChild.cloneNode(true);
 
-        _$insert(_el$9, state.content);
+        _$insert(_el$7, state.content);
 
-        return _el$9;
+        return _el$7;
       })()
-    }), [...Object.keys(props)]), null, _el$10);
+    }), [...Object.keys(props)]), undefined, _el$9);
 
-    _$insert(_el$6, Context.Consumer({
+    _$insert(_el$5, Context.Consumer({
       children: context => context
-    }), null, _el$11);
+    }), undefined, null);
 
-    return _el$6;
+    return _el$5;
   }();
 };
 

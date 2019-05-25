@@ -13,10 +13,10 @@ const _tmpl$ = document.createElement("template"),
 _tmpl$.innerHTML = "<span>Hello </span>";
 _tmpl$2.innerHTML = "<span> John</span>";
 _tmpl$3.innerHTML = "<span>Hello John</span>";
-_tmpl$4.innerHTML = "<span>Hello <!--6--></span>";
-_tmpl$5.innerHTML = "<span><!--8--> John</span>";
-_tmpl$6.innerHTML = "<span><!--10--> <!--12--></span>";
-_tmpl$7.innerHTML = "<span> <!--15--> <!--17--> </span>";
+_tmpl$4.innerHTML = "<span>Hello </span>";
+_tmpl$5.innerHTML = "<span> John</span>";
+_tmpl$6.innerHTML = "<span> </span>";
+_tmpl$7.innerHTML = "<span> <!--14--> <!--15--> </span>";
 _tmpl$8.innerHTML = "<span>Hello</span>";
 _tmpl$9.innerHTML = "<span>Hello John</span>";
 const name = 'Jake',
@@ -30,48 +30,46 @@ const extraSpaces = _tmpl$3.content.firstChild.cloneNode(true);
 
 const trailingExpr = function () {
   const _el$4 = _tmpl$4.content.firstChild.cloneNode(true),
-        _el$5 = _el$4.firstChild,
-        _el$6 = _el$5.nextSibling;
+        _el$5 = _el$4.firstChild;
 
-  _$insert(_el$4, name, null, _el$6);
+  _$insert(_el$4, name, undefined, null);
 
   return _el$4;
 }();
 
 const leadingExpr = function () {
-  const _el$7 = _tmpl$5.content.firstChild.cloneNode(true),
-        _el$8 = _el$7.firstChild;
+  const _el$6 = _tmpl$5.content.firstChild.cloneNode(true),
+        _el$7 = _el$6.firstChild;
 
-  _$insert(_el$7, greeting, null, _el$8);
+  _$insert(_el$6, greeting, undefined, _el$7);
 
-  return _el$7;
+  return _el$6;
 }();
 
 const multiExpr = function () {
-  const _el$9 = _tmpl$6.content.firstChild.cloneNode(true),
-        _el$10 = _el$9.firstChild,
-        _el$11 = _el$10.nextSibling,
-        _el$12 = _el$11.nextSibling;
+  const _el$8 = _tmpl$6.content.firstChild.cloneNode(true),
+        _el$9 = _el$8.firstChild;
 
-  _$insert(_el$9, greeting, null, _el$10);
+  _$insert(_el$8, greeting, undefined, _el$9);
 
-  _$insert(_el$9, name, null, _el$12);
+  _$insert(_el$8, name, undefined, null);
 
-  return _el$9;
+  return _el$8;
 }();
 
 const multiExprSpaced = function () {
-  const _el$13 = _tmpl$7.content.firstChild.cloneNode(true),
-        _el$14 = _el$13.firstChild,
-        _el$15 = _el$14.nextSibling,
-        _el$16 = _el$15.nextSibling,
-        _el$17 = _el$16.nextSibling;
+  const _el$10 = _tmpl$7.content.firstChild.cloneNode(true),
+        _el$11 = _el$10.firstChild,
+        _el$14 = _el$11.nextSibling,
+        _el$12 = _el$14.nextSibling,
+        _el$15 = _el$12.nextSibling,
+        _el$13 = _el$15.nextSibling;
 
-  _$insert(_el$13, greeting, null, _el$15);
+  _$insert(_el$10, greeting, undefined, _el$14);
 
-  _$insert(_el$13, name, null, _el$17);
+  _$insert(_el$10, name, undefined, _el$15);
 
-  return _el$13;
+  return _el$10;
 }();
 
 const multiLine = _tmpl$8.content.firstChild.cloneNode(true);

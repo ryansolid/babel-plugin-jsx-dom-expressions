@@ -66,11 +66,14 @@ The use of cloneNode improves repeat insert performance and precompilation reduc
 
 ## Plugin Options
 
-### moduleName
-The name of the runtime module to import the methods from. Required.
+### moduleName (required)
+The name of the runtime module to import the methods from.
 
 ### delegateEvents
 Boolean to indicate whether to enable automatic event delegation on camelCase.
+
+### contextToCustomElements
+Boeolean Indicates whether to set current render context on Custom Elements and slots. Useful for seemless Context API with Web Components.
 
 ## Special Binding
 
@@ -179,7 +182,7 @@ Often for when there is no need for the argument and it can be skipped if desire
   <button onClick={ removeCompleted }>Clear Completed</button>
 </$>
 ```
-Provide(Experimental) is used with a Context API to allow for hierarchically resolved dependency injection. The value provided will be either passed to an initializer function defined or will be the provided context.
+Provide(Experimental) is used with a Context API to allow for hierarchically resolved dependency injection. The value provided will be either passed to an initializer function defined or will be the provided context. Opt in for the specific library runtime.
 
 ```jsx
 <$ provide={ ThemeContext } value= { 'dark' }>
@@ -217,6 +220,10 @@ Supported by: each, when, suspend
 ### useShadow
 Uses a Shadow Root for portals.
 Supported by: portal
+
+### value
+Sets initialization value for provide control flow.
+Supported by: provide
 
 ```jsx
 <$ each={ todos } fallback={<span>Loading...</span>}>{ todo =>

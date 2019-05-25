@@ -71,7 +71,7 @@ const template2 = function () {
 
     _$insert(_el$12, state.asyncContent);
 
-    _$suspend(_el$11, null, () => AsyncChild(), {
+    _$suspend(_el$11, null, () => AsyncChild({}), {
       fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
     }, _el$13);
 
@@ -105,7 +105,7 @@ const template4 = function () {
   const _el$20 = document.createDocumentFragment(),
         _el$21 = _el$20.insertBefore(document.createTextNode(""), _el$20.firstChild);
 
-  _$provide(_el$20, () => ThemeContext, () => Child(), {
+  _$provide(_el$20, () => ThemeContext, () => Child({}), {
     value: 'dark'
   }, _el$21);
 

@@ -112,16 +112,17 @@ export default (babel) => {
   function checkLength(children) {
     let i = 0;
     children.forEach(child => {
-      if (!t.isJSXText(child) || !/^\s*$/.test(child.value)) i++;
+      !(t.isJSXExpressionContainer(child) && t.isJSXEmptyExpression(child.expression))
+      && (!t.isJSXText(child) || !/^\s*$/.test(child.value)) && i++;
     });
     return i > 1;
   }
 
   // remove unnecessary JSX Text nodes
-  function filterChildren(children) {
+  function filterChildren(children, loose) {
     return children.filter(child =>
       !(t.isJSXExpressionContainer(child) && t.isJSXEmptyExpression(child.expression))
-      && (!t.isJSXText(child) || !/^\s*$/.test(child.value))
+      && (!t.isJSXText(child) || (loose ? !/^\n\s*$/.test(child.value) : !/^\s*$/.test(child.value)))
     );
   }
 
@@ -146,18 +147,23 @@ export default (babel) => {
   }
 
   // reduce unnecessary refs
-  function detectExpressions(jsx, index) {
-    for (let i = index; i < jsx.children.length; i++) {
-      if (t.isJSXExpressionContainer(jsx.children[i])) {
-        if (!t.isJSXEmptyExpression(jsx.children[i].expression)) return true;
+  function detectExpressions(children, index) {
+    if (children[index-1]
+      && t.isJSXExpressionContainer(children[index-1])
+      && !t.isJSXEmptyExpression(children[index-1].expression)
+    ) return true;
+    for (let i = index; i < children.length; i++) {
+      if (t.isJSXExpressionContainer(children[i])) {
+        if (!t.isJSXEmptyExpression(children[i].expression)) return true;
       }
-      else if (t.isJSXElement(jsx.children[i])) {
-        const tagName = getTagName(jsx.children[i]);
+      else if (t.isJSXElement(children[i])) {
+        const tagName = getTagName(children[i]);
         if (tagName.toLowerCase() !== tagName) return true;
-        if (contextToCustomElements && tagName.indexOf('-') > -1) return true;
-        if (jsx.children[i].openingElement.attributes.some(attr => t.isJSXSpreadAttribute(attr) || t.isJSXExpressionContainer(attr.value))) return true;
-        if (jsx.children[i].children.length)
-          if (detectExpressions(jsx.children[i], 0)) return true;
+        if (contextToCustomElements && (tagName === 'slot' || tagName.indexOf('-') > -1)) return true;
+        if (children[i].openingElement.attributes.some(attr => t.isJSXSpreadAttribute(attr) || t.isJSXExpressionContainer(attr.value))) return true;
+        const nextChildren = filterChildren(children[i].children, true);
+        if (nextChildren.length)
+          if (detectExpressions(nextChildren, 0)) return true;
       }
     }
   }
@@ -240,9 +246,7 @@ export default (babel) => {
       childResult[1] && dynamic.push(t.stringLiteral('children'))
       runningObject.push(t.objectProperty(t.identifier("children"), childResult[0]));
     }
-
-    if (runningObject.length)
-      props.push(t.objectExpression(runningObject));
+    props.push(t.objectExpression(runningObject));
 
     if (props.length > 1)
       props = [t.callExpression(t.memberExpression(t.identifier("Object"), t.identifier("assign")), props)];
@@ -253,7 +257,7 @@ export default (babel) => {
         t.identifier(getTagName(jsx)), props[0], t.arrayExpression(dynamic)
       ])];
     } else exprs = [t.callExpression(t.identifier(getTagName(jsx)), props)];
-    return { exprs, template: '' }
+    return { exprs, template: '', component: true }
   }
 
   function transformAttributes(path, jsx, results) {
@@ -305,8 +309,13 @@ export default (babel) => {
   function transformChildren(path, jsx, opts, results) {
     let tempPath = results.id && results.id.name,
       i = 0;
-    jsx.children.forEach((jsxChild, index) => {
-      const child = generateHTMLNode(path, jsxChild, opts, {skipId: !results.id || !detectExpressions(jsx, index)});
+    const jsxChildren = filterChildren(jsx.children, true),
+      children = jsxChildren.map(
+        (jsxChild, index) => generateHTMLNode(path, jsxChild, opts, {skipId: !results.id || !detectExpressions(jsxChildren, index)})
+      );
+
+    jsxChildren.forEach((jsxChild, index) => {
+      const child = children[index];
       if (!child) return;
       results.template += child.template;
       if (child.id) {
@@ -319,15 +328,22 @@ export default (babel) => {
         i++;
       } else if (child.exprs.length) {
         registerImportMethod(path, 'insert');
-        if ((t.isJSXFragment(jsx) && checkParens(jsxChild, path)) || checkLength(jsx.children)) {
+        const parenthesized = checkParens(jsxChild, path);
+        // JSX parent and dynamic || adjacent dynamic nodes or Components || boxed by textNodes
+        if ((t.isJSXFragment(jsx) && parenthesized)
+          || ((parenthesized || child.component) && children[index + 1] && !children[index + 1].id && (checkParens(jsxChildren[index + 1], path) || children[index + 1].component))
+          || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
+        ) {
           let exprId = createPlaceholder(path, results, tempPath, i);
-          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], t.nullLiteral(), exprId])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], t.identifier('undefined'), exprId])));
           tempPath = exprId.name;
           i++;
+        } else if (checkLength(jsxChildren)) {
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], t.identifier('undefined'), (children[index + 1] && children[index + 1].id) || t.nullLiteral()])));
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0]])));
       } else if (child.flow) {
         registerImportMethod(path, child.flow.type);
-        if (t.isJSXFragment(jsx) || checkLength(jsx.children)) {
+        if (t.isJSXFragment(jsx) || checkLength(jsxChildren)) {
           let exprId = createPlaceholder(path, results, tempPath, i);
           results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options, exprId])));
           tempPath = exprId.name;
@@ -346,9 +362,13 @@ export default (babel) => {
       let results = { template: `<${tagName}`, decl: [], exprs: [] };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       transformAttributes(path, jsx, results);
-      if (contextToCustomElements && tagName.indexOf('-') > -1) {
+      if (contextToCustomElements && (tagName === 'slot' || tagName.indexOf('-') > -1)) {
         registerImportMethod(path, 'currentContext');
-        results.exprs.push(t.expressionStatement(t.assignmentExpression('=', t.memberExpression(results.id, t.identifier('_context')), t.callExpression(t.identifier('_$currentContext'), []))))
+        results.exprs.push(t.expressionStatement(t.assignmentExpression(
+          '=',
+          t.memberExpression(results.id, t.identifier('_context')),
+          t.callExpression(t.identifier('_$currentContext'), [])
+        )))
       }
       if (!voidTag) {
         results.template += '>';
