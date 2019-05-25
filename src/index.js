@@ -153,10 +153,11 @@ export default (babel) => {
 
   // reduce unnecessary refs
   function detectExpressions(children, index) {
-    if (children[index-1]
-      && t.isJSXExpressionContainer(children[index-1])
-      && !t.isJSXEmptyExpression(children[index-1].expression)
-    ) return true;
+    if (children[index-1]) {
+      if (t.isJSXExpressionContainer(children[index-1]) && !t.isJSXEmptyExpression(children[index-1].expression)) return true;
+      let tagName;
+      if (t.isJSXElement(children[index-1]) && (tagName = getTagName(children[index - 1])) && tagName.toLowerCase() !== tagName) return true;
+    }
     for (let i = index; i < children.length; i++) {
       if (t.isJSXExpressionContainer(children[i])) {
         if (!t.isJSXEmptyExpression(children[i].expression)) return true;
@@ -334,9 +335,9 @@ export default (babel) => {
       } else if (child.exprs.length) {
         registerImportMethod(path, 'insert');
         const parenthesized = checkParens(jsxChild, path);
-        // JSX parent and dynamic || adjacent dynamic nodes or Components || boxed by textNodes
-        if ((t.isJSXFragment(jsx) && (parenthesized || child.component))
-          || ((parenthesized || child.component) && children[index + 1] && !children[index + 1].id && (checkParens(jsxChildren[index + 1], path) || children[index + 1].component))
+        // JSX parent and last dynamic || adjacent dynamic nodes || boxed by textNodes
+        if ((t.isJSXFragment(jsx) && (parenthesized || child.component) && index + 1 === children.length)
+          || ((parenthesized || child.component) && children[index + 1] && !children[index + 1].id && (checkParens(jsxChildren[index + 1], path) || children[index + 1].component || children[index + 1].flow))
           || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
         ) {
           let exprId = createPlaceholder(path, results, tempPath, i);
@@ -348,11 +349,19 @@ export default (babel) => {
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0]])));
       } else if (child.flow) {
         registerImportMethod(path, child.flow.type);
-        if (t.isJSXFragment(jsx) || checkLength(jsxChildren)) {
+        const multi = checkLength(jsxChildren);
+        // last dynamic || adjacent dynamic or expression nodes || boxed by textNodes
+        // TODO: unify parsing of dynamic parsing
+        if (index + 1 === children.length && multi
+          || (children[index + 1] && !children[index + 1].id && (checkParens(jsxChildren[index + 1], path) || children[index + 1].component || children[index + 1].flow))
+          || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
+        ) {
           let exprId = createPlaceholder(path, results, tempPath, i);
           results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options, exprId])));
           tempPath = exprId.name;
           i++;
+        } else if (multi) {
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options, children[index + 1].id])));
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options])));
       }
     });

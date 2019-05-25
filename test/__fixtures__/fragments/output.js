@@ -2,11 +2,13 @@ import { insert as _$insert } from "r-dom";
 
 const _tmpl$ = document.createElement("template"),
       _tmpl$2 = document.createElement("template"),
-      _tmpl$3 = document.createElement("template");
+      _tmpl$3 = document.createElement("template"),
+      _tmpl$4 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div>First</div><div>Last</div>";
 _tmpl$2.innerHTML = "<!---->";
-_tmpl$3.innerHTML = "<div></div><!---->";
+_tmpl$3.innerHTML = "<div></div>";
+_tmpl$4.innerHTML = "<div></div><!---->";
 const inserted = 'middle';
 
 const multiStatic = _tmpl$.content.cloneNode(true);
@@ -38,22 +40,58 @@ const singleDynamic = function () {
   return _el$6;
 }();
 
-const lastDynamic = function () {
+const firstStatic = function () {
   const _el$8 = _tmpl$3.content.cloneNode(true),
-        _el$9 = _el$8.firstChild,
-        _el$10 = _el$9.nextSibling;
+        _el$9 = _el$8.firstChild;
 
-  _$insert(_el$8, () => inserted, undefined, _el$10);
+  _$insert(_el$8, inserted, undefined, _el$9);
 
   return _el$8;
 }();
 
+const firstDynamic = function () {
+  const _el$10 = _tmpl$3.content.cloneNode(true),
+        _el$11 = _el$10.firstChild;
+
+  _$insert(_el$10, () => inserted, undefined, _el$11);
+
+  return _el$10;
+}();
+
+const firstComponent = function () {
+  const _el$12 = _tmpl$3.content.cloneNode(true),
+        _el$13 = _el$12.firstChild;
+
+  _$insert(_el$12, Component({}), undefined, _el$13);
+
+  return _el$12;
+}();
+
+const lastStatic = function () {
+  const _el$14 = _tmpl$3.content.cloneNode(true),
+        _el$15 = _el$14.firstChild;
+
+  _$insert(_el$14, inserted, undefined, null);
+
+  return _el$14;
+}();
+
+const lastDynamic = function () {
+  const _el$16 = _tmpl$4.content.cloneNode(true),
+        _el$17 = _el$16.firstChild,
+        _el$18 = _el$17.nextSibling;
+
+  _$insert(_el$16, () => inserted, undefined, _el$18);
+
+  return _el$16;
+}();
+
 const lastComponent = function () {
-  const _el$11 = _tmpl$3.content.cloneNode(true),
-        _el$12 = _el$11.firstChild,
-        _el$13 = _el$12.nextSibling;
+  const _el$19 = _tmpl$4.content.cloneNode(true),
+        _el$20 = _el$19.firstChild,
+        _el$21 = _el$20.nextSibling;
 
-  _$insert(_el$11, Component({}), undefined, _el$13);
+  _$insert(_el$19, Component({}), undefined, _el$21);
 
-  return _el$11;
+  return _el$19;
 }();

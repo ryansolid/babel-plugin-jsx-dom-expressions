@@ -23,6 +23,22 @@ const singleDynamic = (
   <>{(inserted)}</>
 );
 
+const firstStatic = (
+  <>{inserted}<div/></>
+);
+
+const firstDynamic = (
+  <>{(inserted)}<div/></>
+);
+
+const firstComponent = (
+  <><Component /><div/></>
+);
+
+const lastStatic = (
+  <><div/>{inserted}</>
+);
+
 const lastDynamic = (
   <><div/>{(inserted)}</>
 );
