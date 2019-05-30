@@ -21,7 +21,7 @@ const Child = props => function () {
 
   props.ref && props.ref(_el$2);
 
-  _$insert(_el$2, props.name, undefined, null);
+  _$insert(_el$2, props.name, null);
 
   _$insert(_el$4, props.children);
 
@@ -45,7 +45,7 @@ const template = props => {
     }, props, {
       ref: r$ => childRef = r$,
       children: _tmpl$2.content.firstChild.cloneNode(true)
-    })), undefined, _el$8);
+    })), _el$8);
 
     _$insert(_el$5, _$createComponent(Child, Object.assign({
       name: 'Jason'
@@ -58,11 +58,11 @@ const template = props => {
 
         return _el$7;
       })()
-    }), [...Object.keys(props)]), undefined, _el$9);
+    }), [...Object.keys(props)]), _el$9);
 
     _$insert(_el$5, Context.Consumer({
       children: context => context
-    }), undefined, null);
+    }), null);
 
     return _el$5;
   }();

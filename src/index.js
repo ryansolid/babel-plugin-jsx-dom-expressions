@@ -341,11 +341,11 @@ export default (babel) => {
           || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
         ) {
           let exprId = createPlaceholder(path, results, tempPath, i);
-          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], t.identifier('undefined'), exprId])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], exprId])));
           tempPath = exprId.name;
           i++;
         } else if (checkLength(jsxChildren)) {
-          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], t.identifier('undefined'), (children[index + 1] && children[index + 1].id) || t.nullLiteral()])));
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0], (children[index + 1] && children[index + 1].id) || t.nullLiteral()])));
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0]])));
       } else if (child.flow) {
         registerImportMethod(path, child.flow.type);
