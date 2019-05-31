@@ -5,6 +5,8 @@ const Child = props => (
   </>
 );
 
+const Consumer = (props) => props.children();
+
 const someProps = {some: 'stuff', more: 'things'}
 
 const template = props => {
@@ -18,9 +20,9 @@ const template = props => {
         {/* Comment Node */}
         <div>{state.content}</div>
       </Child>
-      <Context.Consumer>{ context =>
+      <Consumer>{ context =>
         context
-      }</Context.Consumer>
+      }</Consumer>
     </div>
   );
 }

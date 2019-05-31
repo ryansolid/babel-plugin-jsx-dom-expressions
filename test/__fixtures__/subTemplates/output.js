@@ -4,14 +4,12 @@ import { insert as _$insert } from "r-dom";
 const _tmpl$ = document.createElement("template"),
       _tmpl$2 = document.createElement("template"),
       _tmpl$3 = document.createElement("template"),
-      _tmpl$4 = document.createElement("template"),
-      _tmpl$5 = document.createElement("template");
+      _tmpl$4 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div>Hello </div><div></div>";
 _tmpl$2.innerHTML = "<div>From Parent</div>";
 _tmpl$3.innerHTML = "<div></div>";
-_tmpl$4.innerHTML = "<div><!----><!----></div>";
-_tmpl$5.innerHTML = "<div></div><div></div><div></div>";
+_tmpl$4.innerHTML = "<div></div><div></div><div></div>";
 
 const Child = props => function () {
   const _el$ = _tmpl$.content.cloneNode(true),
@@ -28,6 +26,8 @@ const Child = props => function () {
   return _el$;
 }();
 
+const Consumer = props => props.children();
+
 const someProps = {
   some: 'stuff',
   more: 'things'
@@ -36,16 +36,14 @@ const someProps = {
 const template = props => {
   let childRef;
   return function () {
-    const _el$5 = _tmpl$4.content.firstChild.cloneNode(true),
-          _el$8 = _el$5.firstChild,
-          _el$9 = _el$8.nextSibling;
+    const _el$5 = _tmpl$3.content.firstChild.cloneNode(true);
 
     _$insert(_el$5, Child(Object.assign({
       name: 'John'
     }, props, {
       ref: r$ => childRef = r$,
       children: _tmpl$2.content.firstChild.cloneNode(true)
-    })), _el$8);
+    })), null);
 
     _$insert(_el$5, _$createComponent(Child, Object.assign({
       name: 'Jason'
@@ -58,9 +56,9 @@ const template = props => {
 
         return _el$7;
       })()
-    }), [...Object.keys(props)]), _el$9);
+    }), [...Object.keys(props)]), null);
 
-    _$insert(_el$5, Context.Consumer({
+    _$insert(_el$5, Consumer({
       children: context => context
     }), null);
 
@@ -75,7 +73,7 @@ const template2 = _$createComponent(Child, {
 }, ["dynamic"]);
 
 const template3 = Child({
-  children: _tmpl$5.content.cloneNode(true)
+  children: _tmpl$4.content.cloneNode(true)
 });
 const template4 = Child({
   children: () => _tmpl$3.content.firstChild.cloneNode(true)

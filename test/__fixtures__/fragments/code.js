@@ -1,5 +1,7 @@
 const inserted = 'middle';
 
+const Component = () => <span />
+
 const multiStatic = (
   <>
     <div>First</div>
