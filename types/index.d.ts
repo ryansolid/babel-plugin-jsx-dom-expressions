@@ -5,6 +5,25 @@ declare global {
    * @see https://github.com/adamhaile/surplus/blob/master/index.d.ts
    * @see https://github.com/ryansolid/babel-plugin-jsx-dom-expressions
    */
+
+  // This may interfere with JQuery but no real solutions here
+  // Open issue with TypeScript: https://github.com/microsoft/TypeScript/issues/31606
+  const $: (attr: {
+    children?: {}
+    each?: unknown[]
+    when?: boolean
+    suspend?: boolean
+    fallback?: unknown
+    portal?: Node
+    useShadow?: boolean
+    provide?: {
+      id: symbol
+      initFn: () => any
+    }
+    value?: any
+    afterRender?: (start: Node | null, end?: Node | null) => void
+  }) => any
+
   namespace JSX {
     interface Element extends HTMLElement {}
 
