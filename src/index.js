@@ -279,8 +279,9 @@ export default (babel) => {
 
     // check against static component list
     let dynamic = true;
-    const binding = path.scope.getBinding(getTagName(jsx));
-    if (binding && path.scope.getProgramParent().data.components.has(binding.path)) dynamic = false;
+    const binding = path.scope.getBinding(getTagName(jsx)),
+      components = path.scope.getProgramParent().data.components;
+    if (binding && components && components.has(binding.path)) dynamic = false;
     return { exprs, template: '', dynamic }
   }
 
