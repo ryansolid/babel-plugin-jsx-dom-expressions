@@ -12,14 +12,15 @@ declare global {
     children?: {}
     each?: unknown[]
     when?: boolean
-    suspend?: boolean
-    fallback?: unknown
-    portal?: Node
-    useShadow?: boolean
+    switch?: void
     provide?: {
       id: symbol
       initFn: () => any
     }
+    suspend?: boolean
+    portal?: Node
+    fallback?: unknown
+    useShadow?: boolean
     value?: any
     afterRender?: (start: Node | null, end?: Node | null) => void
   }) => any
