@@ -367,12 +367,15 @@ declare global {
       accessKey?: string
       action?: string
       allowFullScreen?: boolean
+      allowFullscreen?: boolean
       allowTransparency?: boolean
       alt?: string
       async?: boolean
       autocomplete?: string
       autoFocus?: boolean
+      autofocus?: boolean
       autoPlay?: boolean
+      autoplay?: boolean
       capture?: boolean
       cellpadding?: number | string
       cellspacing?: number | string
@@ -467,6 +470,7 @@ declare global {
       size?: number
       sizes?: string
       span?: number
+      spellCheck?: boolean
       spellcheck?: boolean
       src?: string
       srcdoc?: string
@@ -497,6 +501,7 @@ declare global {
       vocab?: string
 
       // Non-standard Attributes
+      autoCapitalize?: string
       autocapitalize?: string
       autocorrect?: string
       autosave?: string
