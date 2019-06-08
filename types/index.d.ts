@@ -350,12 +350,12 @@ declare global {
       allowTransparency?: boolean
       alt?: string
       async?: boolean
-      autoComplete?: string
+      autocomplete?: string
       autoFocus?: boolean
       autoPlay?: boolean
       capture?: boolean
-      cellPadding?: number | string
-      cellSpacing?: number | string
+      cellpadding?: number | string
+      cellspacing?: number | string
       charSet?: string
       challenge?: string
       checked?: boolean
@@ -365,11 +365,11 @@ declare global {
       cols?: number
       colSpan?: number
       content?: string
-      contentEditable?: boolean
-      contextMenu?: string
+      contenteditable?: boolean
+      contextmenu?: string
       controls?: boolean
       coords?: string
-      crossOrigin?: string
+      crossorigin?: string
       data?: string
       dateTime?: string
       default?: boolean
@@ -378,7 +378,7 @@ declare global {
       disabled?: boolean
       download?: any
       draggable?: boolean
-      encType?: string
+      enctype?: string
       form?: string
       formAction?: string
       formEncType?: string
@@ -391,17 +391,16 @@ declare global {
       hidden?: boolean
       high?: number
       href?: string
-      hrefLang?: string
+      hreflang?: string
       htmlFor?: string
       for?: string
       httpEquiv?: string
       id?: string
       innerText?: string | number
-      inputMode?: string
+      inputmode?: string
       integrity?: string
       is?: string
-      keyParams?: string
-      keyType?: string
+      keytype?: string
       kind?: string
       label?: string
       lang?: string
@@ -409,8 +408,8 @@ declare global {
       loop?: boolean
       low?: number
       manifest?: string
-      marginHeight?: number
-      marginWidth?: number
+      marginheight?: number
+      marginwidth?: number
       max?: number | string
       maxLength?: number
       media?: string
@@ -422,22 +421,22 @@ declare global {
       muted?: boolean
       name?: string
       nonce?: string
-      noValidate?: boolean
+      novalidate?: boolean
       open?: boolean
       optimum?: number
       pattern?: string
       placeholder?: string
-      playsInline?: boolean
+      playsinline?: boolean
       poster?: string
       preload?: string
-      radioGroup?: string
-      readOnly?: boolean
+      radiogroup?: string
+      readonly?: boolean
       rel?: string
       required?: boolean
       reversed?: boolean
       role?: string
       rows?: number
-      rowSpan?: number
+      rowspan?: number
       sandbox?: string
       scope?: string
       scoped?: boolean
@@ -448,7 +447,7 @@ declare global {
       size?: number
       sizes?: string
       span?: number
-      spellCheck?: boolean
+      spellcheck?: boolean
       src?: string
       srcdoc?: string
       srclang?: string
@@ -457,7 +456,7 @@ declare global {
       step?: number | string
       style?: Partial<CSSStyleDeclaration>
       summary?: string
-      tabIndex?: number
+      tabindex?: number
       target?: string
       title?: string
       type?: string
@@ -478,15 +477,15 @@ declare global {
       vocab?: string
 
       // Non-standard Attributes
-      autoCapitalize?: string
-      autoCorrect?: string
-      autoSave?: string
+      autocapitalize?: string
+      autocorrect?: string
+      autosave?: string
       color?: string
-      itemProp?: string
-      itemScope?: boolean
-      itemType?: string
-      itemID?: string
-      itemRef?: string
+      itemprop?: string
+      itemscope?: boolean
+      itemtype?: string
+      itemid?: string
+      itemref?: string
       results?: number
       security?: string
       unselectable?: boolean
