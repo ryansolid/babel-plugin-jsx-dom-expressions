@@ -450,9 +450,9 @@ declare global {
       span?: number
       spellCheck?: boolean
       src?: string
-      srcDoc?: string
-      srcLang?: string
-      srcSet?: string
+      srcdoc?: string
+      srclang?: string
+      srcset?: string
       start?: number
       step?: number | string
       style?: Partial<CSSStyleDeclaration>
