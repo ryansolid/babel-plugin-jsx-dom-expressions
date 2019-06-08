@@ -1,3 +1,4 @@
+import { switchWhen as _$switchWhen } from "r-dom";
 import { provide as _$provide } from "r-dom";
 import { portal as _$portal } from "r-dom";
 import { suspend as _$suspend } from "r-dom";
@@ -10,7 +11,8 @@ const _tmpl$ = document.createElement("template"),
       _tmpl$3 = document.createElement("template"),
       _tmpl$4 = document.createElement("template"),
       _tmpl$5 = document.createElement("template"),
-      _tmpl$6 = document.createElement("template");
+      _tmpl$6 = document.createElement("template"),
+      _tmpl$7 = document.createElement("template");
 
 _tmpl$.innerHTML = "<div></div><div></div><!---->";
 _tmpl$2.innerHTML = "<div>Do it!</div>";
@@ -18,6 +20,7 @@ _tmpl$3.innerHTML = "<span>Editing:</span> <input type='text'/>";
 _tmpl$4.innerHTML = "<div></div><!---->";
 _tmpl$5.innerHTML = "<div>Loading...</div>";
 _tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
+_tmpl$7.innerHTML = "<div>Route not Found</div>";
 const list = [{
   id: 1,
   text: 'Shop for Groceries',
@@ -108,4 +111,29 @@ const template4 = function () {
   }, _el$21);
 
   return _el$20;
+}();
+
+const template5 = function () {
+  const _el$22 = document.createDocumentFragment(),
+        _el$23 = _el$22.insertBefore(document.createTextNode(""), _el$22.firstChild);
+
+  _$switchWhen(_el$22, [{
+    condition: () => state.route === 'home',
+    render: () => Home({}),
+    options: {}
+  }, {
+    condition: () => state.route === 'profile',
+    render: () => Profile({}),
+    options: {}
+  }, {
+    condition: () => state.route === 'settings',
+    render: () => Settings({}),
+    options: {
+      afterRender: node => node && node.focus()
+    }
+  }], null, {
+    fallback: () => _tmpl$7.content.firstChild.cloneNode(true)
+  }, _el$23);
+
+  return _el$22;
 }();

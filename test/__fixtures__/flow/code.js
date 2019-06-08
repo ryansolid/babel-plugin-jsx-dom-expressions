@@ -45,3 +45,11 @@ const template4 = (
     <Child />
   </$>
 )
+
+const template5 = (
+  <$ switch fallback={<div>Route not Found</div>}>
+    <$ when={state.route === 'home'}><Home /></$>
+    <$ when={state.route === 'profile'}><Profile /></$>
+    <$ when={state.route === 'settings'} afterRender={node => node && node.focus()}><Settings /></$>
+  </$>
+)

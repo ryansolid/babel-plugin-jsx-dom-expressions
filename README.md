@@ -160,7 +160,7 @@ Components may have children. This is available as props.children. It will eithe
 
 ## Control Flow
 
-Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 4 props on this component 'each', 'when', 'suspend', and 'portal' where the argument is the list to iterate or the condition. The Child is a function (render prop). For each it passes the item and the index to the function, and for when it passes the evaluated value.
+Loops and conditionals are handled by a special JSX tag `<$></$>`. The reason to use a tag instead of just data.map comes from the fact that it isn't just a map function in fine grain. It requires creating nested contexts and memoizing values. Even with custom methods the injection can never be as optimized as giving a special helper and I found I was re-writing pretty much identical code in all implementations. Currently there is support for 6 props on this component 'each', 'when', 'switch', 'provide', 'suspend', and 'portal' where the argument is the list to iterate or the condition. The Child is a function (render prop). For each it passes the item and the index to the function, and for when it passes the evaluated value.
 
 ```jsx
 <ul>
@@ -182,6 +182,16 @@ Often for when there is no need for the argument and it can be skipped if desire
   <button onClick={ removeCompleted }>Clear Completed</button>
 </$>
 ```
+Sometimes you want mutually exclusive options. Switch will evaluate each child when in succession until it hits the first truthy value.
+
+```jsx
+<$ switch fallback={<div>Route not Found</div>}>
+  <$ when={state.route === 'home'}><Home /></$>
+  <$ when={state.route === 'profile'}><Profile /></$>
+  <$ when={state.route === 'settings'}><Settings /></$>
+</$>
+```
+
 Provide(Experimental) is used with a Context API to allow for hierarchically resolved dependency injection. The value provided will be either passed to an initializer function defined or will be the provided context. Opt in for the specific library runtime.
 
 ```jsx
