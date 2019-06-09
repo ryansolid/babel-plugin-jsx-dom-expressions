@@ -114,7 +114,7 @@ export default (babel) => {
     if (index + 1 >= children.length) return false;
 
     // JSX parent and last || next node expr || boxed by textNodes
-    if (children[index + 1].dynamic &&
+    if (children[index + 1].flow || children[index + 1].dynamic &&
       ((isFragment && index + 2 === children.length)
       || (children[index + 2] && !children[index + 2].id)
       || (t.isJSXText(jsxChildren[index]) && t.isJSXText(jsxChildren[index + 2])))
