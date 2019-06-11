@@ -12,15 +12,17 @@ const _tmpl$ = document.createElement("template"),
       _tmpl$4 = document.createElement("template"),
       _tmpl$5 = document.createElement("template"),
       _tmpl$6 = document.createElement("template"),
-      _tmpl$7 = document.createElement("template");
+      _tmpl$7 = document.createElement("template"),
+      _tmpl$8 = document.createElement("template");
 
-_tmpl$.innerHTML = "<div></div><div></div><!---->";
+_tmpl$.innerHTML = "<div></div><div></div>";
 _tmpl$2.innerHTML = "<div>Do it!</div>";
 _tmpl$3.innerHTML = "<span>Editing:</span> <input type='text'/>";
-_tmpl$4.innerHTML = "<div></div><!---->";
+_tmpl$4.innerHTML = "<div></div>";
 _tmpl$5.innerHTML = "<div>Loading...</div>";
 _tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
 _tmpl$7.innerHTML = "<div>Route not Found</div>";
+_tmpl$8.innerHTML = "<p>Content</p>";
 const list = [{
   id: 1,
   text: 'Shop for Groceries',
@@ -42,8 +44,7 @@ const template = function () {
   _$each(_el$, () => list, item => function () {
     const _el$3 = _tmpl$.content.cloneNode(true),
           _el$4 = _el$3.firstChild,
-          _el$5 = _el$4.nextSibling,
-          _el$6 = _el$5.nextSibling;
+          _el$5 = _el$4.nextSibling;
 
     _$insert(_el$4, () => item.text);
 
@@ -51,7 +52,7 @@ const template = function () {
       fallback: () => _tmpl$2.content.firstChild.cloneNode(true)
     });
 
-    _$when(_el$3, () => editingId === item.id, () => _tmpl$3.content.cloneNode(true), {}, _el$6);
+    _$when(_el$3, () => editingId === item.id, () => _tmpl$3.content.cloneNode(true), {}, null);
 
     return _el$3;
   }(), {
@@ -62,62 +63,61 @@ const template = function () {
 }();
 
 const template2 = function () {
-  const _el$9 = document.createDocumentFragment(),
-        _el$10 = _el$9.insertBefore(document.createTextNode(""), _el$9.firstChild);
+  const _el$8 = document.createDocumentFragment(),
+        _el$9 = _el$8.insertBefore(document.createTextNode(""), _el$8.firstChild);
 
-  _$suspend(_el$9, () => state.loading, () => function () {
-    const _el$11 = _tmpl$4.content.cloneNode(true),
-          _el$12 = _el$11.firstChild,
-          _el$13 = _el$12.nextSibling;
+  _$suspend(_el$8, () => state.loading, () => function () {
+    const _el$10 = _tmpl$4.content.cloneNode(true),
+          _el$11 = _el$10.firstChild;
 
-    _$insert(_el$12, state.asyncContent);
+    _$insert(_el$11, state.asyncContent);
 
-    _$suspend(_el$11, null, () => AsyncChild({}), {
+    _$suspend(_el$10, null, () => AsyncChild({}), {
       fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
-    }, _el$13);
+    }, null);
 
-    return _el$11;
+    return _el$10;
   }(), {
     fallback: () => _tmpl$5.content.firstChild.cloneNode(true)
-  }, _el$10);
+  }, _el$9);
 
-  return _el$9;
+  return _el$8;
 }();
 
 const template3 = function () {
-  const _el$16 = document.createDocumentFragment(),
-        _el$17 = _el$16.insertBefore(document.createTextNode(""), _el$16.firstChild);
+  const _el$14 = document.createDocumentFragment(),
+        _el$15 = _el$14.insertBefore(document.createTextNode(""), _el$14.firstChild);
 
-  _$portal(_el$16, null, () => function () {
-    const _el$18 = _tmpl$6.content.cloneNode(true),
-          _el$19 = _el$18.firstChild;
+  _$portal(_el$14, null, () => function () {
+    const _el$16 = _tmpl$6.content.cloneNode(true),
+          _el$17 = _el$16.firstChild;
 
-    _$insert(_el$19, '.isolated { color: red; }');
+    _$insert(_el$17, '.isolated { color: red; }');
 
-    return _el$18;
+    return _el$16;
   }(), {
     useShadow: true
-  }, _el$17);
+  }, _el$15);
 
-  return _el$16;
+  return _el$14;
 }();
 
 const template4 = function () {
-  const _el$20 = document.createDocumentFragment(),
-        _el$21 = _el$20.insertBefore(document.createTextNode(""), _el$20.firstChild);
+  const _el$18 = document.createDocumentFragment(),
+        _el$19 = _el$18.insertBefore(document.createTextNode(""), _el$18.firstChild);
 
-  _$provide(_el$20, () => ThemeContext, () => Child({}), {
+  _$provide(_el$18, () => ThemeContext, () => Child({}), {
     value: 'dark'
-  }, _el$21);
+  }, _el$19);
 
-  return _el$20;
+  return _el$18;
 }();
 
 const template5 = function () {
-  const _el$22 = document.createDocumentFragment(),
-        _el$23 = _el$22.insertBefore(document.createTextNode(""), _el$22.firstChild);
+  const _el$20 = document.createDocumentFragment(),
+        _el$21 = _el$20.insertBefore(document.createTextNode(""), _el$20.firstChild);
 
-  _$switchWhen(_el$22, [{
+  _$switchWhen(_el$20, [{
     condition: () => state.route === 'home',
     render: () => Home({}),
     options: {}
@@ -133,7 +133,19 @@ const template5 = function () {
     }
   }], null, {
     fallback: () => _tmpl$7.content.firstChild.cloneNode(true)
-  }, _el$23);
+  }, _el$21);
 
-  return _el$22;
+  return _el$20;
+}();
+
+const StaticChild = () => _tmpl$4.content.firstChild.cloneNode(true);
+
+const template6 = function () {
+  const _el$24 = _tmpl$4.content.firstChild.cloneNode(true);
+
+  _$insert(_el$24, StaticChild({}), null);
+
+  _$when(_el$24, () => condition, () => _tmpl$8.content.firstChild.cloneNode(true), {}, null);
+
+  return _el$24;
 }();

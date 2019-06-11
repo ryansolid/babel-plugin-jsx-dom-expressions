@@ -110,17 +110,16 @@ export default (babel) => {
     return exprId;
   }
 
-  function dynamicSiblings(children, jsxChildren, index, isFragment) {
+  function dynamicSiblings(children, jsxChildren, index) {
     if (index + 1 >= children.length) return false;
 
-    // JSX parent and last || next node expr || boxed by textNodes
-    if (children[index + 1].flow || children[index + 1].dynamic &&
-      ((isFragment && index + 2 === children.length)
-      || (children[index + 2] && !children[index + 2].id)
+    // next node expr || boxed by textNodes
+    if ((children[index + 1].flow || children[index + 1].dynamic) &&
+      ((children[index + 2] && !children[index + 2].id)
       || (t.isJSXText(jsxChildren[index]) && t.isJSXText(jsxChildren[index + 2])))
     ) return true;
 
-    return dynamicSiblings(children, jsxChildren, index + 1, isFragment);
+    return dynamicSiblings(children, jsxChildren, index + 1);
   }
 
   function trimWhitespace(text) {
@@ -353,8 +352,7 @@ export default (babel) => {
         (jsxChild, index) => generateHTMLNode(path, jsxChild, opts, {skipId: !results.id || !detectExpressions(jsxChildren, index)})
       );
 
-    jsxChildren.forEach((jsxChild, index) => {
-      const child = children[index];
+    children.forEach((child, index) => {
       if (!child) return;
       results.template += child.template;
       if (child.id) {
@@ -367,9 +365,8 @@ export default (babel) => {
         i++;
       } else if (child.exprs.length) {
         registerImportMethod(path, 'insert');
-        // JSX parent and last dynamic || dynamic and next node expr || boxed by textNodes
-        if ((t.isJSXFragment(jsx) && child.dynamic && index + 1 === children.length)
-          || (child.dynamic && children[index + 1] && !children[index + 1].id)
+        // dynamic and next node expr || boxed by textNodes
+        if ((child.dynamic && children[index + 1] && !children[index + 1].id)
           || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
         ) {
           let exprId = createPlaceholder(path, results, tempPath, i, nextExprId);
@@ -381,17 +378,14 @@ export default (babel) => {
           results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [
             results.id, child.exprs[0],
             (children[index + 1] && children[index + 1].id)
-            || dynamicSiblings(children, jsxChildren, index, t.isJSXFragment(jsx)) && (nextExprId || (nextExprId = path.scope.generateUidIdentifier("el$")))
+            || dynamicSiblings(children, jsxChildren, index) && (nextExprId || (nextExprId = path.scope.generateUidIdentifier("el$")))
             || t.nullLiteral()
           ])));
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0]])));
       } else if (child.flow) {
         registerImportMethod(path, child.flow.type);
-        const multi = checkLength(jsxChildren);
-        // last dynamic || dynamic and next node expr || boxed by textNodes
-        // TODO: unify parsing of dynamic parsing
-        if (index + 1 === children.length && multi
-          || (children[index + 1] && !children[index + 1].id)
+        // dynamic and next node expr || boxed by textNodes
+        if ((children[index + 1] && !children[index + 1].id)
           || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
         ) {
           let exprId = createPlaceholder(path, results, tempPath, i, nextExprId);
@@ -399,8 +393,13 @@ export default (babel) => {
           tempPath = exprId.name;
           nextExprId = null;
           i++;
-        } else if (multi) {
-          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options, children[index + 1].id])));
+        } else if (checkLength(jsxChildren)) {
+          results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [
+            results.id, child.flow.condition, child.flow.render, child.flow.options,
+            (children[index + 1] && children[index + 1].id)
+            || dynamicSiblings(children, jsxChildren, index) && (nextExprId || (nextExprId = path.scope.generateUidIdentifier("el$")))
+            || t.nullLiteral()
+          ])));
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$"+child.flow.type), [results.id, child.flow.condition, child.flow.render, child.flow.options])));
       }
     });

@@ -53,3 +53,11 @@ const template5 = (
     <$ when={state.route === 'settings'} afterRender={node => node && node.focus()}><Settings /></$>
   </$>
 )
+
+const StaticChild = () => <div />
+const template6 = (
+  <div>
+    <StaticChild />
+    <$ when={condition}><p>Content</p></$>
+  </div>
+)

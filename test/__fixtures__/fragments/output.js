@@ -2,15 +2,11 @@ import { insert as _$insert } from "r-dom";
 
 const _tmpl$ = document.createElement("template"),
       _tmpl$2 = document.createElement("template"),
-      _tmpl$3 = document.createElement("template"),
-      _tmpl$4 = document.createElement("template"),
-      _tmpl$5 = document.createElement("template");
+      _tmpl$3 = document.createElement("template");
 
 _tmpl$.innerHTML = "<span></span>";
 _tmpl$2.innerHTML = "<div>First</div><div>Last</div>";
-_tmpl$3.innerHTML = "<!---->";
-_tmpl$4.innerHTML = "<div></div>";
-_tmpl$5.innerHTML = "<div></div><!---->";
+_tmpl$3.innerHTML = "<div></div>";
 const inserted = 'middle';
 
 const Component = () => _tmpl$.content.firstChild.cloneNode(true);
@@ -36,65 +32,63 @@ const singleExpression = function () {
 }();
 
 const singleDynamic = function () {
-  const _el$7 = _tmpl$3.content.cloneNode(true),
-        _el$8 = _el$7.firstChild;
+  const _el$7 = document.createDocumentFragment();
 
-  _$insert(_el$7, () => inserted, _el$8);
+  _$insert(_el$7, () => inserted);
 
   return _el$7;
 }();
 
 const firstStatic = function () {
-  const _el$9 = _tmpl$4.content.cloneNode(true),
-        _el$10 = _el$9.firstChild;
+  const _el$8 = _tmpl$3.content.cloneNode(true),
+        _el$9 = _el$8.firstChild;
 
-  _$insert(_el$9, inserted, _el$10);
+  _$insert(_el$8, inserted, _el$9);
 
-  return _el$9;
+  return _el$8;
 }();
 
 const firstDynamic = function () {
-  const _el$11 = _tmpl$4.content.cloneNode(true),
-        _el$12 = _el$11.firstChild;
+  const _el$10 = _tmpl$3.content.cloneNode(true),
+        _el$11 = _el$10.firstChild;
 
-  _$insert(_el$11, () => inserted, _el$12);
+  _$insert(_el$10, () => inserted, _el$11);
 
-  return _el$11;
+  return _el$10;
 }();
 
 const firstComponent = function () {
-  const _el$13 = _tmpl$4.content.cloneNode(true),
-        _el$14 = _el$13.firstChild;
+  const _el$12 = _tmpl$3.content.cloneNode(true),
+        _el$13 = _el$12.firstChild;
 
-  _$insert(_el$13, Component({}), _el$14);
+  _$insert(_el$12, Component({}), _el$13);
 
-  return _el$13;
+  return _el$12;
 }();
 
 const lastStatic = function () {
-  const _el$15 = _tmpl$4.content.cloneNode(true),
-        _el$16 = _el$15.firstChild;
+  const _el$14 = _tmpl$3.content.cloneNode(true),
+        _el$15 = _el$14.firstChild;
 
-  _$insert(_el$15, inserted, null);
+  _$insert(_el$14, inserted, null);
 
-  return _el$15;
+  return _el$14;
 }();
 
 const lastDynamic = function () {
-  const _el$17 = _tmpl$5.content.cloneNode(true),
-        _el$18 = _el$17.firstChild,
-        _el$19 = _el$18.nextSibling;
+  const _el$16 = _tmpl$3.content.cloneNode(true),
+        _el$17 = _el$16.firstChild;
 
-  _$insert(_el$17, () => inserted, _el$19);
+  _$insert(_el$16, () => inserted, null);
 
-  return _el$17;
+  return _el$16;
 }();
 
 const lastComponent = function () {
-  const _el$20 = _tmpl$4.content.cloneNode(true),
-        _el$21 = _el$20.firstChild;
+  const _el$18 = _tmpl$3.content.cloneNode(true),
+        _el$19 = _el$18.firstChild;
 
-  _$insert(_el$20, Component({}), null);
+  _$insert(_el$18, Component({}), null);
 
-  return _el$20;
+  return _el$18;
 }();
