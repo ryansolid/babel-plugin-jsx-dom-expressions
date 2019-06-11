@@ -1,11 +1,9 @@
+import { template as _$template } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { currentContext as _$currentContext } from "r-dom";
 
-const _tmpl$ = document.createElement("template"),
-      _tmpl$2 = document.createElement("template");
-
-_tmpl$.innerHTML = "<my-element></my-element>";
-_tmpl$2.innerHTML = "<my-element><header slot='head'>Title</header></my-element>";
+const _tmpl$ = _$template("<my-element></my-element>"),
+      _tmpl$2 = _$template("<my-element><header slot='head'>Title</header></my-element>");
 
 const template = function () {
   const _el$ = _tmpl$.content.firstChild.cloneNode(true);

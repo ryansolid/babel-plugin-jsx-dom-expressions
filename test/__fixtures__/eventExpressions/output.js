@@ -1,8 +1,7 @@
+import { template as _$template } from "r-dom";
 import { delegateEvents as _$delegateEvents } from "r-dom";
 
-const _tmpl$ = document.createElement("template");
-
-_tmpl$.innerHTML = "<div id='main'><button>Click Bound</button><button>Click Delegated</button><button>Click Listener</button></div>";
+const _tmpl$ = _$template("<div id='main'><button>Click Bound</button><button>Click Delegated</button><button>Click Listener</button></div>");
 
 const template = function () {
   const _el$ = _tmpl$.content.firstChild.cloneNode(true),

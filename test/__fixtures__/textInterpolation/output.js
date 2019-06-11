@@ -1,18 +1,13 @@
+import { template as _$template } from "r-dom";
 import { insert as _$insert } from "r-dom";
 
-const _tmpl$ = document.createElement("template"),
-      _tmpl$2 = document.createElement("template"),
-      _tmpl$3 = document.createElement("template"),
-      _tmpl$4 = document.createElement("template"),
-      _tmpl$5 = document.createElement("template"),
-      _tmpl$6 = document.createElement("template");
+const _tmpl$ = _$template("<span>Hello </span>"),
+      _tmpl$2 = _$template("<span> John</span>"),
+      _tmpl$3 = _$template("<span>Hello John</span>"),
+      _tmpl$4 = _$template("<span> </span>"),
+      _tmpl$5 = _$template("<span> <!----> <!----> </span>"),
+      _tmpl$6 = _$template("<span>Hello</span>");
 
-_tmpl$.innerHTML = "<span>Hello </span>";
-_tmpl$2.innerHTML = "<span> John</span>";
-_tmpl$3.innerHTML = "<span>Hello John</span>";
-_tmpl$4.innerHTML = "<span> </span>";
-_tmpl$5.innerHTML = "<span> <!----> <!----> </span>";
-_tmpl$6.innerHTML = "<span>Hello</span>";
 const name = 'Jake',
       greeting = 'Welcome';
 

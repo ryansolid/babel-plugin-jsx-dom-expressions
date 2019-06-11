@@ -1,15 +1,11 @@
+import { template as _$template } from "r-dom";
 import { createComponent as _$createComponent } from "r-dom";
 import { insert as _$insert } from "r-dom";
 
-const _tmpl$ = document.createElement("template"),
-      _tmpl$2 = document.createElement("template"),
-      _tmpl$3 = document.createElement("template"),
-      _tmpl$4 = document.createElement("template");
-
-_tmpl$.innerHTML = "<div>Hello </div><div></div>";
-_tmpl$2.innerHTML = "<div>From Parent</div>";
-_tmpl$3.innerHTML = "<div></div>";
-_tmpl$4.innerHTML = "<div></div><div></div><div></div>";
+const _tmpl$ = _$template("<div>Hello </div><div></div>"),
+      _tmpl$2 = _$template("<div>From Parent</div>"),
+      _tmpl$3 = _$template("<div></div>"),
+      _tmpl$4 = _$template("<div></div><div></div><div></div>");
 
 const Child = props => function () {
   const _el$ = _tmpl$.content.cloneNode(true),

@@ -1,3 +1,4 @@
+import { template as _$template } from "r-dom";
 import { switchWhen as _$switchWhen } from "r-dom";
 import { provide as _$provide } from "r-dom";
 import { portal as _$portal } from "r-dom";
@@ -6,23 +7,15 @@ import { when as _$when } from "r-dom";
 import { insert as _$insert } from "r-dom";
 import { each as _$each } from "r-dom";
 
-const _tmpl$ = document.createElement("template"),
-      _tmpl$2 = document.createElement("template"),
-      _tmpl$3 = document.createElement("template"),
-      _tmpl$4 = document.createElement("template"),
-      _tmpl$5 = document.createElement("template"),
-      _tmpl$6 = document.createElement("template"),
-      _tmpl$7 = document.createElement("template"),
-      _tmpl$8 = document.createElement("template");
+const _tmpl$ = _$template("<div></div><div></div>"),
+      _tmpl$2 = _$template("<div>Do it!</div>"),
+      _tmpl$3 = _$template("<span>Editing:</span> <input type='text'/>"),
+      _tmpl$4 = _$template("<div></div>"),
+      _tmpl$5 = _$template("<div>Loading...</div>"),
+      _tmpl$6 = _$template("<style></style><div class='isolated'>In a Portal</div>"),
+      _tmpl$7 = _$template("<div>Route not Found</div>"),
+      _tmpl$8 = _$template("<p>Content</p>");
 
-_tmpl$.innerHTML = "<div></div><div></div>";
-_tmpl$2.innerHTML = "<div>Do it!</div>";
-_tmpl$3.innerHTML = "<span>Editing:</span> <input type='text'/>";
-_tmpl$4.innerHTML = "<div></div>";
-_tmpl$5.innerHTML = "<div>Loading...</div>";
-_tmpl$6.innerHTML = "<style></style><div class='isolated'>In a Portal</div>";
-_tmpl$7.innerHTML = "<div>Route not Found</div>";
-_tmpl$8.innerHTML = "<p>Content</p>";
 const list = [{
   id: 1,
   text: 'Shop for Groceries',

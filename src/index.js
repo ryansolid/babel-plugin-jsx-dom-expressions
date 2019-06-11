@@ -529,16 +529,11 @@ export default (babel) => {
             );
           }
           if (path.scope.data.templates) {
+            registerImportMethod(path, 'template');
             const declarators = path.scope.data.templates.map(template =>
-              t.variableDeclarator(template.id, t.callExpression(t.memberExpression(t.identifier('document'), t.identifier('createElement')), [t.stringLiteral('template')]))
+              t.variableDeclarator(template.id, t.callExpression(t.identifier('_$template'), [t.stringLiteral(template.template)]))
             )
-            const assignments = path.scope.data.templates.map(template =>
-              t.expressionStatement(t.assignmentExpression('=', t.memberExpression(template.id, t.identifier('innerHTML')), t.stringLiteral(template.template)))
-            )
-            path.node.body.unshift(
-              t.variableDeclaration("const", declarators),
-              ...assignments
-            );
+            path.node.body.unshift(t.variableDeclaration("const", declarators));
           }
         }
       }

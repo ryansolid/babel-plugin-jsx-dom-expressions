@@ -1,12 +1,10 @@
+import { template as _$template } from "r-dom";
 import { insert as _$insert } from "r-dom";
 
-const _tmpl$ = document.createElement("template"),
-      _tmpl$2 = document.createElement("template"),
-      _tmpl$3 = document.createElement("template");
+const _tmpl$ = _$template("<span></span>"),
+      _tmpl$2 = _$template("<div>First</div><div>Last</div>"),
+      _tmpl$3 = _$template("<div></div>");
 
-_tmpl$.innerHTML = "<span></span>";
-_tmpl$2.innerHTML = "<div>First</div><div>Last</div>";
-_tmpl$3.innerHTML = "<div></div>";
 const inserted = 'middle';
 
 const Component = () => _tmpl$.content.firstChild.cloneNode(true);
