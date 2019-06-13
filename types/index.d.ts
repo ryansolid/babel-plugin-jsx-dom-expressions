@@ -12,7 +12,7 @@ declare global {
     children?: {}
     each?: unknown[]
     when?: boolean
-    switch?: void
+    switch?: void | boolean
     provide?: {
       id: symbol
       initFn: () => any
