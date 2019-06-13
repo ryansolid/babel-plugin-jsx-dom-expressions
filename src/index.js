@@ -365,8 +365,9 @@ export default (babel) => {
         i++;
       } else if (child.exprs.length) {
         registerImportMethod(path, 'insert');
-        // dynamic and next node expr || boxed by textNodes
-        if ((child.dynamic && children[index + 1] && !children[index + 1].id)
+        // jsx parent and only child || next node expr || boxed by textNodes
+        if ((child.dynamic && children.length === 1 && t.isJSXFragment(jsx))
+          || (child.dynamic && children[index + 1] && !children[index + 1].id)
           || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
         ) {
           let exprId = createPlaceholder(path, results, tempPath, i, nextExprId);
@@ -384,8 +385,9 @@ export default (babel) => {
         } else results.exprs.push(t.expressionStatement(t.callExpression(t.identifier("_$insert"), [results.id, child.exprs[0]])));
       } else if (child.flow) {
         registerImportMethod(path, child.flow.type);
-        // dynamic and next node expr || boxed by textNodes
-        if ((children[index + 1] && !children[index + 1].id)
+        // jsx parent and only child || next node expr || boxed by textNodes
+        if ((children.length === 1 && t.isJSXFragment(jsx))
+          || (children[index + 1] && !children[index + 1].id)
           || (t.isJSXText(jsxChildren[index - 1]) && t.isJSXText(jsxChildren[index + 1]))
         ) {
           let exprId = createPlaceholder(path, results, tempPath, i, nextExprId);
