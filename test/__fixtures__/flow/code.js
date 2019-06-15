@@ -61,3 +61,10 @@ const template6 = (
     <$ when={condition}><p>Content</p></$>
   </div>
 )
+
+const template7 = (
+  <div>
+    <$ when={condition1}><p>Content1</p></$>
+    <$ when={condition2}><p>Content2</p></$>
+  </div>
+)

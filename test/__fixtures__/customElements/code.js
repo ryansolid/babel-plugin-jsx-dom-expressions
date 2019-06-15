@@ -11,3 +11,9 @@ const template3 = (
     <header slot='head'>Title</header>
   </my-element>
 )
+
+const template4 = (
+  <>
+    <slot name='head'></slot>
+  </>
+)

@@ -14,7 +14,10 @@ const _tmpl$ = _$template("<div></div><div></div>"),
       _tmpl$5 = _$template("<div>Loading...</div>"),
       _tmpl$6 = _$template("<style></style><div class='isolated'>In a Portal</div>"),
       _tmpl$7 = _$template("<div>Route not Found</div>"),
-      _tmpl$8 = _$template("<p>Content</p>");
+      _tmpl$8 = _$template("<p>Content</p>"),
+      _tmpl$9 = _$template("<div><!----></div>"),
+      _tmpl$10 = _$template("<p>Content1</p>"),
+      _tmpl$11 = _$template("<p>Content2</p>");
 
 const list = [{
   id: 1,
@@ -141,4 +144,15 @@ const template6 = function () {
   _$when(_el$24, () => condition, () => _tmpl$8.content.firstChild.cloneNode(true), {}, null);
 
   return _el$24;
+}();
+
+const template7 = function () {
+  const _el$26 = _tmpl$9.content.firstChild.cloneNode(true),
+        _el$27 = _el$26.firstChild;
+
+  _$when(_el$26, () => condition1, () => _tmpl$10.content.firstChild.cloneNode(true), {}, _el$27);
+
+  _$when(_el$26, () => condition2, () => _tmpl$11.content.firstChild.cloneNode(true), {}, null);
+
+  return _el$26;
 }();
