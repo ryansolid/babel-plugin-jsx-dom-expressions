@@ -34,25 +34,25 @@ const template = props => {
   return function () {
     const _el$5 = _tmpl$3.content.firstChild.cloneNode(true);
 
-    _$insert(_el$5, Child(Object.assign({
+    _$insert(_el$5, _$createComponent(Child, Object.assign({
       name: 'John'
     }, props, {
       ref: r$ => childRef = r$,
-      children: _tmpl$2.content.firstChild.cloneNode(true)
-    })), null);
+      children: () => _tmpl$2.content.firstChild.cloneNode(true)
+    }), ["children"]), null);
 
     _$insert(_el$5, _$createComponent(Child, Object.assign({
       name: 'Jason'
     }, Object.keys(props).reduce((m$, k$) => m$[k$] = () => props[k$], {}), {
       ref: props.ref,
-      children: (() => {
+      children: () => {
         const _el$7 = _tmpl$3.content.firstChild.cloneNode(true);
 
         _$insert(_el$7, state.content);
 
         return _el$7;
-      })()
-    }), [...Object.keys(props)]), null);
+      }
+    }), [...Object.keys(props), "children"]), null);
 
     _$insert(_el$5, Consumer({
       children: context => context
@@ -68,9 +68,10 @@ const template2 = _$createComponent(Child, {
   handleClick: clickHandler
 }, ["dynamic"]);
 
-const template3 = Child({
-  children: _tmpl$4.content.cloneNode(true)
-});
+const template3 = _$createComponent(Child, {
+  children: () => _tmpl$4.content.cloneNode(true)
+}, ["children"]);
+
 const template4 = Child({
   children: () => _tmpl$3.content.firstChild.cloneNode(true)
 });

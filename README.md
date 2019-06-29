@@ -156,7 +156,7 @@ const MyComp = props => (
 <MyComp param={( dynamic() )} other={ static } />
 ```
 
-Components may have children. This is available as props.children. It will either be the value of a single expression child or it will be a DOM node(Fragment in case of multi-children) which can be rendered.
+Components may have children. This is available as props.children. It will either be the value of a single expression child or it will be a DOM node(Fragment in case of multi-children) which can be rendered. Children are always evaluated lazily upon access (like dynamic properties).
 
 ## Control Flow
 

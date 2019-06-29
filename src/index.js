@@ -146,21 +146,17 @@ export default (babel) => {
   function transformComponentChildren(path, children, opts) {
     const filteredChildren = filterChildren(children);
     if (!filteredChildren.length) return;
-    let child, dynamic;
-    if (filteredChildren.length === 1) {
-      if (t.isJSXExpressionContainer(filteredChildren[0])) dynamic = checkParens(filteredChildren[0], path);
-      child = filteredChildren[0];
-    } else child = t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children);
+    let child = filteredChildren.length === 1 ? filteredChildren[0] : t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), children);
 
-    child = generateHTMLNode(path, child, opts);
+    child = generateHTMLNode(path, child, opts, {ignoreDynamic: true});
     if (child == null) return;
     if (child.id) {
       registerTemplate(path, child, filteredChildren.length !== 1);
       if (!child.exprs.length && child.decl.declarations.length === 1)
-        return [child.decl.declarations[0].init];
-      else return [t.callExpression(t.arrowFunctionExpression([], t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)])), [])];
+        return child.decl.declarations[0].init;
+      else return t.blockStatement([child.decl, ...child.exprs, t.returnStatement(child.id)]);
     }
-    return [child.exprs[0], dynamic];
+    return child.exprs[0];
   }
 
   // reduce unnecessary refs
@@ -206,7 +202,7 @@ export default (babel) => {
     if (t.isJSXExpressionContainer(children[0])) render = children[0].expression;
     else if (children.length > 1) {
       if (flow.type === 'switch') {
-        const conditions = []
+        const conditions = [];
         children.forEach((child) => {
           const {flow: childFlow} = generateFlow(child)
           conditions.push(t.objectExpression([
@@ -273,9 +269,13 @@ export default (babel) => {
     });
 
     const childResult = transformComponentChildren(path, jsx.children, opts);
-    if (childResult && childResult[0]) {
-      childResult[1] && dynamicKeys.push(t.stringLiteral('children'));
-      runningObject.push(t.objectProperty(t.identifier("children"), childResult[0]));
+    if (childResult) {
+      if (t.isFunction(childResult))
+        runningObject.push(t.objectProperty(t.identifier("children"), childResult));
+      else {
+        dynamicKeys.push(t.stringLiteral('children'));
+        runningObject.push(t.objectProperty(t.identifier("children"), t.arrowFunctionExpression([], childResult)));
+      }
     }
     props.push(t.objectExpression(runningObject));
 
@@ -443,7 +443,7 @@ export default (babel) => {
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
       if (t.isJSXEmptyExpression(jsx.expression)) return null;
-      if (!checkParens(jsx, path)) return { exprs: [jsx.expression], template: '' }
+      if (info.ignoreDynamic || !checkParens(jsx, path)) return { exprs: [jsx.expression], template: '' }
       return { exprs: [t.arrowFunctionExpression([], jsx.expression)], template: '', dynamic: true }
     }
   }
