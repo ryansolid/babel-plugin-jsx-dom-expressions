@@ -200,21 +200,21 @@ export default (babel) => {
     flow.options = t.objectExpression(flowOptions);
 
     if (t.isJSXExpressionContainer(children[0])) render = children[0].expression;
-    else if (children.length > 1) {
-      if (flow.type === 'switch') {
-        const conditions = [];
-        children.forEach((child) => {
-          const {flow: childFlow} = generateFlow(child)
-          conditions.push(t.objectExpression([
-            t.objectProperty(t.identifier('condition'), childFlow.condition),
-            t.objectProperty(t.identifier('render'), childFlow.render),
-            t.objectProperty(t.identifier('options'), childFlow.options)
-          ]));
-        });
-        flow.type = 'switchWhen';
-        flow.condition = t.arrayExpression(conditions);
-        render = t.nullLiteral();
-      } else children = [t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), jsx.children)];
+    else if (flow.type === 'switch') {
+      const conditions = [];
+      children.forEach((child) => {
+        const {flow: childFlow} = generateFlow(child)
+        conditions.push(t.objectExpression([
+          t.objectProperty(t.identifier('condition'), childFlow.condition),
+          t.objectProperty(t.identifier('render'), childFlow.render),
+          t.objectProperty(t.identifier('options'), childFlow.options)
+        ]));
+      });
+      flow.type = 'switchWhen';
+      flow.condition = t.arrayExpression(conditions);
+      render = t.nullLiteral();
+    } else if (children.length > 1) {
+      children = [t.JSXFragment(t.JSXOpeningFragment(), t.JSXClosingFragment(), jsx.children)];
     } else if (t.isJSXText(children[0])) children[0] = t.stringLiteral(trimWhitespace(children[0].value));
     if (!render) render = t.arrowFunctionExpression([], children[0]);
     flow.render = render;
