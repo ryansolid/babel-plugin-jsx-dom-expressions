@@ -154,11 +154,11 @@ const MyComp = props => (
 <MyComp param={( dynamic() )} other={ static } />
 ```
 
-Components may have children. This is available as props.children. It will either be the value of a single expression child or it will be a DOM node(Fragment in case of multi-children) which can be rendered. Children are always evaluated lazily upon access (like dynamic properties).
+Components may have children. This is available as props.children. It may be a node, a function, or a string, or an array of the aforementioned. Non-expression children like DOM nodes are set to evaluate lazily (upon access by default). For single expressions you must use {( )} to have the same behaviour.
 
 ## Fragments
 
-This plugin also supports JSX Fragments with `<></>` notation. However they use a Persistent Fragment based on [Document Persistent Fragment](https://github.com/WebReflection/document-persistent-fragment). Look at your specific libraries documentation to learn how to include the polyfill.
+This plugin also supports JSX Fragments with `<></>` notation. These will be compiled to arrays. The fragment syntax provides the convenience of being able to use the template syntax to wrap expressions.
 
 ## Work in Progress
 
