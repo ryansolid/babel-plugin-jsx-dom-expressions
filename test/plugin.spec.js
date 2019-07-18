@@ -6,8 +6,10 @@ pluginTester({
   plugin,
   pluginOptions: {
     moduleName: 'r-dom',
+    builtIns: ['For'],
     delegateEvents: true,
-    contextToCustomElements: true,
+    alwaysCreateComponents: false,
+    contextToCustomElements: true
   },
   title: 'Convert JSX',
   fixtures: path.join(__dirname, '__fixtures__'),

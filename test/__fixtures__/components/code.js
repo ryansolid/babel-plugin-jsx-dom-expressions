@@ -20,9 +20,9 @@ const template = props => {
         {/* Comment Node */}
         <div>{state.content}</div>
       </Child>
-      <Consumer>{ context =>
+      <Context.Consumer>{ context =>
         context
-      }</Consumer>
+      }</Context.Consumer>
     </div>
   );
 }
@@ -47,4 +47,9 @@ const template4 = (
 
 const template5 = (
   <Child>{( dynamicValue )}</Child>
+)
+
+// builtIns
+const template6 = (
+  <For each={( list )}>{ item => item }</For>
 )

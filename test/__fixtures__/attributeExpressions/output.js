@@ -3,7 +3,7 @@ import { wrap as _$wrap } from "r-dom";
 import { spread as _$spread } from "r-dom";
 import { classList as _$classList } from "r-dom";
 
-const _tmpl$ = _$template("<div id='main'><h1><a>Welcome</a></h1></div>");
+const _tmpl$ = _$template(`<div id="main"><h1><a>Welcome</a></h1></div>`);
 
 const welcoming = 'Welcome';
 const selected = true;
@@ -12,17 +12,12 @@ const props = {
   some: 'stuff',
   no: 'thing'
 };
-
-const binding = (el, accessor) => el.custom = accessor();
-
 let link;
 
 const template = function () {
   const _el$ = _tmpl$.content.firstChild.cloneNode(true),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.firstChild;
-
-  custom(_el$, () => binding);
 
   _$classList(_el$, {
     selected: selected

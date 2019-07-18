@@ -1,6 +1,6 @@
 import { template as _$template } from "r-dom";
 
-const _tmpl$ = _$template("<div id='main'><h1>Welcome</h1><label>Edit:</label><input id='entry' type='text'/></div>");
+const _tmpl$ = _$template(`<div id="main"><h1>Welcome</h1><label>Edit:</label><input id="entry" type="text"></div>`);
 
 const template = function () {
   const _el$ = _tmpl$.content.firstChild.cloneNode(true),

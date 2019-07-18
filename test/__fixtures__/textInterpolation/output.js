@@ -1,12 +1,12 @@
 import { template as _$template } from "r-dom";
 import { insert as _$insert } from "r-dom";
 
-const _tmpl$ = _$template("<span>Hello </span>"),
-      _tmpl$2 = _$template("<span> John</span>"),
-      _tmpl$3 = _$template("<span>Hello John</span>"),
-      _tmpl$4 = _$template("<span> </span>"),
-      _tmpl$5 = _$template("<span> <!----> <!----> </span>"),
-      _tmpl$6 = _$template("<span>Hello</span>");
+const _tmpl$ = _$template(`<span>Hello </span>`),
+      _tmpl$2 = _$template(`<span> John</span>`),
+      _tmpl$3 = _$template(`<span>Hello John</span>`),
+      _tmpl$4 = _$template(`<span> </span>`),
+      _tmpl$5 = _$template(`<span> <!----> <!----> </span>`),
+      _tmpl$6 = _$template(`<span>Hello</span>`);
 
 const name = 'Jake',
       greeting = 'Welcome';
