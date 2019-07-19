@@ -40,6 +40,7 @@ const template = props => {
       name: 'John'
     }, props, {
       ref: r$ => childRef = r$,
+      booleanProperty: true,
       children: () => _tmpl$3.content.firstChild.cloneNode(true)
     }), ["children"]), null);
 

@@ -10,6 +10,7 @@ const template = (
     <h1
       {...(props)}
       {...results}
+      disabled
       title={( welcoming )}
       style={({ backgroundColor: color })}
       classList={({ selected: selected })}

@@ -222,7 +222,7 @@ export default (babel) => {
           );
         } else props.push(attribute.argument);
       } else {
-        const value = attribute.value;
+        const value = attribute.value || t.booleanLiteral(true);
         if (t.isJSXExpressionContainer(value))
           if (attribute.name.name === 'ref') {
             runningObject.push(t.objectProperty(

@@ -13,7 +13,7 @@ const template = props => {
   let childRef;
   return (
     <div>
-      <Child name='John' {...props} ref={childRef}>
+      <Child name='John' {...props} ref={childRef} booleanProperty>
         <div>From Parent</div>
       </Child>
       <Child name='Jason' {...(props)} forwardRef={props.ref}>
