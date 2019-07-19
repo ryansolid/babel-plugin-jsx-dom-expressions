@@ -34,9 +34,9 @@ const template3 = function () {
   return _el$3;
 }();
 
-const template4 = (() => {
+const template4 = [(() => {
   const _el$4 = _tmpl$3.content.firstChild.cloneNode(true);
 
   _el$4._context = _$currentContext();
   return _el$4;
-})();
+})()];

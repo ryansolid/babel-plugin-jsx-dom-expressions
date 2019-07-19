@@ -356,8 +356,7 @@ export default (babel) => {
           return child.exprs[0];
         }
       });
-    if (children.length === 1) { results.exprs.push(children[0]) }
-    else results.exprs.push(t.arrayExpression(children));
+    results.exprs.push(t.arrayExpression(children));
   }
 
   function generateHTMLNode(path, jsx, opts, info = {}) {
