@@ -1,3 +1,5 @@
+type DomElement = Element;  // Introduce alias due to shadowing in JSX namespace.
+
 declare global {
   /**
    * Forked from `https://github.com/adamhaile/surplus` and adapted for `babel-plugin-jsx-dom-expressions`.
@@ -7,7 +9,12 @@ declare global {
    */
 
   namespace JSX {
-    interface Element extends HTMLElement {}
+    type Element = DomElement | ArrayElement | FunctionElement;
+
+    interface ArrayElement extends Array<Element> {}
+    interface FunctionElement {
+      (): Element;
+    }
 
     // Let TS know the name of the `children` property in order for it to be able to type check them.
     // https://github.com/Microsoft/TypeScript/issues/18357
