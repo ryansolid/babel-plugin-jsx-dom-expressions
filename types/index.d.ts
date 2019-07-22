@@ -9,11 +9,15 @@ declare global {
    */
 
   namespace JSX {
-    type Element = DomElement | ArrayElement | FunctionElement;
+    type Element = DomElement | ArrayElement | FunctionElement | MatchElement | string | number;
 
     interface ArrayElement extends Array<Element> {}
     interface FunctionElement {
-      (): Element;
+      (): Element
+    }
+    interface MatchElement {
+      when: boolean
+      children: Element
     }
 
     // Let TS know the name of the `children` property in order for it to be able to type check them.
