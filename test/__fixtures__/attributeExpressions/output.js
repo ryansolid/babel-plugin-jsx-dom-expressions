@@ -3,7 +3,7 @@ import { wrap as _$wrap } from "r-dom";
 import { spread as _$spread } from "r-dom";
 import { classList as _$classList } from "r-dom";
 
-const _tmpl$ = _$template(`<div id="main"><h1 disabled><a>Welcome</a></h1></div>`);
+const _tmpl$ = _$template(`<div id="main"><h1 disabled=""><a>Welcome</a></h1></div>`);
 
 const welcoming = 'Welcome';
 const selected = true;

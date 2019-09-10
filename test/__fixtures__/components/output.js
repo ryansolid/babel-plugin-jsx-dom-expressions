@@ -46,7 +46,7 @@ const template = props => {
 
     _$insert(_el$4, _$createComponent(Child, Object.assign({
       name: 'Jason'
-    }, Object.keys(props).reduce((m$, k$) => m$[k$] = () => props[k$], {}), {
+    }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
       ref: props.ref,
       children: () => {
         const _el$6 = _tmpl$2.content.firstChild.cloneNode(true);

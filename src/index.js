@@ -213,10 +213,14 @@ export default (babel) => {
           props.push(
             t.callExpression(t.memberExpression(t.callExpression(t.memberExpression(t.identifier('Object'), t.identifier('keys')), [attribute.argument]), t.identifier('reduce')), [
               t.arrowFunctionExpression([memo, key],
-                t.assignmentExpression('=',
-                t.memberExpression(memo, key, true),
-                t.arrowFunctionExpression([], t.memberExpression(attribute.argument,key, true))
-              )),
+                t.sequenceExpression([
+                  t.assignmentExpression('=',
+                    t.memberExpression(memo, key, true),
+                    t.arrowFunctionExpression([], t.memberExpression(attribute.argument,key, true))
+                  ),
+                  memo
+                ])
+              ),
               t.objectExpression([])
             ])
           );
@@ -299,7 +303,7 @@ export default (babel) => {
         }
       } else {
         results.template += ` ${key}`;
-        if (value) results.template += `="${value.value}"`;
+        results.template += value ? `="${value.value}"`: `=""`;
       }
     });
   }
