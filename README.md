@@ -69,11 +69,17 @@ The use of cloneNode improves repeat insert performance and precompilation reduc
 ### moduleName (required)
 The name of the runtime module to import the methods from.
 
+### generate
+The output mode of the compiler. Can be "dom"(default), "ssr", or "hydrate". "dom" is standard output. "ssr" is for server side rendering that is hydrateable. And "hydrate" is for the client that hydrates the previously server rendered markup.s
+
 ### delegateEvents
 Boolean to indicate whether to enable automatic event delegation on camelCase.
 
 ### contextToCustomElements
 Boolean indicates whether to set current render context on Custom Elements and slots. Useful for seemless Context API with Web Components.
+
+### alwaysWrap
+Removes the need for `{( )}` syntax. All expressions will be dynamic. This can lead to severe performance degradation. Use at your own risk.
 
 ### alwaysCreateComponents
 Always use createComponent method instead of just calling the function. Needed to support class components.
