@@ -1,5 +1,6 @@
 import { template as _$template } from "r-dom";
 import { getNextMarker as _$getNextMarker } from "r-dom";
+import { hydration as _$hydration } from "r-dom";
 import { insert as _$insert } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
 
@@ -27,7 +28,7 @@ const trailingExpr = function () {
         _el$6 = _el$5.nextSibling,
         [_el$7, _co$] = _$getNextMarker(_el$6.nextSibling);
 
-  _$insert(_el$4, name, _el$7, _co$);
+  _$hydration(() => _$insert(_el$4, name, _el$7, _co$), _el$4);
 
   return _el$4;
 }();
@@ -38,7 +39,7 @@ const leadingExpr = function () {
         [_el$11, _co$2] = _$getNextMarker(_el$10.nextSibling),
         _el$9 = _el$11.nextSibling;
 
-  _$insert(_el$8, greeting, _el$11, _co$2);
+  _$hydration(() => _$insert(_el$8, greeting, _el$11, _co$2), _el$8);
 
   return _el$8;
 }();
@@ -51,9 +52,9 @@ const multiExpr = function () {
         _el$16 = _el$13.nextSibling,
         [_el$17, _co$4] = _$getNextMarker(_el$16.nextSibling);
 
-  _$insert(_el$12, greeting, _el$15, _co$3);
+  _$hydration(() => _$insert(_el$12, greeting, _el$15, _co$3), _el$12);
 
-  _$insert(_el$12, name, _el$17, _co$4);
+  _$hydration(() => _$insert(_el$12, name, _el$17, _co$4), _el$12);
 
   return _el$12;
 }();
@@ -68,9 +69,9 @@ const multiExprSpaced = function () {
         [_el$25, _co$6] = _$getNextMarker(_el$24.nextSibling),
         _el$21 = _el$25.nextSibling;
 
-  _$insert(_el$18, greeting, _el$23, _co$5);
+  _$hydration(() => _$insert(_el$18, greeting, _el$23, _co$5), _el$18);
 
-  _$insert(_el$18, name, _el$25, _co$6);
+  _$hydration(() => _$insert(_el$18, name, _el$25, _co$6), _el$18);
 
   return _el$18;
 }();
