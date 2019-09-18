@@ -50,7 +50,7 @@ declare global {
 
     // https://github.com/ryansolid/babel-plugin-jsx-dom-expressions#special-binding
     interface CustomAttributes<T> {
-      ref?: T;
+      ref?: T extends HTMLElement ? T : (el: T) => void;
       forwardRef?: (el: T) => void;
       classList?: { [k: string]: boolean | undefined };
       events?: { [key: string]: EventHandler<T, CustomEvent> };

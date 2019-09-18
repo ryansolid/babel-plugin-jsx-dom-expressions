@@ -23,7 +23,7 @@
     "coveralls": "3.0.6",
     "dom-expressions": "~0.11.0",
     "jest": "^24.9.0",
-    "rollup": "^1.20.3",
+    "rollup": "^1.21.4",
     "rollup-plugin-node-resolve": "^5.2.0"
   },
   "dependencies": {
