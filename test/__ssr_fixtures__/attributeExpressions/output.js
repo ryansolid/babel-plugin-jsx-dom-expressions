@@ -1,4 +1,5 @@
 import { template as _$template } from "r-dom";
+import { getNextElement as _$getNextElement } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { spread as _$spread } from "r-dom";
 import { classList as _$classList } from "r-dom";
@@ -15,7 +16,7 @@ const props = {
 let link;
 
 const template = function () {
-  const _el$ = _tmpl$.content.firstChild.cloneNode(true),
+  const _el$ = _$getNextElement(_tmpl$),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.firstChild;
 
@@ -27,9 +28,9 @@ const template = function () {
     color
   });
 
-  _$spread(_el$2, () => props);
+  _$spread(_el$2, () => props, false);
 
-  _$spread(_el$2, results);
+  _$spread(_el$2, results, false);
 
   _$wrap(() => _el$2.title = welcoming);
 

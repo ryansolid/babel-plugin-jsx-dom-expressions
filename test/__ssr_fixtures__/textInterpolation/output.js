@@ -1,5 +1,6 @@
 import { template as _$template } from "r-dom";
 import { insert as _$insert } from "r-dom";
+import { getNextElement as _$getNextElement } from "r-dom";
 
 const _tmpl$ = _$template(`<span>Hello </span>`),
       _tmpl$2 = _$template(`<span> John</span>`),
@@ -13,14 +14,14 @@ const _tmpl$ = _$template(`<span>Hello </span>`),
 const name = 'Jake',
       greeting = 'Welcome';
 
-const trailing = _tmpl$.content.firstChild.cloneNode(true);
+const trailing = _$getNextElement(_tmpl$);
 
-const leading = _tmpl$2.content.firstChild.cloneNode(true);
+const leading = _$getNextElement(_tmpl$2);
 
-const extraSpaces = _tmpl$3.content.firstChild.cloneNode(true);
+const extraSpaces = _$getNextElement(_tmpl$3);
 
 const trailingExpr = function () {
-  const _el$4 = _tmpl$4.content.firstChild.cloneNode(true),
+  const _el$4 = _$getNextElement(_tmpl$4),
         _el$5 = _el$4.firstChild,
         _el$6 = _el$5.nextSibling,
         _el$7 = _el$6.nextSibling;
@@ -31,7 +32,7 @@ const trailingExpr = function () {
 }();
 
 const leadingExpr = function () {
-  const _el$8 = _tmpl$5.content.firstChild.cloneNode(true),
+  const _el$8 = _$getNextElement(_tmpl$5),
         _el$10 = _el$8.firstChild,
         _el$11 = _el$10.nextSibling,
         _el$9 = _el$11.nextSibling;
@@ -42,7 +43,7 @@ const leadingExpr = function () {
 }();
 
 const multiExpr = function () {
-  const _el$12 = _tmpl$6.content.firstChild.cloneNode(true),
+  const _el$12 = _$getNextElement(_tmpl$6),
         _el$14 = _el$12.firstChild,
         _el$15 = _el$14.nextSibling,
         _el$13 = _el$15.nextSibling,
@@ -57,7 +58,7 @@ const multiExpr = function () {
 }();
 
 const multiExprSpaced = function () {
-  const _el$18 = _tmpl$7.content.firstChild.cloneNode(true),
+  const _el$18 = _$getNextElement(_tmpl$7),
         _el$19 = _el$18.firstChild,
         _el$22 = _el$19.nextSibling,
         _el$23 = _el$22.nextSibling,
@@ -73,6 +74,6 @@ const multiExprSpaced = function () {
   return _el$18;
 }();
 
-const multiLine = _tmpl$8.content.firstChild.cloneNode(true);
+const multiLine = _$getNextElement(_tmpl$8);
 
-const multiLineTrailingSpace = _tmpl$3.content.firstChild.cloneNode(true);
+const multiLineTrailingSpace = _$getNextElement(_tmpl$3);

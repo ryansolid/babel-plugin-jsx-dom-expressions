@@ -1,6 +1,6 @@
 import SyntaxJSX from "@babel/plugin-syntax-jsx";
 import { addNamed } from "@babel/helper-module-imports";
-import { Attributes, NonComposedEvents } from "dom-expressions";
+import { Attributes, NonComposedEvents, SVGElements } from "dom-expressions";
 import VoidElements from "./VoidElements";
 
 export default babel => {
@@ -43,10 +43,10 @@ export default babel => {
         templateId = path.scope.generateUidIdentifier("tmpl$");
         templates.push({ id: templateId, template: results.template });
       }
-      if (generate === "hydrate") registerImportMethod(path, "getNextElement");
+      if (generate === "hydrate" || generate === "ssr") registerImportMethod(path, "getNextElement");
       decl = t.variableDeclarator(
         results.id,
-        generate === "hydrate"
+        generate === "hydrate" || generate === "ssr"
           ? t.callExpression(t.identifier("_$getNextElement"), [templateId])
           : t.callExpression(
               t.memberExpression(
@@ -76,7 +76,7 @@ export default babel => {
     }
   }
 
-  function setAttr(path, elem, name, value) {
+  function setAttr(path, elem, name, value, isSVG) {
     if (name === "style") {
       return t.callExpression(
         t.memberExpression(t.identifier("Object"), t.identifier("assign")),
@@ -89,7 +89,7 @@ export default babel => {
       return t.callExpression(t.identifier("_$classList"), [elem, value]);
     }
 
-    let isAttribute = name.indexOf("-") > -1,
+    let isAttribute = isSVG || name.indexOf("-") > -1,
       attribute = Attributes[name];
     if (attribute)
       if (attribute.type === "attribute") isAttribute = true;
@@ -107,11 +107,11 @@ export default babel => {
     );
   }
 
-  function setAttrExpr(path, elem, name, value) {
+  function setAttrExpr(path, elem, name, value, isSVG) {
     registerImportMethod(path, "wrap");
     return t.expressionStatement(
       t.callExpression(t.identifier("_$wrap"), [
-        t.arrowFunctionExpression([], setAttr(path, elem, name, value))
+        t.arrowFunctionExpression([], setAttr(path, elem, name, value, isSVG))
       ])
     );
   }
@@ -427,7 +427,9 @@ export default babel => {
 
   function transformAttributes(path, jsx, results) {
     let elem = results.id;
-    const spread = t.identifier("_$spread");
+    const spread = t.identifier("_$spread"),
+      tagName = getTagName(jsx),
+      isSVG = SVGElements.has(tagName);
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
         registerImportMethod(path, "spread");
@@ -439,14 +441,19 @@ export default babel => {
             t.expressionStatement(
               t.callExpression(spread, [
                 elem,
-                t.arrowFunctionExpression([], attribute.argument)
+                t.arrowFunctionExpression([], attribute.argument),
+                t.booleanLiteral(isSVG)
               ])
             )
           );
         } else
           results.exprs.push(
             t.expressionStatement(
-              t.callExpression(spread, [elem, attribute.argument])
+              t.callExpression(spread, [
+                elem,
+                attribute.argument,
+                t.booleanLiteral(isSVG)
+              ])
             )
           );
         return;
@@ -519,10 +526,14 @@ export default babel => {
             )
           );
         } else if (!value || alwaysWrap || checkParens(value, path)) {
-          results.exprs.push(setAttrExpr(path, elem, key, value.expression));
+          results.exprs.push(
+            setAttrExpr(path, elem, key, value.expression, isSVG)
+          );
         } else {
           results.exprs.push(
-            t.expressionStatement(setAttr(path, elem, key, value.expression))
+            t.expressionStatement(
+              setAttr(path, elem, key, value.expression, isSVG)
+            )
           );
         }
       } else {

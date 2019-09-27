@@ -28,9 +28,9 @@ const template = function () {
     color
   });
 
-  _$spread(_el$2, () => props);
+  _$spread(_el$2, () => props, false);
 
-  _$spread(_el$2, results);
+  _$spread(_el$2, results, false);
 
   _$wrap(() => _el$2.title = welcoming);
 

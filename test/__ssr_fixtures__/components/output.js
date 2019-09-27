@@ -1,6 +1,7 @@
 import { template as _$template } from "r-dom";
 import { For as _$For } from "r-dom";
 import { createComponent as _$createComponent } from "r-dom";
+import { getNextElement as _$getNextElement } from "r-dom";
 import { insert as _$insert } from "r-dom";
 
 const _tmpl$ = _$template(`<div>Hello <!--#--><!--/--></div>`),
@@ -9,7 +10,7 @@ const _tmpl$ = _$template(`<div>Hello <!--#--><!--/--></div>`),
       _tmpl$4 = _$template(`<div><!--#--><!--/--><!--#--><!--/--><!--#--><!--/--></div>`);
 
 const Child = props => [(() => {
-  const _el$ = _tmpl$.content.firstChild.cloneNode(true),
+  const _el$ = _$getNextElement(_tmpl$),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.nextSibling,
         _el$4 = _el$3.nextSibling;
@@ -20,7 +21,7 @@ const Child = props => [(() => {
 
   return _el$;
 })(), (() => {
-  const _el$5 = _tmpl$2.content.firstChild.cloneNode(true);
+  const _el$5 = _$getNextElement(_tmpl$2);
 
   _$insert(_el$5, props.children);
 
@@ -37,7 +38,7 @@ const someProps = {
 const template = props => {
   let childRef;
   return function () {
-    const _el$6 = _tmpl$4.content.firstChild.cloneNode(true),
+    const _el$6 = _$getNextElement(_tmpl$4),
           _el$9 = _el$6.firstChild,
           _el$10 = _el$9.nextSibling,
           _el$11 = _el$10.nextSibling,
@@ -50,7 +51,7 @@ const template = props => {
     }, props, {
       ref: r$ => childRef = r$,
       booleanProperty: true,
-      children: () => _tmpl$3.content.firstChild.cloneNode(true)
+      children: () => _$getNextElement(_tmpl$3)
     }), ["children"]), _el$10);
 
     _$insert(_el$6, _$createComponent(Child, Object.assign({
@@ -58,7 +59,7 @@ const template = props => {
     }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
       ref: props.ref,
       children: () => {
-        const _el$8 = _tmpl$2.content.firstChild.cloneNode(true);
+        const _el$8 = _$getNextElement(_tmpl$2);
 
         _$insert(_el$8, state.content);
 
@@ -81,11 +82,11 @@ const template2 = _$createComponent(Child, {
 }, ["dynamic"]);
 
 const template3 = _$createComponent(Child, {
-  children: () => [_tmpl$2.content.firstChild.cloneNode(true), _tmpl$2.content.firstChild.cloneNode(true), _tmpl$2.content.firstChild.cloneNode(true)]
+  children: () => [_$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2)]
 }, ["children"]);
 
 const template4 = Child({
-  children: () => _tmpl$2.content.firstChild.cloneNode(true)
+  children: () => _$getNextElement(_tmpl$2)
 });
 
 const template5 = _$createComponent(Child, {
