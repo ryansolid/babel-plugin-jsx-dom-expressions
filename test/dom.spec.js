@@ -7,12 +7,13 @@ pluginTester({
   pluginOptions: {
     moduleName: 'r-dom',
     builtIns: ['For'],
+    generate: "dom",
     delegateEvents: true,
+    alwaysWrap: false,
     alwaysCreateComponents: false,
     contextToCustomElements: true
   },
   title: 'Convert JSX',
-  fixtures: path.join(__dirname, '__fixtures__'),
+  fixtures: path.join(__dirname, '__dom_fixtures__'),
   snapshot: true
 });
-

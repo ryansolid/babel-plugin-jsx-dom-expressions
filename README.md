@@ -69,11 +69,17 @@ The use of cloneNode improves repeat insert performance and precompilation reduc
 ### moduleName (required)
 The name of the runtime module to import the methods from.
 
+### generate
+The output mode of the compiler. Can be "dom"(default), "ssr", or "hydrate". "dom" is standard output. "ssr" is for server side rendering that is hydrateable. And "hydrate" is for the client that hydrates the previously server rendered markup.s
+
 ### delegateEvents
 Boolean to indicate whether to enable automatic event delegation on camelCase.
 
 ### contextToCustomElements
 Boolean indicates whether to set current render context on Custom Elements and slots. Useful for seemless Context API with Web Components.
+
+### alwaysWrap
+Removes the need for `{( )}` syntax. All expressions will be dynamic. This can lead to severe performance degradation. Use at your own risk.
 
 ### alwaysCreateComponents
 Always use createComponent method instead of just calling the function. Needed to support class components.
@@ -161,6 +167,7 @@ Components may have children. This is available as props.children. It may be a n
 This plugin also supports JSX Fragments with `<></>` notation. These will be compiled to arrays. The fragment syntax provides the convenience of being able to use the template syntax to wrap expressions.
 
 ## SVG
+
 There is basic SVG support with this library. Most element/attributes should work but no support for namespaces yet.
 ## Acknowledgements
 
