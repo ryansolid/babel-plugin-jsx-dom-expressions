@@ -770,7 +770,7 @@ export default babel => {
             path.replaceWithMultiple(
               [result.decl].concat(
                 result.exprs,
-                t.expressionStatement(result.id)
+                t.returnStatement(result.id)
               )
             );
         } else path.replaceWith(result.exprs[0]);
