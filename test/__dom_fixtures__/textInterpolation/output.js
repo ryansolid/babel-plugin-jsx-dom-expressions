@@ -6,7 +6,8 @@ const _tmpl$ = _$template(`<span>Hello </span>`),
       _tmpl$3 = _$template(`<span>Hello John</span>`),
       _tmpl$4 = _$template(`<span> </span>`),
       _tmpl$5 = _$template(`<span> <!----> <!----> </span>`),
-      _tmpl$6 = _$template(`<span>Hello</span>`);
+      _tmpl$6 = _$template(`<span>Hello</span>`),
+      _tmpl$7 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
 
 const name = 'Jake',
       greeting = 'Welcome';
@@ -64,3 +65,5 @@ const multiExprSpaced = function () {
 const multiLine = _tmpl$6.content.firstChild.cloneNode(true);
 
 const multiLineTrailingSpace = _tmpl$3.content.firstChild.cloneNode(true);
+
+const escape = _tmpl$7.content.firstChild.cloneNode(true);

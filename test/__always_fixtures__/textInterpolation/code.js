@@ -21,3 +21,7 @@ const multiLineTrailingSpace = <span>
   Hello 
   John
 </span>
+
+const escape = <span>
+  &nbsp;&lt;Hi&gt;&nbsp;
+</span>

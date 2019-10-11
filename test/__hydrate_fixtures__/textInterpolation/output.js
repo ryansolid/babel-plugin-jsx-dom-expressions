@@ -11,7 +11,8 @@ const _tmpl$ = _$template(`<span>Hello </span>`),
       _tmpl$5 = _$template(`<span><!--#--><!--/--> John</span>`),
       _tmpl$6 = _$template(`<span><!--#--><!--/--> <!--#--><!--/--></span>`),
       _tmpl$7 = _$template(`<span> <!--#--><!--/--> <!--#--><!--/--> </span>`),
-      _tmpl$8 = _$template(`<span>Hello</span>`);
+      _tmpl$8 = _$template(`<span>Hello</span>`),
+      _tmpl$9 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
 
 const name = 'Jake',
       greeting = 'Welcome';
@@ -79,3 +80,5 @@ const multiExprSpaced = function () {
 const multiLine = _$getNextElement(_tmpl$8);
 
 const multiLineTrailingSpace = _$getNextElement(_tmpl$3);
+
+const escape = _$getNextElement(_tmpl$9);

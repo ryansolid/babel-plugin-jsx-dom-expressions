@@ -155,7 +155,7 @@ export default babel => {
   }
 
   function trimWhitespace(text) {
-    return text.replace(/\n\s*/g, "").replace(/\s+/g, " ");
+    return text.replace(/[\r\n]\s*/g, "").replace(/\s+/g, " ");
   }
 
   function checkLength(children) {
@@ -165,7 +165,7 @@ export default babel => {
         t.isJSXExpressionContainer(child) &&
         t.isJSXEmptyExpression(child.expression)
       ) &&
-        (!t.isJSXText(child) || !/^\s*$/.test(child.value)) &&
+        (!t.isJSXText(child) || !/^\s*$/.test(child.extra.raw)) &&
         i++;
     });
     return i > 1;
@@ -180,7 +180,7 @@ export default babel => {
           t.isJSXEmptyExpression(child.expression)
         ) &&
         (!t.isJSXText(child) ||
-          (loose ? !/^\n\s*$/.test(child.value) : !/^\s*$/.test(child.value)))
+          (loose ? !/^[\r\n]\s*$/.test(child.extra.raw) : !/^\s*$/.test(child.extra.raw)))
     );
   }
 
@@ -191,7 +191,7 @@ export default babel => {
 
     let transformedChildren = filteredChildren.map(child => {
       if (t.isJSXText(child)) {
-        return t.stringLiteral(trimWhitespace(child.value));
+        return t.stringLiteral(trimWhitespace(child.extra.raw));
       } else {
         child = generateHTMLNode(path, child, opts);
         if (child.id) {
@@ -667,7 +667,7 @@ export default babel => {
     const jsxChildren = filterChildren(jsx.children, true),
       children = jsxChildren.map(child => {
         if (t.isJSXText(child)) {
-          return t.stringLiteral(trimWhitespace(child.value));
+          return t.stringLiteral(trimWhitespace(child.extra.raw));
         } else {
           child = generateHTMLNode(path, child, opts);
           if (child.id) {
@@ -728,7 +728,7 @@ export default babel => {
       transformFragmentChildren(path, jsx, opts, results);
       return results;
     } else if (t.isJSXText(jsx)) {
-      const text = trimWhitespace(jsx.value);
+      const text = trimWhitespace(jsx.extra.raw);
       if (!text.length) return null;
       const results = { template: text, decl: [], exprs: [] };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
