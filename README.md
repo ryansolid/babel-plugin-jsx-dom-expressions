@@ -170,7 +170,7 @@ This plugin also supports JSX Fragments with `<></>` notation. These will be com
 
 ## SVG
 
-There is basic SVG support with this library. Most element attributes(no camelCase mapping) should work but no support for namespaces yet.
+There is basic SVG support with this library. Most element attributes should work but no support for namespaces yet.
 
 ## Acknowledgements
 
