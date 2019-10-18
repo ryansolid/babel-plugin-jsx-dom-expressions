@@ -15,6 +15,8 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 In general JSX Attribute Expressions are treated as properties by default, with exception of hyphenated(-) ones that will always be set as attributes on the DOM element. Plain string attributes(Non expression, no {}) will be treated as attributes.
 
+This library uses a heuristic whether to dynamic wrap expressions based on if they contain function calls or property access. Simple literals and variable expressions won't be wrapped.
+
 ## Example
 
 ```jsx
@@ -146,7 +148,7 @@ Keep in mind given the independent nature of binding updates there is no guarant
 
 ## Components
 
-Components are just Capital Cased tags. Instead of wrapping with computation dynamic props will just be getter accessors. * Remember property access triggers so don't destructure outside of computations.
+Components are just Capital Cased tags. Instead of wrapping with computation dynamic props will just be getter accessors. * Remember property access triggers so don't destructure outside of computations unless you intend the content to be static.
 
 ```jsx
 const MyComp = props => {
