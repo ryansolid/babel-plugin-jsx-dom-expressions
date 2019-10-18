@@ -15,22 +15,24 @@ This plugin treats all lowercase tags as html elements and mixed cased tags as C
 
 In general JSX Attribute Expressions are treated as properties by default, with exception of hyphenated(-) ones that will always be set as attributes on the DOM element. Plain string attributes(Non expression, no {}) will be treated as attributes.
 
-<b>For dynamic expressions that should be wrapped in a computation for partial re-render use inner parenthesis in the expression ```{( )}```.</b>
+This library uses a heuristic whether to dynamic wrap expressions based on if they contain function calls or property access. Simple literals and variable expressions won't be wrapped.
 
 ## Example
 
 ```jsx
-const view = ({ item }) =>
-  <tr class={( item.id === selected ? 'danger' : '' )}>
-    <td class="col-md-1">{ item.id }</td>
+const view = ({ item }) => {
+  const itemId = item.id;
+  <tr class={ itemId === selected() ? 'danger' : '' }>
+    <td class="col-md-1">{ itemId }</td>
     <td class="col-md-4">
-      <a onclick={e => select(item, e)}>{( item.label )}</a>
+      <a onclick={e => select(item, e)}>{ item.label }</a>
     </td>
     <td class="col-md-1"><a onclick={e => del(item, e)}>
       <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
     </a></td>
     <td class="col-md-6"></td>
   </tr>
+}
 ```
 Compiles to:
 
@@ -41,21 +43,23 @@ import { wrap as _$wrap } from "dom";
 const _tmpl$ = document.createElement("template");
 _tmpl$.innerHTML = `<tr><td class="col-md-1"></td><td class="col-md-4"><a></a></td><td class="col-md-1"><a><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td><td class="col-md-6"></td></tr>`;
 
-const view = ({ item }) =>
-  function () {
+const view = ({ item }) => {
+  const itemId = item.id;
+  return function() {
     const _el$ = _tmpl$.content.firstChild.cloneNode(true),
           _el$2 = _el$.firstChild,
           _el$3 = _el$2.nextSibling,
           _el$4 = _el$3.firstChild,
           _el$5 = _el$3.nextSibling,
           _el$6 = _el$5.firstChild;
-    _$wrap(() => _el$.className = item.id === selected ? 'danger' : '');
-    _$insert(_el$2, item.id);
+    _$wrap(() => _el$.className = itemId === selected() ? 'danger' : '');
+    _$insert(_el$2, itemId);
     _el$4.onclick = e => select(item, e);
     _$insert(_el$4, () => item.label);
     _el$6.onclick = e => del(item, e);
     return _el$;
   }();
+}
 ```
 The use of cloneNode improves repeat insert performance and precompilation reduces the number of references to the minimal traversal path. This is a basic example which doesn't leverage event delegation or any of the more advanced features described below.
 
@@ -77,9 +81,6 @@ Boolean to indicate whether to enable automatic event delegation on camelCase.
 
 ### contextToCustomElements
 Boolean indicates whether to set current render context on Custom Elements and slots. Useful for seemless Context API with Web Components.
-
-### alwaysWrap
-Removes the need for `{( )}` syntax. All expressions will be dynamic. This can lead to severe performance degradation. Use at your own risk.
 
 ### alwaysCreateComponents
 Always use createComponent method instead of just calling the function. Needed to support class components.
@@ -112,7 +113,7 @@ These will be treated as event handlers expecting a function. All lowercase are 
 
 ```jsx
 <ul>
-  {( list().map(item => <li model={item.id} onClick={handler} />) )}
+  { list().map(item => <li model={item.id} onClick={handler} />) }
 </ul>
 ```
 This delegation solution works with Web Components and the Shadow DOM as well if the events are composed. That limits the list to custom events and most UA UI events like onClick, onKeyUp, onKeyDown, onDblClick, onInput, onMouseDown, onMouseUp, etc..
@@ -126,7 +127,7 @@ Important:
 
 This takes an object and assigns all the keys as classes which are truthy.
 ```jsx
-<div classList={({ selected: isSelected(), editing: isEditing() })} />
+<div classList={{ selected: isSelected(), editing: isEditing() }} />
 ```
 ### events
 
@@ -137,30 +138,31 @@ Generic event method for Level 3 "addEventListener" events. Experimental.
 
 ### ... (spreads)
 
-Spreads let you pass multiple props at once. If you wish dynamic updating remember to wrap with a parenthesis:
+Spreads let you pass multiple props at once:
 
 ```jsx
-<div {...static} {...(dynamic)} />
+<div {...static} />
 ```
 
 Keep in mind given the independent nature of binding updates there is no guarantee of order using spreads at this time. It's under consideration.
 
 ## Components
 
-Components are just Capital Cased tags. The same rules around dynamic wrapping apply. Instead of wrapping with computation dynamic props will just be getter accessors. * Remember property access triggers so don't destructure outside of computations.
+Components are just Capital Cased tags. Instead of wrapping with computation dynamic props will just be getter accessors. * Remember property access triggers so don't destructure outside of computations unless you intend the content to be static.
 
 ```jsx
-const MyComp = props => (
-  <>
-    <div>{( props.param )}</div>
-    <div>{ props.static }</div>
+const MyComp = props => {
+  const staticProp = props.other;
+  return <>
+    <div>{ props.param }</div>
+    <div>{ staticProp }</div>
   </>
-);
+};
 
-<MyComp param={( dynamic() )} other={ static } />
+<MyComp param={ dynamic() } other={ static } />
 ```
 
-Components may have children. This is available as props.children. It may be a node, a function, or a string, or an array of the aforementioned. Non-expression children like DOM nodes are set to evaluate lazily (upon access by default). For single expressions you must use {( )} to have the same behaviour.
+Components may have children. This is available as props.children. It may be a node, a function, or a string, or an array of the aforementioned. Non-expression children like DOM nodes are set to evaluate lazily (upon access by default).
 
 ## Fragments
 
@@ -168,7 +170,8 @@ This plugin also supports JSX Fragments with `<></>` notation. These will be com
 
 ## SVG
 
-There is basic SVG support with this library. Most element/attributes should work but no support for namespaces yet.
+There is basic SVG support with this library. Most element attributes should work but no support for namespaces yet.
+
 ## Acknowledgements
 
 The concept of using JSX to DOM instead of html strings and context based binding usually found in these libraries was inspired greatly by [Surplus](https://github.com/adamhaile/surplus).

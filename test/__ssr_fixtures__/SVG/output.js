@@ -13,14 +13,18 @@ const template2 = function () {
   const _el$2 = _$getNextElement(_tmpl$2),
         _el$3 = _el$2.firstChild;
 
+  _$wrap(() => _el$3.setAttribute("class", state.name));
+
+  _$wrap(() => _el$3.setAttribute("stroke-width", state.width));
+
   _$wrap(() => _el$3.setAttribute("x", state.x));
 
   _$wrap(() => _el$3.setAttribute("y", state.y));
 
   _$wrap(() => Object.assign(_el$3.style, {
-    fill: 'red',
-    stroke: 'black',
-    'stroke-width': 5,
+    fill: "red",
+    stroke: "black",
+    "stroke-width": props.stroke,
     opacity: 0.5
   }));
 
@@ -31,7 +35,7 @@ const template3 = function () {
   const _el$4 = _$getNextElement(_tmpl$3),
         _el$5 = _el$4.firstChild;
 
-  _$spread(_el$5, props, true);
+  _$spread(_el$5, () => props, true);
 
   return _el$4;
 }();

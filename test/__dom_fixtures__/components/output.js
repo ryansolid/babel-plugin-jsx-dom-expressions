@@ -13,49 +13,44 @@ const Child = props => [(() => {
 
   props.ref && props.ref(_el$);
 
-  _$insert(_el$, props.name, null);
+  _$insert(_el$, () => props.name, null);
 
   return _el$;
 })(), (() => {
   const _el$3 = _tmpl$2.content.firstChild.cloneNode(true);
 
-  _$insert(_el$3, props.children);
+  _$insert(_el$3, () => props.children);
 
   return _el$3;
 })()];
 
-const Consumer = props => props.children();
-
-const someProps = {
-  some: 'stuff',
-  more: 'things'
-};
-
 const template = props => {
   let childRef;
+  const {
+    content
+  } = props;
   return function () {
     const _el$4 = _tmpl$2.content.firstChild.cloneNode(true);
 
     _$insert(_el$4, _$createComponent(Child, Object.assign({
-      name: 'John'
-    }, props, {
+      name: "John"
+    }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
       ref: r$ => childRef = r$,
       booleanProperty: true,
       children: () => _tmpl$3.content.firstChild.cloneNode(true)
-    }), ["children"]), null);
+    }), [...Object.keys(props), "children"]), null);
 
-    _$insert(_el$4, _$createComponent(Child, Object.assign({
-      name: 'Jason'
-    }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
+    _$insert(_el$4, _$createComponent(Child, {
+      name: "Jason",
       ref: props.ref,
       children: () => {
         const _el$6 = _tmpl$2.content.firstChild.cloneNode(true);
 
-        _$insert(_el$6, state.content);
+        _$insert(_el$6, content);
 
         return _el$6;
       }
-    }), [...Object.keys(props), "children"]), null);
+    }, ["children"]), null);
 
     _$insert(_el$4, Context.Consumer({
       children: context => context
@@ -66,7 +61,7 @@ const template = props => {
 };
 
 const template2 = _$createComponent(Child, {
-  name: 'Jake',
+  name: "Jake",
   dynamic: () => state.data,
   handleClick: clickHandler
 }, ["dynamic"]);
@@ -75,16 +70,17 @@ const template3 = _$createComponent(Child, {
   children: () => [_tmpl$2.content.firstChild.cloneNode(true), _tmpl$2.content.firstChild.cloneNode(true), _tmpl$2.content.firstChild.cloneNode(true)]
 }, ["children"]);
 
-const template4 = Child({
-  children: () => _tmpl$2.content.firstChild.cloneNode(true)
-});
+const template4 = _$createComponent(Child, {
+  children: _tmpl$2.content.firstChild.cloneNode(true)
+}, ["children"]);
 
 const template5 = _$createComponent(Child, {
-  children: () => dynamicValue
+  children: () => state.dynamic
 }, ["children"]); // builtIns
 
 
 const template6 = _$createComponent(_$For, {
-  each: () => list,
+  each: () => state.list,
+  fallback: () => Loading({}),
   children: item => item
-}, ["each"]);
+}, ["each", "fallback"]);

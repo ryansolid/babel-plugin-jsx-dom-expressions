@@ -9,9 +9,9 @@ const _tmpl$ = _$template(`<my-element></my-element>`),
 const template = function () {
   const _el$ = _tmpl$.content.firstChild.cloneNode(true);
 
-  _el$.setAttribute("some-attr", state.name);
+  _el$.setAttribute("some-attr", name);
 
-  _el$.someProp = state.data;
+  _el$.someProp = data;
   _el$._context = _$currentContext();
   return _el$;
 }();

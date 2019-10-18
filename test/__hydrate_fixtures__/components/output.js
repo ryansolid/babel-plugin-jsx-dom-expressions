@@ -19,26 +19,22 @@ const Child = props => [(() => {
 
   props.ref && props.ref(_el$);
 
-  _$hydration(() => _$insert(_el$, props.name, _el$4, _co$), _el$);
+  _$hydration(() => _$insert(_el$, () => props.name, _el$4, _co$), _el$);
 
   return _el$;
 })(), (() => {
   const _el$5 = _$getNextElement(_tmpl$2);
 
-  _$hydration(() => _$insert(_el$5, props.children, undefined, Array.prototype.slice.call(_el$5.childNodes, 0)), _el$5);
+  _$hydration(() => _$insert(_el$5, () => props.children, undefined, Array.prototype.slice.call(_el$5.childNodes, 0)), _el$5);
 
   return _el$5;
 })()];
 
-const Consumer = props => props.children();
-
-const someProps = {
-  some: 'stuff',
-  more: 'things'
-};
-
 const template = props => {
   let childRef;
+  const {
+    content
+  } = props;
   return function () {
     const _el$6 = _$getNextElement(_tmpl$4),
           _el$9 = _el$6.firstChild,
@@ -49,25 +45,24 @@ const template = props => {
           [_el$14, _co$4] = _$getNextMarker(_el$13.nextSibling);
 
     _$hydration(() => _$insert(_el$6, _$createComponent(Child, Object.assign({
-      name: 'John'
-    }, props, {
+      name: "John"
+    }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
       ref: r$ => childRef = r$,
       booleanProperty: true,
       children: () => _$getNextElement(_tmpl$3)
-    }), ["children"]), _el$10, _co$2), _el$6);
+    }), [...Object.keys(props), "children"]), _el$10, _co$2), _el$6);
 
-    _$hydration(() => _$insert(_el$6, _$createComponent(Child, Object.assign({
-      name: 'Jason'
-    }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
+    _$hydration(() => _$insert(_el$6, _$createComponent(Child, {
+      name: "Jason",
       ref: props.ref,
       children: () => {
         const _el$8 = _$getNextElement(_tmpl$2);
 
-        _$hydration(() => _$insert(_el$8, state.content, undefined, Array.prototype.slice.call(_el$8.childNodes, 0)), _el$8);
+        _$hydration(() => _$insert(_el$8, content, undefined, Array.prototype.slice.call(_el$8.childNodes, 0)), _el$8);
 
         return _el$8;
       }
-    }), [...Object.keys(props), "children"]), _el$12, _co$3), _el$6);
+    }, ["children"]), _el$12, _co$3), _el$6);
 
     _$hydration(() => _$insert(_el$6, Context.Consumer({
       children: context => context
@@ -78,7 +73,7 @@ const template = props => {
 };
 
 const template2 = _$createComponent(Child, {
-  name: 'Jake',
+  name: "Jake",
   dynamic: () => state.data,
   handleClick: clickHandler
 }, ["dynamic"]);
@@ -87,16 +82,17 @@ const template3 = _$createComponent(Child, {
   children: () => [_$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2)]
 }, ["children"]);
 
-const template4 = Child({
-  children: () => _$getNextElement(_tmpl$2)
-});
+const template4 = _$createComponent(Child, {
+  children: _$getNextElement(_tmpl$2)
+}, ["children"]);
 
 const template5 = _$createComponent(Child, {
-  children: () => dynamicValue
+  children: () => state.dynamic
 }, ["children"]); // builtIns
 
 
 const template6 = _$createComponent(_$For, {
-  each: () => list,
+  each: () => state.list,
+  fallback: () => Loading({}),
   children: item => item
-}, ["each"]);
+}, ["each", "fallback"]);

@@ -9,14 +9,14 @@ const _tmpl$ = _$template(`<span>Hello </span>`),
       _tmpl$5 = _$template(`<span><!--#--><!--/--> John</span>`),
       _tmpl$6 = _$template(`<span><!--#--><!--/--> <!--#--><!--/--></span>`),
       _tmpl$7 = _$template(`<span> <!--#--><!--/--> <!--#--><!--/--> </span>`),
-      _tmpl$8 = _$template(`<span>Hello</span>`);
-
-const name = 'Jake',
-      greeting = 'Welcome';
+      _tmpl$8 = _$template(`<span>Hello</span>`),
+      _tmpl$9 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
 
 const trailing = _$getNextElement(_tmpl$);
 
 const leading = _$getNextElement(_tmpl$2);
+/* prettier-ignore */
+
 
 const extraSpaces = _$getNextElement(_tmpl$3);
 
@@ -41,6 +41,8 @@ const leadingExpr = function () {
 
   return _el$8;
 }();
+/* prettier-ignore */
+
 
 const multiExpr = function () {
   const _el$12 = _$getNextElement(_tmpl$6),
@@ -56,6 +58,8 @@ const multiExpr = function () {
 
   return _el$12;
 }();
+/* prettier-ignore */
+
 
 const multiExprSpaced = function () {
   const _el$18 = _$getNextElement(_tmpl$7),
@@ -73,7 +77,15 @@ const multiExprSpaced = function () {
 
   return _el$18;
 }();
+/* prettier-ignore */
+
 
 const multiLine = _$getNextElement(_tmpl$8);
+/* prettier-ignore */
+
 
 const multiLineTrailingSpace = _$getNextElement(_tmpl$3);
+/* prettier-ignore */
+
+
+const escape = _$getNextElement(_tmpl$9);

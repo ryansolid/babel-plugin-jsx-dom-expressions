@@ -17,26 +17,22 @@ const Child = props => [(() => {
 
   props.ref && props.ref(_el$);
 
-  _$insert(_el$, props.name, _el$4);
+  _$insert(_el$, () => props.name, _el$4);
 
   return _el$;
 })(), (() => {
   const _el$5 = _$getNextElement(_tmpl$2);
 
-  _$insert(_el$5, props.children);
+  _$insert(_el$5, () => props.children);
 
   return _el$5;
 })()];
 
-const Consumer = props => props.children();
-
-const someProps = {
-  some: 'stuff',
-  more: 'things'
-};
-
 const template = props => {
   let childRef;
+  const {
+    content
+  } = props;
   return function () {
     const _el$6 = _$getNextElement(_tmpl$4),
           _el$9 = _el$6.firstChild,
@@ -47,25 +43,24 @@ const template = props => {
           _el$14 = _el$13.nextSibling;
 
     _$insert(_el$6, _$createComponent(Child, Object.assign({
-      name: 'John'
-    }, props, {
+      name: "John"
+    }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
       ref: r$ => childRef = r$,
       booleanProperty: true,
       children: () => _$getNextElement(_tmpl$3)
-    }), ["children"]), _el$10);
+    }), [...Object.keys(props), "children"]), _el$10);
 
-    _$insert(_el$6, _$createComponent(Child, Object.assign({
-      name: 'Jason'
-    }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
+    _$insert(_el$6, _$createComponent(Child, {
+      name: "Jason",
       ref: props.ref,
       children: () => {
         const _el$8 = _$getNextElement(_tmpl$2);
 
-        _$insert(_el$8, state.content);
+        _$insert(_el$8, content);
 
         return _el$8;
       }
-    }), [...Object.keys(props), "children"]), _el$12);
+    }, ["children"]), _el$12);
 
     _$insert(_el$6, Context.Consumer({
       children: context => context
@@ -76,7 +71,7 @@ const template = props => {
 };
 
 const template2 = _$createComponent(Child, {
-  name: 'Jake',
+  name: "Jake",
   dynamic: () => state.data,
   handleClick: clickHandler
 }, ["dynamic"]);
@@ -90,11 +85,11 @@ const template4 = Child({
 });
 
 const template5 = _$createComponent(Child, {
-  children: () => dynamicValue
+  children: () => state.dynamic
 }, ["children"]); // builtIns
 
 
 const template6 = _$createComponent(_$For, {
-  each: () => list,
+  each: () => state.list,
   children: item => item
 }, ["each"]);
