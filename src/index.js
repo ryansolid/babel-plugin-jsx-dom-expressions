@@ -9,13 +9,20 @@ export default babel => {
     generate = "dom",
     delegateEvents = true,
     builtIns = [],
-    alwaysWrap = false,
     alwaysCreateComponents = false,
     contextToCustomElements = false;
 
-  function checkParens(jsx, path) {
-    const e = path.hub.file.code.slice(jsx.start + 1, jsx.end - 1).trim();
-    return e[0] === "(" && e[e.length - 1] === ")";
+  // TODO: Consider using ast detection instead of raw string
+  function isDynamic(jsx, path, checkTags) {
+    const code = path.hub.file.code.slice(jsx.start, jsx.end).trim();
+    return (
+      !t.isFunction(jsx.expression) &&
+      (code.includes(".") ||
+        (code.includes("(") && code.includes(")")) ||
+        (code.includes("[") && code.includes("]")) ||
+        (checkTags && code.includes("<") && code.includes(">"))
+      )
+    );
   }
 
   function registerImportMethod(path, name) {
@@ -43,7 +50,8 @@ export default babel => {
         templateId = path.scope.generateUidIdentifier("tmpl$");
         templates.push({ id: templateId, template: results.template });
       }
-      if (generate === "hydrate" || generate === "ssr") registerImportMethod(path, "getNextElement");
+      if (generate === "hydrate" || generate === "ssr")
+        registerImportMethod(path, "getNextElement");
       decl = t.variableDeclarator(
         results.id,
         generate === "hydrate" || generate === "ssr"
@@ -180,7 +188,9 @@ export default babel => {
           t.isJSXEmptyExpression(child.expression)
         ) &&
         (!t.isJSXText(child) ||
-          (loose ? !/^[\r\n]\s*$/.test(child.extra.raw) : !/^\s*$/.test(child.extra.raw)))
+          (loose
+            ? !/^[\r\n]\s*$/.test(child.extra.raw)
+            : !/^\s*$/.test(child.extra.raw)))
     );
   }
 
@@ -218,9 +228,7 @@ export default babel => {
     if (filteredChildren.length === 1) {
       transformedChildren = transformedChildren[0];
       if (t.isJSXExpressionContainer(filteredChildren[0]))
-        dynamic =
-          !t.isFunction(filteredChildren[0].expression) &&
-          (alwaysWrap || checkParens(filteredChildren[0], path));
+        dynamic = isDynamic(filteredChildren[0], path, true);
       else {
         transformedChildren =
           t.isCallExpression(transformedChildren) &&
@@ -299,55 +307,47 @@ export default babel => {
           props.push(t.objectExpression(runningObject));
           runningObject = [];
         }
-        if (
-          alwaysWrap ||
-          (attribute.argument.extra && attribute.argument.extra.parenthesized)
-        ) {
-          const key = t.identifier("k$"),
-            memo = t.identifier("m$");
-          dynamicKeys.push(
-            t.spreadElement(
+        const key = t.identifier("k$"),
+          memo = t.identifier("m$");
+        dynamicKeys.push(
+          t.spreadElement(
+            t.callExpression(
+              t.memberExpression(t.identifier("Object"), t.identifier("keys")),
+              [attribute.argument]
+            )
+          )
+        );
+        props.push(
+          t.callExpression(
+            t.memberExpression(
               t.callExpression(
                 t.memberExpression(
                   t.identifier("Object"),
                   t.identifier("keys")
                 ),
                 [attribute.argument]
-              )
-            )
-          );
-          props.push(
-            t.callExpression(
-              t.memberExpression(
-                t.callExpression(
-                  t.memberExpression(
-                    t.identifier("Object"),
-                    t.identifier("keys")
-                  ),
-                  [attribute.argument]
-                ),
-                t.identifier("reduce")
               ),
-              [
-                t.arrowFunctionExpression(
-                  [memo, key],
-                  t.sequenceExpression([
-                    t.assignmentExpression(
-                      "=",
-                      t.memberExpression(memo, key, true),
-                      t.arrowFunctionExpression(
-                        [],
-                        t.memberExpression(attribute.argument, key, true)
-                      )
-                    ),
-                    memo
-                  ])
-                ),
-                t.objectExpression([])
-              ]
-            )
-          );
-        } else props.push(attribute.argument);
+              t.identifier("reduce")
+            ),
+            [
+              t.arrowFunctionExpression(
+                [memo, key],
+                t.sequenceExpression([
+                  t.assignmentExpression(
+                    "=",
+                    t.memberExpression(memo, key, true),
+                    t.arrowFunctionExpression(
+                      [],
+                      t.memberExpression(attribute.argument, key, true)
+                    )
+                  ),
+                  memo
+                ])
+              ),
+              t.objectExpression([])
+            ]
+          )
+        );
       } else {
         const value = attribute.value || t.booleanLiteral(true);
         if (t.isJSXExpressionContainer(value))
@@ -369,10 +369,7 @@ export default babel => {
             runningObject.push(
               t.objectProperty(t.identifier("ref"), value.expression)
             );
-          } else if (
-            !t.isFunction(value.expression) &&
-            (alwaysWrap || checkParens(value, path))
-          ) {
+          } else if (isDynamic(value, path, true)) {
             dynamicKeys.push(t.stringLiteral(attribute.name.name));
             runningObject.push(
               t.objectProperty(
@@ -433,29 +430,15 @@ export default babel => {
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
         registerImportMethod(path, "spread");
-        if (
-          alwaysWrap ||
-          (attribute.argument.extra && attribute.argument.extra.parenthesized)
-        ) {
-          results.exprs.push(
-            t.expressionStatement(
-              t.callExpression(spread, [
-                elem,
-                t.arrowFunctionExpression([], attribute.argument),
-                t.booleanLiteral(isSVG)
-              ])
-            )
-          );
-        } else
-          results.exprs.push(
-            t.expressionStatement(
-              t.callExpression(spread, [
-                elem,
-                attribute.argument,
-                t.booleanLiteral(isSVG)
-              ])
-            )
-          );
+        results.exprs.push(
+          t.expressionStatement(
+            t.callExpression(spread, [
+              elem,
+              t.arrowFunctionExpression([], attribute.argument),
+              t.booleanLiteral(isSVG)
+            ])
+          )
+        );
         return;
       }
 
@@ -525,7 +508,7 @@ export default babel => {
               )
             )
           );
-        } else if (!value || alwaysWrap || checkParens(value, path)) {
+        } else if (isDynamic(value, path)) {
           results.exprs.push(
             setAttrExpr(path, elem, key, value.expression, isSVG)
           );
@@ -735,10 +718,7 @@ export default babel => {
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
       if (t.isJSXEmptyExpression(jsx.expression)) return null;
-      if (
-        t.isFunction(jsx.expression) ||
-        (!alwaysWrap && !checkParens(jsx, path))
-      )
+      if (!isDynamic(jsx, path))
         return { exprs: [jsx.expression], template: "" };
       return {
         exprs: [t.arrowFunctionExpression([], jsx.expression)],
@@ -757,7 +737,6 @@ export default babel => {
         if ("delegateEvents" in opts) delegateEvents = opts.delegateEvents;
         if ("contextToCustomElements" in opts)
           contextToCustomElements = opts.contextToCustomElements;
-        if ("alwaysWrap" in opts) alwaysWrap = opts.alwaysWrap;
         if ("alwaysCreateComponents" in opts)
           alwaysCreateComponents = opts.alwaysCreateComponents;
         if ("builtIns" in opts) builtIns = opts.builtIns;
@@ -768,10 +747,7 @@ export default babel => {
             path.replaceWith(result.decl.declarations[0].init);
           else
             path.replaceWithMultiple(
-              [result.decl].concat(
-                result.exprs,
-                t.returnStatement(result.id)
-              )
+              [result.decl].concat(result.exprs, t.returnStatement(result.id))
             );
         } else path.replaceWith(result.exprs[0]);
       },
@@ -781,7 +757,6 @@ export default babel => {
         if ("delegateEvents" in opts) delegateEvents = opts.delegateEvents;
         if ("contextToCustomElements" in opts)
           contextToCustomElements = opts.contextToCustomElements;
-        if ("alwaysWrap" in opts) alwaysWrap = opts.alwaysWrap;
         if ("alwaysCreateComponents" in opts)
           alwaysCreateComponents = opts.alwaysCreateComponents;
         if ("builtIns" in opts) builtIns = opts.builtIns;

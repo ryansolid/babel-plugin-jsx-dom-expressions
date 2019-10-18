@@ -15,26 +15,24 @@ const template = (
 const template2 = (
   <svg width="400" height="180">
     <rect
-      x={( state.x )}
-      y={( state.y )}
+      x={state.x}
+      y={state.y}
       rx="20"
       ry="20"
       width="150"
       height="150"
-      style={({
-        fill: 'red',
-        stroke: 'black',
-        'stroke-width': 5,
+      style={{
+        fill: "red",
+        stroke: "black",
+        "stroke-width": props.stroke,
         opacity: 0.5
-      })}
+      }}
     />
   </svg>
 );
 
 const template3 = (
   <svg width="400" height="180">
-    <rect
-      {...props}
-    />
+    <rect {...props} />
   </svg>
 );

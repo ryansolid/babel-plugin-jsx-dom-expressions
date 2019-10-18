@@ -1,7 +1,3 @@
-const inserted = 'middle';
-
-const Component = () => <span />
-
 const multiStatic = (
   <>
     <div>First</div>
@@ -17,34 +13,48 @@ const multiExpression = (
   </>
 );
 
-const singleExpression = (
-  <>{inserted}</>
-);
+const singleExpression = <>{inserted}</>;
 
-const singleDynamic = (
-  <>{(inserted)}</>
-);
+const singleDynamic = <>{inserted()}</>;
 
 const firstStatic = (
-  <>{inserted}<div/></>
+  <>
+    {inserted}
+    <div />
+  </>
 );
 
 const firstDynamic = (
-  <>{(inserted)}<div/></>
+  <>
+    {inserted()}
+    <div />
+  </>
 );
 
 const firstComponent = (
-  <><Component /><div/></>
+  <>
+    <Component />
+    <div />
+  </>
 );
 
 const lastStatic = (
-  <><div/>{inserted}</>
+  <>
+    <div />
+    {inserted}
+  </>
 );
 
 const lastDynamic = (
-  <><div/>{(inserted)}</>
+  <>
+    <div />
+    {inserted()}
+  </>
 );
 
 const lastComponent = (
-  <><div/><Component /></>
+  <>
+    <div />
+    <Component />
+  </>
 );

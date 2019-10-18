@@ -9,13 +9,13 @@ const template = function () {
         _el$3 = _el$2.nextSibling,
         _el$4 = _el$3.nextSibling;
 
-  _el$2.onclick = () => console.log('bound');
+  _el$2.onclick = () => console.log("bound");
 
-  _el$3.__click = () => console.log('delegated');
+  _el$3.__click = () => console.log("delegated");
 
-  _el$4.addEventListener("click", () => console.log('listener'));
+  _el$4.addEventListener("click", () => console.log("listener"));
 
-  _el$4.addEventListener("CAPS-ev", () => console.log('custom'));
+  _el$4.addEventListener("CAPS-ev", () => console.log("custom"));
 
   return _el$;
 }();

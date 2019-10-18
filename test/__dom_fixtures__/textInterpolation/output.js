@@ -9,12 +9,11 @@ const _tmpl$ = _$template(`<span>Hello </span>`),
       _tmpl$6 = _$template(`<span>Hello</span>`),
       _tmpl$7 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
 
-const name = 'Jake',
-      greeting = 'Welcome';
-
 const trailing = _tmpl$.content.firstChild.cloneNode(true);
 
 const leading = _tmpl$2.content.firstChild.cloneNode(true);
+/* prettier-ignore */
+
 
 const extraSpaces = _tmpl$3.content.firstChild.cloneNode(true);
 
@@ -35,6 +34,8 @@ const leadingExpr = function () {
 
   return _el$6;
 }();
+/* prettier-ignore */
+
 
 const multiExpr = function () {
   const _el$8 = _tmpl$4.content.firstChild.cloneNode(true),
@@ -46,6 +47,8 @@ const multiExpr = function () {
 
   return _el$8;
 }();
+/* prettier-ignore */
+
 
 const multiExprSpaced = function () {
   const _el$10 = _tmpl$5.content.firstChild.cloneNode(true),
@@ -61,9 +64,15 @@ const multiExprSpaced = function () {
 
   return _el$10;
 }();
+/* prettier-ignore */
+
 
 const multiLine = _tmpl$6.content.firstChild.cloneNode(true);
+/* prettier-ignore */
+
 
 const multiLineTrailingSpace = _tmpl$3.content.firstChild.cloneNode(true);
+/* prettier-ignore */
+
 
 const escape = _tmpl$7.content.firstChild.cloneNode(true);
