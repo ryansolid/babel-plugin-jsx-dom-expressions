@@ -12,6 +12,10 @@ const template2 = function () {
   const _el$2 = _tmpl$2.content.firstChild.cloneNode(true),
         _el$3 = _el$2.firstChild;
 
+  _$wrap(() => _el$3.setAttribute("class", state.name));
+
+  _$wrap(() => _el$3.setAttribute("stroke-width", state.width));
+
   _$wrap(() => _el$3.setAttribute("x", state.x));
 
   _$wrap(() => _el$3.setAttribute("y", state.y));

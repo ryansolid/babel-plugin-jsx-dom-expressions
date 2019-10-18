@@ -15,6 +15,8 @@ const template = (
 const template2 = (
   <svg width="400" height="180">
     <rect
+      className={state.name}
+      strokeWidth={state.width}
       x={state.x}
       y={state.y}
       rx="20"

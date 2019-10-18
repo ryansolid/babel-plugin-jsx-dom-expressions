@@ -1,6 +1,6 @@
 import SyntaxJSX from "@babel/plugin-syntax-jsx";
 import { addNamed } from "@babel/helper-module-imports";
-import { Attributes, NonComposedEvents, SVGElements } from "dom-expressions";
+import { Attributes, SVGAttributes, NonComposedEvents, SVGElements } from "dom-expressions";
 import VoidElements from "./VoidElements";
 
 export default babel => {
@@ -98,10 +98,12 @@ export default babel => {
     }
 
     let isAttribute = isSVG || name.indexOf("-") > -1,
-      attribute = Attributes[name];
-    if (attribute)
+      attribute = isSVG ? SVGAttributes[name] : Attributes[name];
+
+    if (attribute) {
       if (attribute.type === "attribute") isAttribute = true;
-      else name = attribute.alias;
+      if (attribute.alias) name = attribute.alias;
+    } else if (isSVG) name = name.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`);
 
     if (isAttribute)
       return t.callExpression(
