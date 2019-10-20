@@ -532,6 +532,16 @@ export default babel => {
           );
         }
       } else {
+        if (isSVG) {
+          attribute = SVGAttributes[key];
+
+          if (attribute) {
+            if (attribute.alias) key = attribute.alias;
+          } else key = key.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`);
+        } else {
+          attribute = SVGAttributes[key];
+          if (attribute && attribute.alias) key = attribute.alias;
+        }
         results.template += ` ${key}`;
         results.template += value ? `="${value.value}"` : `=""`;
       }

@@ -1,6 +1,7 @@
 const template = (
   <svg width="400" height="180">
     <rect
+      strokeWidth="2"
       x="50"
       y="20"
       rx="20"
