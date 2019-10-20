@@ -1,6 +1,11 @@
 import SyntaxJSX from "@babel/plugin-syntax-jsx";
 import { addNamed } from "@babel/helper-module-imports";
-import { Attributes, SVGAttributes, NonComposedEvents, SVGElements } from "dom-expressions";
+import {
+  Attributes,
+  SVGAttributes,
+  NonComposedEvents,
+  SVGElements
+} from "dom-expressions";
 import VoidElements from "./VoidElements";
 
 export default babel => {
@@ -20,8 +25,7 @@ export default babel => {
       (code.includes(".") ||
         (code.includes("(") && code.includes(")")) ||
         (code.includes("[") && code.includes("]")) ||
-        (checkTags && code.includes("<") && code.includes(">"))
-      )
+        (checkTags && code.includes("<") && code.includes(">")))
     );
   }
 
@@ -59,7 +63,12 @@ export default babel => {
           : t.callExpression(
               t.memberExpression(
                 t.memberExpression(
-                  t.memberExpression(templateId, t.identifier("content")),
+                  results.wrapSVG
+                    ? t.memberExpression(
+                        t.memberExpression(templateId, t.identifier("content")),
+                        t.identifier("firstChild")
+                      )
+                    : t.memberExpression(templateId, t.identifier("content")),
                   t.identifier("firstChild")
                 ),
                 t.identifier("cloneNode")
@@ -103,7 +112,8 @@ export default babel => {
     if (attribute) {
       if (attribute.type === "attribute") isAttribute = true;
       if (attribute.alias) name = attribute.alias;
-    } else if (isSVG) name = name.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`);
+    } else if (isSVG)
+      name = name.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`);
 
     if (isAttribute)
       return t.callExpression(
@@ -205,7 +215,7 @@ export default babel => {
       if (t.isJSXText(child)) {
         return t.stringLiteral(trimWhitespace(child.extra.raw));
       } else {
-        child = generateHTMLNode(path, child, opts);
+        child = generateHTMLNode(path, child, opts, { topLevel: true });
         if (child.id) {
           registerTemplate(path, child);
           if (!child.exprs.length && child.decl.declarations.length === 1)
@@ -654,7 +664,7 @@ export default babel => {
         if (t.isJSXText(child)) {
           return t.stringLiteral(trimWhitespace(child.extra.raw));
         } else {
-          child = generateHTMLNode(path, child, opts);
+          child = generateHTMLNode(path, child, opts, { topLevel: true });
           if (child.id) {
             registerTemplate(path, child);
             if (!child.exprs.length && child.decl.declarations.length === 1)
@@ -681,10 +691,12 @@ export default babel => {
   function generateHTMLNode(path, jsx, opts, info = {}) {
     if (t.isJSXElement(jsx)) {
       let tagName = getTagName(jsx),
+        wrapSVG = info.topLevel && tagName != "svg" && SVGElements.has(tagName),
         voidTag = VoidElements.indexOf(tagName) > -1;
       if (tagName !== tagName.toLowerCase())
         return generateComponent(path, jsx, opts);
-      let results = { template: `<${tagName}`, decl: [], exprs: [] };
+      let results = { template: `<${tagName}`, decl: [], exprs: [], wrapSVG };
+      if (wrapSVG) results.template = "<svg>" + results.template;
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       transformAttributes(path, jsx, results);
       if (
@@ -707,6 +719,7 @@ export default babel => {
         transformChildren(path, jsx, opts, results);
         results.template += `</${tagName}>`;
       }
+      if (wrapSVG) results.template += "</svg>";
       return results;
     } else if (t.isJSXFragment(jsx)) {
       let results = { template: "", decl: [], exprs: [] };
@@ -742,7 +755,9 @@ export default babel => {
         if ("alwaysCreateComponents" in opts)
           alwaysCreateComponents = opts.alwaysCreateComponents;
         if ("builtIns" in opts) builtIns = opts.builtIns;
-        const result = generateHTMLNode(path, path.node, opts);
+        const result = generateHTMLNode(path, path.node, opts, {
+          topLevel: true
+        });
         if (result.id) {
           registerTemplate(path, result);
           if (!result.exprs.length && result.decl.declarations.length === 1)
