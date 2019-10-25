@@ -13,6 +13,14 @@ const multiExpression = (
   </>
 );
 
+const multiDynamic = (
+  <>
+    <div id={state.first}>First</div>
+    {state.inserted}
+    <div id={state.last}>Last</div>
+  </>
+);
+
 const singleExpression = <>{inserted}</>;
 
 const singleDynamic = <>{inserted()}</>;

@@ -7,7 +7,7 @@ import { getNextElement as _$getNextElement } from "r-dom";
 const _tmpl$ = _$template(`<svg width="400" height="180"><rect stroke-width="2" x="50" y="20" rx="20" ry="20" width="150" height="150" style="fill:red;stroke:black;stroke-width:5;opacity:0.5"></rect></svg>`),
       _tmpl$2 = _$template(`<svg width="400" height="180"><rect rx="20" ry="20" width="150" height="150"></rect></svg>`),
       _tmpl$3 = _$template(`<svg width="400" height="180"><rect></rect></svg>`),
-      _tmpl$4 = _$template(`<svg><rect x="50" y="20" width="150" height="150"></rect></svg>`);
+      _tmpl$4 = _$template(`<svg><rect x="50" y="20" width="150" height="150"></rect></svg>`, true);
 
 const template = _$getNextElement(_tmpl$);
 
@@ -15,20 +15,22 @@ const template2 = function () {
   const _el$2 = _$getNextElement(_tmpl$2),
         _el$3 = _el$2.firstChild;
 
-  _$wrap(() => _el$3.setAttribute("class", state.name));
+  _$wrap(() => {
+    _el$3.setAttribute("class", state.name);
 
-  _$wrap(() => _el$3.setAttribute("stroke-width", state.width));
+    _el$3.setAttribute("stroke-width", state.width);
 
-  _$wrap(() => _el$3.setAttribute("x", state.x));
+    _el$3.setAttribute("x", state.x);
 
-  _$wrap(() => _el$3.setAttribute("y", state.y));
+    _el$3.setAttribute("y", state.y);
 
-  _$wrap(() => Object.assign(_el$3.style, {
-    fill: "red",
-    stroke: "black",
-    "stroke-width": props.stroke,
-    opacity: 0.5
-  }));
+    Object.assign(_el$3.style, {
+      fill: "red",
+      stroke: "black",
+      "stroke-width": props.stroke,
+      opacity: 0.5
+    });
+  });
 
   return _el$2;
 }();

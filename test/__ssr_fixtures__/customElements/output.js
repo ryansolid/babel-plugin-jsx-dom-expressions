@@ -20,11 +20,14 @@ const template = function () {
 const template2 = function () {
   const _el$2 = _$getNextElement(_tmpl$);
 
-  _$wrap(() => _el$2.setAttribute("some-attr", state.name));
-
-  _$wrap(() => _el$2.someProp = state.data);
-
   _el$2._context = _$currentContext();
+
+  _$wrap(() => {
+    _el$2.setAttribute("some-attr", state.name);
+
+    _el$2.someProp = state.data;
+  });
+
   return _el$2;
 }();
 

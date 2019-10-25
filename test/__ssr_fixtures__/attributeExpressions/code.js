@@ -13,3 +13,10 @@ const template = (
     </h1>
   </div>
 );
+
+const template2 = (
+  <div>
+    <div textContent={rowId} />
+    <div textContent={row.label} />
+  </div>
+);

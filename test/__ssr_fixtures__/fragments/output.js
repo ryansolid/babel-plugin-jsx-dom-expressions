@@ -1,4 +1,5 @@
 import { template as _$template } from "r-dom";
+import { wrap as _$wrap } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
 
 const _tmpl$ = _$template(`<div>First</div>`),
@@ -7,6 +8,19 @@ const _tmpl$ = _$template(`<div>First</div>`),
 
 const multiStatic = [_$getNextElement(_tmpl$), _$getNextElement(_tmpl$2)];
 const multiExpression = [_$getNextElement(_tmpl$), inserted, _$getNextElement(_tmpl$2)];
+const multiDynamic = [(() => {
+  const _el$5 = _$getNextElement(_tmpl$);
+
+  _$wrap(() => _el$5.id = state.first);
+
+  return _el$5;
+})(), () => state.inserted, (() => {
+  const _el$6 = _$getNextElement(_tmpl$2);
+
+  _$wrap(() => _el$6.id = state.last);
+
+  return _el$6;
+})()];
 const singleExpression = [inserted];
 const singleDynamic = [() => inserted()];
 const firstStatic = [inserted, _$getNextElement(_tmpl$3)];

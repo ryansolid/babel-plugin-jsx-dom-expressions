@@ -8,7 +8,7 @@ const _tmpl$ = _$template(`<div>Hello </div>`),
       _tmpl$3 = _$template(`<div>From Parent</div>`);
 
 const Child = props => [(() => {
-  const _el$ = _tmpl$.content.firstChild.cloneNode(true),
+  const _el$ = _tmpl$.cloneNode(true),
         _el$2 = _el$.firstChild;
 
   props.ref && props.ref(_el$);
@@ -17,7 +17,7 @@ const Child = props => [(() => {
 
   return _el$;
 })(), (() => {
-  const _el$3 = _tmpl$2.content.firstChild.cloneNode(true);
+  const _el$3 = _tmpl$2.cloneNode(true);
 
   _$insert(_el$3, () => props.children);
 
@@ -30,21 +30,21 @@ const template = props => {
     content
   } = props;
   return function () {
-    const _el$4 = _tmpl$2.content.firstChild.cloneNode(true);
+    const _el$4 = _tmpl$2.cloneNode(true);
 
     _$insert(_el$4, _$createComponent(Child, Object.assign({
       name: "John"
     }, Object.keys(props).reduce((m$, k$) => (m$[k$] = () => props[k$], m$), {}), {
       ref: r$ => childRef = r$,
       booleanProperty: true,
-      children: () => _tmpl$3.content.firstChild.cloneNode(true)
+      children: () => _tmpl$3.cloneNode(true)
     }), [...Object.keys(props), "children"]), null);
 
     _$insert(_el$4, _$createComponent(Child, {
       name: "Jason",
       ref: props.ref,
       children: () => {
-        const _el$6 = _tmpl$2.content.firstChild.cloneNode(true);
+        const _el$6 = _tmpl$2.cloneNode(true);
 
         _$insert(_el$6, content);
 
@@ -67,11 +67,11 @@ const template2 = _$createComponent(Child, {
 }, ["dynamic"]);
 
 const template3 = _$createComponent(Child, {
-  children: () => [_tmpl$2.content.firstChild.cloneNode(true), _tmpl$2.content.firstChild.cloneNode(true), _tmpl$2.content.firstChild.cloneNode(true)]
+  children: () => [_tmpl$2.cloneNode(true), _tmpl$2.cloneNode(true), _tmpl$2.cloneNode(true)]
 }, ["children"]);
 
 const template4 = _$createComponent(Child, {
-  children: _tmpl$2.content.firstChild.cloneNode(true)
+  children: _tmpl$2.cloneNode(true)
 }, ["children"]);
 
 const template5 = _$createComponent(Child, {

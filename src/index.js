@@ -52,7 +52,11 @@ export default babel => {
         templateId = templateDef.id;
       } else {
         templateId = path.scope.generateUidIdentifier("tmpl$");
-        templates.push({ id: templateId, template: results.template });
+        templates.push({
+          id: templateId,
+          template: results.template,
+          isSVG: results.isSVG
+        });
       }
       if (generate === "hydrate" || generate === "ssr")
         registerImportMethod(path, "getNextElement");
@@ -61,18 +65,7 @@ export default babel => {
         generate === "hydrate" || generate === "ssr"
           ? t.callExpression(t.identifier("_$getNextElement"), [templateId])
           : t.callExpression(
-              t.memberExpression(
-                t.memberExpression(
-                  results.wrapSVG
-                    ? t.memberExpression(
-                        t.memberExpression(templateId, t.identifier("content")),
-                        t.identifier("firstChild")
-                      )
-                    : t.memberExpression(templateId, t.identifier("content")),
-                  t.identifier("firstChild")
-                ),
-                t.identifier("cloneNode")
-              ),
+              t.memberExpression(templateId, t.identifier("cloneNode")),
               [t.booleanLiteral(true)]
             )
       );
@@ -93,7 +86,7 @@ export default babel => {
     }
   }
 
-  function setAttr(path, elem, name, value, isSVG) {
+  function setAttr(path, elem, name, value, isSVG, dynamic) {
     if (name === "style") {
       return t.callExpression(
         t.memberExpression(t.identifier("Object"), t.identifier("assign")),
@@ -104,6 +97,23 @@ export default babel => {
     if (name === "classList") {
       registerImportMethod(path, "classList");
       return t.callExpression(t.identifier("_$classList"), [elem, value]);
+    }
+
+    if (dynamic && name === "textContent") {
+      let firstChild;
+      return t.conditionalExpression(
+        (firstChild = t.memberExpression(elem, t.identifier("firstChild"))),
+        t.assignmentExpression(
+          "=",
+          t.memberExpression(firstChild, t.identifier("data")),
+          value
+        ),
+        t.assignmentExpression(
+          "=",
+          t.memberExpression(elem, t.identifier("textContent")),
+          value
+        )
+      );
     }
 
     let isAttribute = isSVG || name.indexOf("-") > -1,
@@ -127,11 +137,30 @@ export default babel => {
     );
   }
 
-  function setAttrExpr(path, elem, name, value, isSVG) {
+  function wrapDynamics(path, dynamics) {
+    if (!dynamics.length) return;
     registerImportMethod(path, "wrap");
+    const results =
+      dynamics.length === 1
+        ? setAttr(
+            path,
+            dynamics[0].elem,
+            dynamics[0].key,
+            dynamics[0].value,
+            dynamics[0].isSVG,
+            true
+          )
+        : t.blockStatement(
+            dynamics.map(({ elem, key, value, isSVG }) =>
+              t.expressionStatement(
+                setAttr(path, elem, key, value, isSVG, true)
+              )
+            )
+          );
+
     return t.expressionStatement(
       t.callExpression(t.identifier("_$wrap"), [
-        t.arrowFunctionExpression([], setAttr(path, elem, name, value, isSVG))
+        t.arrowFunctionExpression([], results)
       ])
     );
   }
@@ -218,7 +247,10 @@ export default babel => {
         child = generateHTMLNode(path, child, opts, { topLevel: true });
         if (child.id) {
           registerTemplate(path, child);
-          if (!child.exprs.length && child.decl.declarations.length === 1)
+          if (
+            !(child.exprs.length || child.dynamics.length) &&
+            child.decl.declarations.length === 1
+          )
             return child.decl.declarations[0].init;
           else
             return t.callExpression(
@@ -226,7 +258,9 @@ export default babel => {
                 [],
                 t.blockStatement([
                   child.decl,
-                  ...child.exprs,
+                  ...child.exprs.concat(
+                    wrapDynamics(path, child.dynamics) || []
+                  ),
                   t.returnStatement(child.id)
                 ])
               ),
@@ -521,9 +555,7 @@ export default babel => {
             )
           );
         } else if (isDynamic(value, path)) {
-          results.exprs.push(
-            setAttrExpr(path, elem, key, value.expression, isSVG)
-          );
+          results.dynamics.push({ elem, key, value: value.expression, isSVG });
         } else {
           results.exprs.push(
             t.expressionStatement(
@@ -573,6 +605,7 @@ export default babel => {
         );
         results.decl.push(...child.decl);
         results.exprs.push(...child.exprs);
+        results.dynamics.push(...child.dynamics);
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
@@ -677,7 +710,10 @@ export default babel => {
           child = generateHTMLNode(path, child, opts, { topLevel: true });
           if (child.id) {
             registerTemplate(path, child);
-            if (!child.exprs.length && child.decl.declarations.length === 1)
+            if (
+              !(child.exprs.length || child.dynamics.length) &&
+              child.decl.declarations.length === 1
+            )
               return child.decl.declarations[0].init;
             else
               return t.callExpression(
@@ -685,7 +721,9 @@ export default babel => {
                   [],
                   t.blockStatement([
                     child.decl,
-                    ...child.exprs,
+                    ...child.exprs.concat(
+                      wrapDynamics(path, child.dynamics) || []
+                    ),
                     t.returnStatement(child.id)
                   ])
                 ),
@@ -705,7 +743,13 @@ export default babel => {
         voidTag = VoidElements.indexOf(tagName) > -1;
       if (tagName !== tagName.toLowerCase())
         return generateComponent(path, jsx, opts);
-      let results = { template: `<${tagName}`, decl: [], exprs: [], wrapSVG };
+      let results = {
+        template: `<${tagName}`,
+        decl: [],
+        exprs: [],
+        dynamics: [],
+        isSVG: wrapSVG
+      };
       if (wrapSVG) results.template = "<svg>" + results.template;
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       transformAttributes(path, jsx, results);
@@ -732,13 +776,13 @@ export default babel => {
       if (wrapSVG) results.template += "</svg>";
       return results;
     } else if (t.isJSXFragment(jsx)) {
-      let results = { template: "", decl: [], exprs: [] };
+      let results = { template: "", decl: [], exprs: [], dynamics: [] };
       transformFragmentChildren(path, jsx, opts, results);
       return results;
     } else if (t.isJSXText(jsx)) {
       const text = trimWhitespace(jsx.extra.raw);
       if (!text.length) return null;
-      const results = { template: text, decl: [], exprs: [] };
+      const results = { template: text, decl: [], exprs: [], dynamics: [] };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
@@ -770,11 +814,18 @@ export default babel => {
         });
         if (result.id) {
           registerTemplate(path, result);
-          if (!result.exprs.length && result.decl.declarations.length === 1)
+          if (
+            !(result.exprs.length || result.dynamics.length) &&
+            result.decl.declarations.length === 1
+          )
             path.replaceWith(result.decl.declarations[0].init);
           else
             path.replaceWithMultiple(
-              [result.decl].concat(result.exprs, t.returnStatement(result.id))
+              [result.decl].concat(
+                result.exprs,
+                wrapDynamics(path, result.dynamics) || [],
+                t.returnStatement(result.id)
+              )
             );
         } else path.replaceWith(result.exprs[0]);
       },
@@ -815,9 +866,14 @@ export default babel => {
               registerImportMethod(path, "template");
               return t.variableDeclarator(
                 template.id,
-                t.callExpression(t.identifier("_$template"), [
-                  t.templateLiteral([t.templateElement(tmpl, true)], [])
-                ])
+                t.callExpression(
+                  t.identifier("_$template"),
+                  [
+                    t.templateLiteral([t.templateElement(tmpl, true)], [])
+                  ].concat(
+                    template.isSVG ? t.booleanLiteral(template.isSVG) : []
+                  )
+                )
               );
             });
             path.node.body.unshift(t.variableDeclaration("const", declarators));
