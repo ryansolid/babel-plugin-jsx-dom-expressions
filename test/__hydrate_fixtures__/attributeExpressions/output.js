@@ -46,8 +46,10 @@ const template2 = function () {
         _el$6 = _el$5.nextSibling;
 
   _el$5.textContent = rowId;
+  _el$6.textContent = row.label;
+  const _el$7 = _el$6.firstChild;
 
-  _$wrap(() => _el$6.firstChild ? _el$6.firstChild.data = row.label : _el$6.textContent = row.label);
+  _$wrap(() => _el$7.data = row.label);
 
   return _el$4;
 }();

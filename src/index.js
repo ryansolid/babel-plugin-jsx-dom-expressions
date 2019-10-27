@@ -100,19 +100,10 @@ export default babel => {
     }
 
     if (dynamic && name === "textContent") {
-      let firstChild;
-      return t.conditionalExpression(
-        (firstChild = t.memberExpression(elem, t.identifier("firstChild"))),
-        t.assignmentExpression(
-          "=",
-          t.memberExpression(firstChild, t.identifier("data")),
-          value
-        ),
-        t.assignmentExpression(
-          "=",
-          t.memberExpression(elem, t.identifier("textContent")),
-          value
-        )
+      return t.assignmentExpression(
+        "=",
+        t.memberExpression(elem, t.identifier("data")),
+        value
       );
     }
 
@@ -555,6 +546,25 @@ export default babel => {
             )
           );
         } else if (isDynamic(value, path)) {
+          if (key === "textContent") {
+            const textId = path.scope.generateUidIdentifier("el$");
+            results.exprs.push(
+              t.expressionStatement(
+                t.assignmentExpression(
+                  "=",
+                  t.memberExpression(elem, t.identifier("textContent")),
+                  value.expression
+                )
+              ),
+              t.variableDeclaration("const", [
+                t.variableDeclarator(
+                  textId,
+                  t.memberExpression(elem, t.identifier("firstChild"))
+                )
+              ])
+            );
+            elem = textId;
+          }
           results.dynamics.push({ elem, key, value: value.expression, isSVG });
         } else {
           results.exprs.push(
