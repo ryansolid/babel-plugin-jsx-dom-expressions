@@ -37,7 +37,7 @@ declare global {
       | (() => Child[]);
 
     interface EventHandler<T, E extends Event> {
-      (e: E & { currentTarget: T }): void;
+      (e: E & { currentTarget: T, target: T }): void;
     }
 
     // Intrinsic attributes enable us to define certain keys as attributes on an element, while
