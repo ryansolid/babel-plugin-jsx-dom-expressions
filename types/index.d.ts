@@ -393,6 +393,7 @@ declare global {
       coords?: string;
       crossorigin?: string;
       data?: string;
+      dataset?: string;
       dateTime?: string;
       default?: boolean;
       defer?: boolean;
