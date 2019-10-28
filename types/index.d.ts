@@ -161,8 +161,8 @@ declare global {
       onpointerover?: EventHandler<T, Event>;
       onpointerout?: EventHandler<T, Event>;
       onPointerOut?: EventHandler<T, Event>;
-      onpointerup?: EventHandler<T, Event>;
       onPointerUp?: EventHandler<T, Event>;
+      onpointerup?: EventHandler<T, Event>;
 
       // Media Events
       onAbort?: EventHandler<T, Event>;
