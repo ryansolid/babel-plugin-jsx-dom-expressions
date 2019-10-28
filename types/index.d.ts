@@ -142,6 +142,28 @@ declare global {
       onKeyUpCapture?: EventHandler<T, KeyboardEvent>;
       onkeyupcapture?: EventHandler<T, KeyboardEvent>;
 
+      // Pointer Events
+      onGotPointerCapture?: EventHandler<T, Event>;
+      ongotpointercapture?: EventHandler<T, Event>;
+      onLostPointerCapture?: EventHandler<T, Event>;
+      onlostpointercapture?: EventHandler<T, Event>;
+      onPointerCancel?: EventHandler<T, Event>;
+      onpointercancel?: EventHandler<T, Event>;
+      onPointerDown?: EventHandler<T, Event>;
+      onpointerdown?: EventHandler<T, Event>;
+      onPointerEnter?: EventHandler<T, Event>;
+      onpointerenter?: EventHandler<T, Event>;
+      onPointerLeave?: EventHandler<T, Event>;
+      onpointerleave?: EventHandler<T, Event>;
+      onPointerMove?: EventHandler<T, Event>;
+      onpointermove?: EventHandler<T, Event>;
+      onPointerOver?: EventHandler<T, Event>;
+      onpointerover?: EventHandler<T, Event>;
+      onpointerout?: EventHandler<T, Event>;
+      onPointerOut?: EventHandler<T, Event>;
+      onpointerup?: EventHandler<T, Event>;
+      onPointerUp?: EventHandler<T, Event>;
+
       // Media Events
       onAbort?: EventHandler<T, Event>;
       onabort?: EventHandler<T, Event>;
