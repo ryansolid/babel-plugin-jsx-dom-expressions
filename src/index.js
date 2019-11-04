@@ -17,16 +17,34 @@ export default babel => {
     alwaysCreateComponents = false,
     contextToCustomElements = false;
 
-  // TODO: Consider using ast detection instead of raw string
   function isDynamic(jsx, path, checkTags) {
-    const code = path.hub.file.code.slice(jsx.start, jsx.end).trim();
-    return (
-      !t.isFunction(jsx.expression) &&
-      (code.includes(".") ||
-        (code.includes("(") && code.includes(")")) ||
-        (code.includes("[") && code.includes("]")) ||
-        (checkTags && code.includes("<") && code.includes(">")))
-    );
+    const expr = jsx.expression;
+    if (
+      t.isCallExpression(expr) ||
+      t.isMemberExpression(expr) ||
+      (checkTags && (t.isJSXElement(expr) || t.isJSXFragment(expr)))
+    )
+      return true;
+
+    let dynamic;
+    const nodePath = path.scope.getProgramParent().data.exprs.get(jsx);
+    nodePath.traverse({
+      CallExpression(p) {
+        dynamic = true;
+        p.stop();
+      },
+      MemberExpression(p) {
+        dynamic = true;
+        p.stop();
+      },
+      JSXElement(p) {
+        checkTags && (dynamic = true && p.stop());
+      },
+      JSXFragment(p) {
+        checkTags && (dynamic = true && p.stop());
+      }
+    });
+    return dynamic;
   }
 
   function registerImportMethod(path, name) {
@@ -852,6 +870,14 @@ export default babel => {
         path.replaceWith(result.exprs[0]);
       },
       Program: {
+        enter: path => {
+          const exprs = path.scope.data.exprs = new Map();
+          path.traverse({
+            JSXExpressionContainer(p) {
+              exprs.set(p.node, p);
+            }
+          });
+        },
         exit: path => {
           if (path.scope.data.events) {
             registerImportMethod(path, "delegateEvents");
