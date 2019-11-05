@@ -6,7 +6,7 @@ const _tmpl$ = _$template(`<div>First</div>`),
       _tmpl$3 = _$template(`<div></div>`);
 
 const multiStatic = [_tmpl$.cloneNode(true), _tmpl$2.cloneNode(true)];
-const multiExpression = [_tmpl$.cloneNode(true), inserted, _tmpl$2.cloneNode(true)];
+const multiExpression = [_tmpl$.cloneNode(true), inserted, _tmpl$2.cloneNode(true), "After"];
 const multiDynamic = [(() => {
   const _el$5 = _tmpl$.cloneNode(true);
 
@@ -19,7 +19,7 @@ const multiDynamic = [(() => {
   _$wrap(() => _el$6.id = state.last);
 
   return _el$6;
-})()];
+})(), "After"];
 const singleExpression = [inserted];
 const singleDynamic = [() => inserted()];
 const firstStatic = [inserted, _tmpl$3.cloneNode(true)];

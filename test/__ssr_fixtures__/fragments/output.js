@@ -7,7 +7,7 @@ const _tmpl$ = _$template(`<div>First</div>`),
       _tmpl$3 = _$template(`<div></div>`);
 
 const multiStatic = [_$getNextElement(_tmpl$), _$getNextElement(_tmpl$2)];
-const multiExpression = [_$getNextElement(_tmpl$), inserted, _$getNextElement(_tmpl$2)];
+const multiExpression = [_$getNextElement(_tmpl$), inserted, _$getNextElement(_tmpl$2), "After"];
 const multiDynamic = [(() => {
   const _el$5 = _$getNextElement(_tmpl$);
 
@@ -20,7 +20,7 @@ const multiDynamic = [(() => {
   _$wrap(() => _el$6.id = state.last);
 
   return _el$6;
-})()];
+})(), "After"];
 const singleExpression = [inserted];
 const singleDynamic = [() => inserted()];
 const firstStatic = [inserted, _$getNextElement(_tmpl$3)];

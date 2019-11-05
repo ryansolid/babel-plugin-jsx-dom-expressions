@@ -77,7 +77,7 @@ const template2 = _$createComponent(Child, {
 }, ["dynamic"]);
 
 const template3 = _$createComponent(Child, {
-  children: () => [_$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2)]
+  children: () => [_$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2), "After"]
 }, ["children"]);
 
 const template4 = _$createComponent(Child, {

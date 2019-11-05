@@ -31,6 +31,7 @@ const template3 = (
     <div />
     <div />
     <div />
+    After
   </Child>
 );
 

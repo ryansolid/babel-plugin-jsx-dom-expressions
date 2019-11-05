@@ -10,6 +10,7 @@ const multiExpression = (
     <div>First</div>
     {inserted}
     <div>Last</div>
+    After
   </>
 );
 
@@ -18,6 +19,7 @@ const multiDynamic = (
     <div id={state.first}>First</div>
     {state.inserted}
     <div id={state.last}>Last</div>
+    After
   </>
 );
 
