@@ -38,10 +38,10 @@ export default babel => {
         p.stop();
       },
       JSXElement(p) {
-        checkTags && (dynamic = true && p.stop());
+        checkTags ? (dynamic = true) && p.stop() : p.skip();
       },
       JSXFragment(p) {
-        checkTags && (dynamic = true && p.stop());
+        checkTags ? (dynamic = true) && p.stop() : p.skip();
       }
     });
     return dynamic;
@@ -253,7 +253,7 @@ export default babel => {
       if (t.isJSXText(child)) {
         return t.stringLiteral(trimWhitespace(child.extra.raw));
       } else {
-        child = generateHTMLNode(path, child, opts, { topLevel: true });
+        child = generateHTMLNode(path, child, opts, { topLevel: true, componentChild: true });
         if (child.id) {
           registerTemplate(path, child);
           if (
@@ -815,7 +815,7 @@ export default babel => {
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
       if (t.isJSXEmptyExpression(jsx.expression)) return null;
-      if (!isDynamic(jsx, path))
+      if (!isDynamic(jsx, path, !!info.componentChild))
         return { exprs: [jsx.expression], template: "" };
       return {
         exprs: [t.arrowFunctionExpression([], jsx.expression)],

@@ -83,7 +83,7 @@ const template3 = _$createComponent(Child, {
 }, ["children"]);
 
 const template4 = _$createComponent(Child, {
-  children: _$getNextElement(_tmpl$2)
+  children: () => _$getNextElement(_tmpl$2)
 }, ["children"]);
 
 const template5 = _$createComponent(Child, {

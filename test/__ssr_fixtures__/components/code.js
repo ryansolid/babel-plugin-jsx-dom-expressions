@@ -34,9 +34,9 @@ const template3 = (
   </Child>
 );
 
-const template4 = <Child>{() => <div />}</Child>;
+const template4 = <Child>{<div />}</Child>;
 
 const template5 = <Child>{state.dynamic}</Child>;
 
 // builtIns
-const template6 = <For each={state.list}>{item => item}</For>;
+const template6 = <For each={state.list} fallback={<Loading />}>{item => item}</For>;

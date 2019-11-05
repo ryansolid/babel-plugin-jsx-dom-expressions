@@ -80,9 +80,9 @@ const template3 = _$createComponent(Child, {
   children: () => [_$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2), _$getNextElement(_tmpl$2)]
 }, ["children"]);
 
-const template4 = Child({
+const template4 = _$createComponent(Child, {
   children: () => _$getNextElement(_tmpl$2)
-});
+}, ["children"]);
 
 const template5 = _$createComponent(Child, {
   children: () => state.dynamic
@@ -91,5 +91,6 @@ const template5 = _$createComponent(Child, {
 
 const template6 = _$createComponent(_$For, {
   each: () => state.list,
+  fallback: () => Loading({}),
   children: item => item
-}, ["each"]);
+}, ["each", "fallback"]);

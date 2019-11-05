@@ -71,7 +71,7 @@ const template3 = _$createComponent(Child, {
 }, ["children"]);
 
 const template4 = _$createComponent(Child, {
-  children: _tmpl$2.cloneNode(true)
+  children: () => _tmpl$2.cloneNode(true)
 }, ["children"]);
 
 const template5 = _$createComponent(Child, {
