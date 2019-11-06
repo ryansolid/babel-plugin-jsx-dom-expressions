@@ -19,6 +19,7 @@ export default babel => {
 
   function isDynamic(jsx, path, checkTags) {
     const expr = jsx.expression;
+    if (t.isFunction(expr)) return false;
     if (
       t.isCallExpression(expr) ||
       t.isMemberExpression(expr) ||
@@ -29,6 +30,9 @@ export default babel => {
     let dynamic;
     const nodePath = path.scope.getProgramParent().data.exprs.get(jsx);
     nodePath.traverse({
+      Function(p) {
+        p.skip();
+      },
       CallExpression(p) {
         dynamic = true;
         p.stop();
@@ -253,7 +257,10 @@ export default babel => {
       if (t.isJSXText(child)) {
         return t.stringLiteral(trimWhitespace(child.extra.raw));
       } else {
-        child = generateHTMLNode(path, child, opts, { topLevel: true, componentChild: true });
+        child = generateHTMLNode(path, child, opts, {
+          topLevel: true,
+          componentChild: true
+        });
         if (child.id) {
           registerTemplate(path, child);
           if (
@@ -871,7 +878,7 @@ export default babel => {
       },
       Program: {
         enter: path => {
-          const exprs = path.scope.data.exprs = new Map();
+          const exprs = (path.scope.data.exprs = new Map());
           path.traverse({
             JSXExpressionContainer(p) {
               exprs.set(p.node, p);
