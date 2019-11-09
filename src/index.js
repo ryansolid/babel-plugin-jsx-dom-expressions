@@ -14,11 +14,10 @@ export default babel => {
     generate = "dom",
     delegateEvents = true,
     builtIns = [],
-    alwaysCreateComponents = false,
+    wrapConditionals = false,
     contextToCustomElements = false;
 
-  function isDynamic(jsx, path, checkTags) {
-    const expr = jsx.expression;
+  function isDynamic(expr, path, checkTags) {
     if (t.isFunction(expr)) return false;
     if (
       t.isCallExpression(expr) ||
@@ -28,8 +27,7 @@ export default babel => {
       return true;
 
     let dynamic;
-    const nodePath = path.scope.getProgramParent().data.exprs.get(jsx);
-    nodePath.traverse({
+    path.traverse({
       Function(p) {
         p.skip();
       },
@@ -108,6 +106,10 @@ export default babel => {
     }
   }
 
+  function lookupPathForExpr(path, node) {
+    return path.scope.getProgramParent().data.exprs.get(node.expression);
+  }
+
   function setAttr(path, elem, name, value, isSVG, dynamic) {
     if (name === "style") {
       return t.callExpression(
@@ -176,6 +178,71 @@ export default babel => {
         t.arrowFunctionExpression([], results)
       ])
     );
+  }
+
+  function transformCondition(path, expr, deep) {
+    registerImportMethod(path, "wrapCondition");
+    let dTest, cond;
+    if (t.isConditionalExpression(expr)) {
+      dTest = isDynamic(expr.test, path.get("test"));
+      if (dTest) {
+        cond = expr.test;
+        expr.test = t.callExpression(t.identifier("_c$"), []);
+        if (
+          t.isConditionalExpression(expr.consequent) ||
+          t.isLogicalExpression(expr.consequent)
+        ) {
+          expr.consequent = transformCondition(
+            path.get("consequent"),
+            expr.consequent,
+            true
+          );
+        }
+        if (
+          t.isConditionalExpression(expr.alternate) ||
+          t.isLogicalExpression(expr.alternate)
+        ) {
+          expr.alternate = transformCondition(
+            path.get("alternate"),
+            expr.alternate,
+            true
+          );
+        }
+      }
+    } else if (t.isLogicalExpression(expr)) {
+      let nextExpr = expr;
+      let nextPath = path;
+      // handle top-level or, ie cond && <A/> || <B/>
+      if (expr.operator === "||" && t.isLogicalExpression(expr.left)) {
+        nextExpr = nextExpr.left;
+        nextPath = nextPath.get("left");
+      }
+      dTest = isDynamic(nextExpr.left, nextPath.get("left"));
+      if (dTest) {
+        cond = nextExpr.left;
+        nextExpr.left = t.callExpression(t.identifier("_c$"), []);
+      }
+    }
+    if (dTest) {
+      return t.callExpression(
+        t.arrowFunctionExpression(
+          [],
+          t.blockStatement([
+            t.variableDeclaration("const", [
+              t.variableDeclarator(
+                t.identifier("_c$"),
+                t.callExpression(t.identifier("_$wrapCondition"), [
+                  t.arrowFunctionExpression([], cond)
+                ])
+              )
+            ]),
+            t.returnStatement(deep ? expr : t.arrowFunctionExpression([], expr))
+          ])
+        ),
+        []
+      );
+    }
+    return deep ? expr : t.arrowFunctionExpression([], expr);
   }
 
   function createPlaceholder(path, results, tempPath, i, char) {
@@ -283,15 +350,14 @@ export default babel => {
               []
             );
         }
+        dynamic = child.dynamic;
         return child.exprs[0];
       }
     });
 
     if (filteredChildren.length === 1) {
       transformedChildren = transformedChildren[0];
-      if (t.isJSXExpressionContainer(filteredChildren[0]))
-        dynamic = isDynamic(filteredChildren[0], path, true);
-      else {
+      if (!t.isJSXExpressionContainer(filteredChildren[0])) {
         transformedChildren =
           t.isCallExpression(transformedChildren) &&
           !transformedChildren.arguments.length
@@ -431,13 +497,21 @@ export default babel => {
             runningObject.push(
               t.objectProperty(t.identifier("ref"), value.expression)
             );
-          } else if (isDynamic(value, path, true)) {
+          } else if (
+            isDynamic(value.expression, lookupPathForExpr(path, value), true)
+          ) {
             dynamicKeys.push(t.stringLiteral(attribute.name.name));
+            const expr =
+              wrapConditionals &&
+              (t.isLogicalExpression(value.expression) ||
+                t.isConditionalExpression(value.expression))
+                ? transformCondition(
+                    lookupPathForExpr(path, value),
+                    value.expression
+                  )
+                : t.arrowFunctionExpression([], value.expression);
             runningObject.push(
-              t.objectProperty(
-                t.identifier(attribute.name.name),
-                t.arrowFunctionExpression([], value.expression)
-              )
+              t.objectProperty(t.identifier(attribute.name.name), expr)
             );
           } else
             runningObject.push(
@@ -470,16 +544,12 @@ export default babel => {
         )
       ];
 
-    if (alwaysCreateComponents || dynamicKeys.length) {
-      registerImportMethod(path, "createComponent");
-      exprs = [
-        t.callExpression(t.identifier("_$createComponent"), [
-          t.identifier(tagName),
-          props[0],
-          t.arrayExpression(dynamicKeys)
-        ])
-      ];
-    } else exprs = [t.callExpression(t.identifier(tagName), props)];
+    registerImportMethod(path, "createComponent");
+    const componentArgs = [t.identifier(tagName), props[0]];
+    if (dynamicKeys.length) componentArgs.push(t.arrayExpression(dynamicKeys));
+    exprs = [
+      t.callExpression(t.identifier("_$createComponent"), componentArgs)
+    ];
 
     return { exprs, template: "", component: true };
   }
@@ -570,7 +640,9 @@ export default babel => {
               )
             )
           );
-        } else if (isDynamic(value, path)) {
+        } else if (
+          isDynamic(value.expression, lookupPathForExpr(path, value))
+        ) {
           if (key === "textContent") {
             const textId = path.scope.generateUidIdentifier("el$");
             results.exprs.push(
@@ -822,11 +894,24 @@ export default babel => {
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
       if (t.isJSXEmptyExpression(jsx.expression)) return null;
-      if (!isDynamic(jsx, path, !!info.componentChild))
+      if (
+        !isDynamic(
+          jsx.expression,
+          lookupPathForExpr(path, jsx),
+          !!info.componentChild
+        )
+      )
         return { exprs: [jsx.expression], template: "" };
+      const expr =
+        wrapConditionals &&
+        (t.isLogicalExpression(jsx.expression) ||
+          t.isConditionalExpression(jsx.expression))
+          ? transformCondition(lookupPathForExpr(path, jsx), jsx.expression)
+          : t.arrowFunctionExpression([], jsx.expression);
       return {
-        exprs: [t.arrowFunctionExpression([], jsx.expression)],
-        template: ""
+        exprs: [expr],
+        template: "",
+        dynamic: true
       };
     }
   }
@@ -841,9 +926,9 @@ export default babel => {
         if ("delegateEvents" in opts) delegateEvents = opts.delegateEvents;
         if ("contextToCustomElements" in opts)
           contextToCustomElements = opts.contextToCustomElements;
-        if ("alwaysCreateComponents" in opts)
-          alwaysCreateComponents = opts.alwaysCreateComponents;
         if ("builtIns" in opts) builtIns = opts.builtIns;
+        if ("wrapConditionals" in opts)
+          wrapConditionals = opts.wrapConditionals;
         const result = generateHTMLNode(path, path.node, opts, {
           topLevel: true
         });
@@ -870,9 +955,9 @@ export default babel => {
         if ("delegateEvents" in opts) delegateEvents = opts.delegateEvents;
         if ("contextToCustomElements" in opts)
           contextToCustomElements = opts.contextToCustomElements;
-        if ("alwaysCreateComponents" in opts)
-          alwaysCreateComponents = opts.alwaysCreateComponents;
         if ("builtIns" in opts) builtIns = opts.builtIns;
+        if ("wrapConditionals" in opts)
+          wrapConditionals = opts.wrapConditionals;
         const result = generateHTMLNode(path, path.node, opts);
         path.replaceWith(result.exprs[0]);
       },
@@ -881,7 +966,7 @@ export default babel => {
           const exprs = (path.scope.data.exprs = new Map());
           path.traverse({
             JSXExpressionContainer(p) {
-              exprs.set(p.node, p);
+              exprs.set(p.node.expression, p.get("expression"));
             }
           });
         },

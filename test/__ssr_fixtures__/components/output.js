@@ -62,7 +62,7 @@ const template = props => {
       }
     }, ["children"]), _el$12);
 
-    _$insert(_el$6, Context.Consumer({
+    _$insert(_el$6, _$createComponent(Context.Consumer, {
       children: context => context
     }), _el$14);
 
@@ -91,6 +91,6 @@ const template5 = _$createComponent(Child, {
 
 const template6 = _$createComponent(_$For, {
   each: () => state.list,
-  fallback: () => Loading({}),
+  fallback: () => _$createComponent(Loading, {}),
   children: item => item
 }, ["each", "fallback"]);

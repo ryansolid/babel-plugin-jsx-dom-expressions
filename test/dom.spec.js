@@ -9,8 +9,7 @@ pluginTester({
     builtIns: ['For'],
     generate: "dom",
     delegateEvents: true,
-    alwaysWrap: false,
-    alwaysCreateComponents: false,
+    wrapConditionals: true,
     contextToCustomElements: true
   },
   title: 'Convert JSX',

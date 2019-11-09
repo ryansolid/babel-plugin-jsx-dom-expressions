@@ -1,4 +1,5 @@
 import { template as _$template } from "r-dom";
+import { createComponent as _$createComponent } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
 
@@ -25,7 +26,7 @@ const singleExpression = [inserted];
 const singleDynamic = [() => inserted()];
 const firstStatic = [inserted, _$getNextElement(_tmpl$3)];
 const firstDynamic = [() => inserted(), _$getNextElement(_tmpl$3)];
-const firstComponent = [Component({}), _$getNextElement(_tmpl$3)];
+const firstComponent = [_$createComponent(Component, {}), _$getNextElement(_tmpl$3)];
 const lastStatic = [_$getNextElement(_tmpl$3), inserted];
 const lastDynamic = [_$getNextElement(_tmpl$3), () => inserted()];
-const lastComponent = [_$getNextElement(_tmpl$3), Component({})];
+const lastComponent = [_$getNextElement(_tmpl$3), _$createComponent(Component, {})];

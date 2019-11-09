@@ -61,9 +61,11 @@ const view = ({ item }) => {
   }();
 }
 ```
+
 The use of cloneNode improves repeat insert performance and precompilation reduces the number of references to the minimal traversal path. This is a basic example which doesn't leverage event delegation or any of the more advanced features described below.
 
 ## Example Implementations
+
 * [Solid](https://github.com/ryansolid/solid): A declarative JavaScript library for building user interfaces.
 * [ko-jsx](https://github.com/ryansolid/ko-jsx): Knockout JS with JSX rendering.
 * [mobx-jsx](https://github.com/ryansolid/mobx-jsx): Ever wondered how much more performant MobX is without React? A lot.
@@ -71,21 +73,27 @@ The use of cloneNode improves repeat insert performance and precompilation reduc
 ## Plugin Options
 
 ### moduleName (required)
+
 The name of the runtime module to import the methods from.
 
 ### generate
+
 The output mode of the compiler. Can be "dom"(default), "ssr", or "hydrate". "dom" is standard output. "ssr" is for server side rendering that is hydrateable. And "hydrate" is for the client that hydrates the previously server rendered markup.s
 
 ### delegateEvents
+
 Boolean to indicate whether to enable automatic event delegation on camelCase.
 
+### wrapConditionals
+
+Boolean indicates whether smart conditional detection should be used. This optimizes simple boolean expressions and ternaries in JSX.
+
 ### contextToCustomElements
+
 Boolean indicates whether to set current render context on Custom Elements and slots. Useful for seemless Context API with Web Components.
 
-### alwaysCreateComponents
-Always use createComponent method instead of just calling the function. Needed to support class components.
-
 ### builtIns
+
 Array of Component exports from module, that aren't included by default with the library. This plugin will automatically import them if it comes across them in the JSX.
 
 ## Special Binding
@@ -116,6 +124,7 @@ These will be treated as event handlers expecting a function. All lowercase are 
   { list().map(item => <li model={item.id} onClick={handler} />) }
 </ul>
 ```
+
 This delegation solution works with Web Components and the Shadow DOM as well if the events are composed. That limits the list to custom events and most UA UI events like onClick, onKeyUp, onKeyDown, onDblClick, onInput, onMouseDown, onMouseUp, etc..
 
 Important:
@@ -141,7 +150,7 @@ Generic event method for Level 3 "addEventListener" events. Experimental.
 Spreads let you pass multiple props at once:
 
 ```jsx
-<div {...static} />
+<div {...props} />
 ```
 
 Keep in mind given the independent nature of binding updates there is no guarantee of order using spreads at this time. It's under consideration.
