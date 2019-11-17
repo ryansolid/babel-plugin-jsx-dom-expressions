@@ -26,15 +26,19 @@ const template = function () {
 
   _el$3.setAttribute("href", "/");
 
-  _$wrap(() => {
-    _el$2.title = welcoming();
+  _$wrap((_p$ = {}) => {
+    const _v$ = welcoming(),
+          _v$2 = {
+      selected: selected()
+    },
+          _v$3 = _p$._v$2;
+
+    _v$ !== _p$._v$ && (_el$2.title = _p$._v$ = _v$);
     Object.assign(_el$2.style, {
       backgroundColor: color()
     });
-
-    _$classList(_el$2, {
-      selected: selected()
-    });
+    _v$2 !== _p$._v$2 && _$classList(_el$2, _p$._v$2 = _v$2, _v$3);
+    return _p$;
   });
 
   return _el$;

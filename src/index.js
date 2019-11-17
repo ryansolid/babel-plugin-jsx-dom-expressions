@@ -110,7 +110,7 @@ export default babel => {
     return path.scope.getProgramParent().data.exprs.get(node.expression);
   }
 
-  function setAttr(path, elem, name, value, isSVG, dynamic) {
+  function setAttr(path, elem, name, value, isSVG, dynamic, prevId) {
     if (name === "style") {
       return t.callExpression(
         t.memberExpression(t.identifier("Object"), t.identifier("assign")),
@@ -120,7 +120,10 @@ export default babel => {
 
     if (name === "classList") {
       registerImportMethod(path, "classList");
-      return t.callExpression(t.identifier("_$classList"), [elem, value]);
+      return t.callExpression(
+        t.identifier("_$classList"),
+        prevId ? [elem, value, prevId] : [elem, value]
+      );
     }
 
     if (dynamic && name === "textContent") {
@@ -155,27 +158,75 @@ export default babel => {
   function wrapDynamics(path, dynamics) {
     if (!dynamics.length) return;
     registerImportMethod(path, "wrap");
-    const results =
-      dynamics.length === 1
-        ? setAttr(
-            path,
-            dynamics[0].elem,
-            dynamics[0].key,
-            dynamics[0].value,
-            dynamics[0].isSVG,
-            true
-          )
-        : t.blockStatement(
-            dynamics.map(({ elem, key, value, isSVG }) =>
-              t.expressionStatement(
-                setAttr(path, elem, key, value, isSVG, true)
+    let results, argument;
+    if (dynamics.length === 1) {
+      results = setAttr(
+        path,
+        dynamics[0].elem,
+        dynamics[0].key,
+        dynamics[0].value,
+        dynamics[0].isSVG,
+        true
+      );
+    } else {
+      const decls = [],
+        statements = [],
+        prevId = t.identifier("_p$");
+      argument = t.assignmentPattern(prevId, t.objectExpression([]));
+      dynamics.forEach(({ elem, key, value, isSVG }) => {
+        // no point diffing at this point as object
+        if (key === "style") {
+          statements.push(
+            t.expressionStatement(
+              setAttr(path, elem, key, value, isSVG, true)
+            )
+          );
+        } else {
+          const identifier = path.scope.generateUidIdentifier("v$");
+          decls.push(t.variableDeclarator(identifier, value));
+          // stash prev value for comparison
+          let prevValue;
+          if (key === "classList") {
+            prevValue = path.scope.generateUidIdentifier("v$");
+            decls.push(t.variableDeclarator(prevValue, t.memberExpression(prevId, identifier)))
+          }
+          statements.push(
+            t.expressionStatement(
+              t.logicalExpression(
+                "&&",
+                t.binaryExpression(
+                  "!==",
+                  identifier,
+                  t.memberExpression(prevId, identifier)
+                ),
+                setAttr(
+                  path,
+                  elem,
+                  key,
+                  t.assignmentExpression(
+                    "=",
+                    t.memberExpression(prevId, identifier),
+                    identifier
+                  ),
+                  isSVG,
+                  true,
+                  prevValue
+                )
               )
             )
           );
+        }
+      });
+      results = t.blockStatement([
+        t.variableDeclaration("const", decls),
+        ...statements,
+        t.returnStatement(prevId)
+      ]);
+    }
 
     return t.expressionStatement(
       t.callExpression(t.identifier("_$wrap"), [
-        t.arrowFunctionExpression([], results)
+        t.arrowFunctionExpression(argument ? [argument] : [], results)
       ])
     );
   }

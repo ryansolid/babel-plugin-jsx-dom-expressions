@@ -22,10 +22,12 @@ const template2 = function () {
 
   _el$2._context = _$currentContext();
 
-  _$wrap(() => {
-    _el$2.setAttribute("some-attr", state.name);
-
-    _el$2.someProp = state.data;
+  _$wrap((_p$ = {}) => {
+    const _v$ = state.name,
+          _v$2 = state.data;
+    _v$ !== _p$._v$ && _el$2.setAttribute("some-attr", _p$._v$ = _v$);
+    _v$2 !== _p$._v$2 && (_el$2.someProp = _p$._v$2 = _v$2);
+    return _p$;
   });
 
   return _el$2;
