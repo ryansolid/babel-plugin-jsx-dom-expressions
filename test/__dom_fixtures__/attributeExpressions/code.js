@@ -1,7 +1,12 @@
 const template = (
-  <div id="main" classList={{ selected: selected }} style={{ color }}>
+  <div
+    id="main"
+    {...results}
+    classList={{ selected: selected }}
+    style={{ color }}
+  >
     <h1
-      {...results}
+      {...results()}
       disabled
       title={welcoming()}
       style={{ backgroundColor: color() }}

@@ -39,7 +39,7 @@ const template3 = function () {
   const _el$4 = _tmpl$3.cloneNode(true),
         _el$5 = _el$4.firstChild;
 
-  _$spread(_el$5, () => props, true);
+  _$spread(_el$5, props, true);
 
   return _el$4;
 }();

@@ -107,7 +107,7 @@ export default babel => {
   }
 
   function lookupPathForExpr(path, node) {
-    return path.scope.getProgramParent().data.exprs.get(node.expression);
+    return path.scope.getProgramParent().data.exprs.get(node);
   }
 
   function setAttr(path, elem, name, value, isSVG, dynamic, prevId) {
@@ -177,9 +177,7 @@ export default babel => {
         // no point diffing at this point as object
         if (key === "style") {
           statements.push(
-            t.expressionStatement(
-              setAttr(path, elem, key, value, isSVG, true)
-            )
+            t.expressionStatement(setAttr(path, elem, key, value, isSVG, true))
           );
         } else {
           const identifier = path.scope.generateUidIdentifier("v$");
@@ -188,7 +186,12 @@ export default babel => {
           let prevValue;
           if (key === "classList") {
             prevValue = path.scope.generateUidIdentifier("v$");
-            decls.push(t.variableDeclarator(prevValue, t.memberExpression(prevId, identifier)))
+            decls.push(
+              t.variableDeclarator(
+                prevValue,
+                t.memberExpression(prevId, identifier)
+              )
+            );
           }
           statements.push(
             t.expressionStatement(
@@ -549,7 +552,11 @@ export default babel => {
               t.objectProperty(t.identifier("ref"), value.expression)
             );
           } else if (
-            isDynamic(value.expression, lookupPathForExpr(path, value), true)
+            isDynamic(
+              value.expression,
+              lookupPathForExpr(path, value.expression),
+              true
+            )
           ) {
             dynamicKeys.push(t.stringLiteral(attribute.name.name));
             const expr =
@@ -557,7 +564,7 @@ export default babel => {
               (t.isLogicalExpression(value.expression) ||
                 t.isConditionalExpression(value.expression))
                 ? transformCondition(
-                    lookupPathForExpr(path, value),
+                    lookupPathForExpr(path, value.expression),
                     value.expression
                   )
                 : t.arrowFunctionExpression([], value.expression);
@@ -617,7 +624,12 @@ export default babel => {
           t.expressionStatement(
             t.callExpression(spread, [
               elem,
-              t.arrowFunctionExpression([], attribute.argument),
+              isDynamic(
+                attribute.argument,
+                lookupPathForExpr(path, attribute.argument)
+              )
+                ? t.arrowFunctionExpression([], attribute.argument)
+                : attribute.argument,
               t.booleanLiteral(isSVG)
             ])
           )
@@ -692,7 +704,7 @@ export default babel => {
             )
           );
         } else if (
-          isDynamic(value.expression, lookupPathForExpr(path, value))
+          isDynamic(value.expression, lookupPathForExpr(path, value.expression))
         ) {
           if (key === "textContent") {
             const textId = path.scope.generateUidIdentifier("el$");
@@ -948,7 +960,7 @@ export default babel => {
       if (
         !isDynamic(
           jsx.expression,
-          lookupPathForExpr(path, jsx),
+          lookupPathForExpr(path, jsx.expression),
           !!info.componentChild
         )
       )
@@ -957,7 +969,10 @@ export default babel => {
         wrapConditionals &&
         (t.isLogicalExpression(jsx.expression) ||
           t.isConditionalExpression(jsx.expression))
-          ? transformCondition(lookupPathForExpr(path, jsx), jsx.expression)
+          ? transformCondition(
+              lookupPathForExpr(path, jsx.expression),
+              jsx.expression
+            )
           : t.arrowFunctionExpression([], jsx.expression);
       return {
         exprs: [expr],
@@ -1018,6 +1033,9 @@ export default babel => {
           path.traverse({
             JSXExpressionContainer(p) {
               exprs.set(p.node.expression, p.get("expression"));
+            },
+            JSXSpreadAttribute(p) {
+              exprs.set(p.node.argument, p.get("arguments"));
             }
           });
         },
