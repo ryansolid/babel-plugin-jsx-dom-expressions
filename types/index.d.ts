@@ -441,20 +441,18 @@ declare global {
 
     interface HTMLAttributes<T> extends DOMAttributes<T> {
       // Standard HTML Attributes
-      accesskey?: string;
+      accessKey?: string;
       className?: string;
-      contenteditable?: boolean | "inherit";
-      contextmenu?: string;
+      contentEditable?: boolean | "inherit";
+      contextMenu?: string;
       dir?: HTMLDir;
       draggable?: boolean;
       hidden?: boolean;
       id?: string;
       lang?: string;
-      placeholder?: string;
-      slot?: string;
       spellcheck?: boolean;
       style?: Partial<CSSStyleDeclaration>;
-      tabindex?: number;
+      tabIndex?: number;
       title?: string;
       translate?: "yes" | "no";
 
@@ -469,18 +467,13 @@ declare global {
       vocab?: string;
 
       // Non-standard Attributes
-      autocapitalize?: HTMLAutocapitalize;
-      autocorrect?: string;
-      autosave?: string;
+      autoCapitalize?: HTMLAutocapitalize;
       color?: string;
-      itemprop?: string;
-      itemscope?: boolean;
-      itemtype?: string;
-      itemid?: string;
-      itemref?: string;
-      results?: number | string;
-      security?: string;
-      unselectable?: boolean;
+      itemProp?: string;
+      itemScope?: boolean;
+      itemType?: string;
+      itemId?: string;
+      itemRef?: string;
     }
 
     // HTML Elements
@@ -491,7 +484,7 @@ declare global {
       hreflang?: string;
       media?: string;
       ping?: string;
-      referrerpolicy: HTMLReferrerPolicy;
+      referrerPolicy: HTMLReferrerPolicy;
       rel?: string;
       target?: string;
       type?: string;
@@ -506,7 +499,7 @@ declare global {
       href?: string;
       hreflang?: string;
       ping?: string;
-      referrerpolicy: HTMLReferrerPolicy;
+      referrerPolicy: HTMLReferrerPolicy;
       rel?: string;
       shape?: "rect" | "circle" | "poly" | "default";
       target?: string;
@@ -525,11 +518,11 @@ declare global {
       autofocus?: boolean;
       disabled?: boolean;
       form?: string;
-      formaction?: string;
-      formenctype?: HTMLFormEncType;
-      formmethod?: HTMLFormMethod;
-      formnovalidate?: boolean;
-      formtarget?: string;
+      formAction?: string;
+      formEnctype?: HTMLFormEncType;
+      formMethod?: HTMLFormMethod;
+      formNoValidate?: boolean;
+      formTarget?: string;
       name?: string;
       type?: "submit" | "reset" | "button";
       value?: string;
@@ -578,23 +571,12 @@ declare global {
       acceptCharset?: string;
       action?: string;
       autocomplete?: string;
+      encoding?: HTMLFormEncType;
       enctype?: HTMLFormEncType;
       method?: HTMLFormMethod;
       name?: string;
-      novalidate?: boolean;
+      noValidate?: boolean;
       target?: string;
-    }
-
-    interface MediaHTMLAttributes<T> extends HTMLAttributes<T> {
-      autoplay?: boolean;
-      controls?: boolean;
-      crossorigin?: HTMLCrossorigin;
-      loop?: boolean;
-      mediagroup?: string;
-      muted?: boolean;
-      playsinline?: boolean;
-      preload?: "none" | "metadata" | "auto" | "";
-      src?: string;
     }
 
     interface IframeHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -602,7 +584,7 @@ declare global {
       allowfullscreen?: boolean;
       height?: number | string;
       name?: string;
-      referrerpolicy: HTMLReferrerPolicy;
+      referrerPolicy: HTMLReferrerPolicy;
       sandbox?: HTMLIframeSandbox;
       src?: string;
       srcdoc?: string;
@@ -611,10 +593,10 @@ declare global {
 
     interface ImgHTMLAttributes<T> extends HTMLAttributes<T> {
       alt?: string;
-      crossorigin?: HTMLCrossorigin;
+      crossOrigin?: HTMLCrossorigin;
       decoding?: "sync" | "async" | "auto";
       height?: number;
-      referrerpolicy?: HTMLReferrerPolicy;
+      referrerPolicy?: HTMLReferrerPolicy;
       sizes?: string;
       src?: string;
       srcset?: string;
@@ -628,25 +610,25 @@ declare global {
       autofocus?: boolean;
       capture?: boolean | string;
       checked?: boolean;
-      crossorigin?: HTMLCrossorigin;
+      crossOrigin?: HTMLCrossorigin;
       disabled?: boolean;
       form?: string;
-      formaction?: string;
-      formenctype?: HTMLFormEncType;
-      formmethod?: HTMLFormMethod;
-      formnovalidate?: boolean;
-      formtarget?: string;
+      formAction?: string;
+      formEnctype?: HTMLFormEncType;
+      formMethod?: HTMLFormMethod;
+      formNoValidate?: boolean;
+      formTarget?: string;
       height?: number | string;
       list?: string;
       max?: number | string;
-      maxlength?: number;
+      maxLength?: number;
       min?: number | string;
-      minlength?: number;
+      minLength?: number;
       multiple?: boolean;
       name?: string;
       pattern?: string;
       placeholder?: string;
-      readonly?: boolean;
+      readOnly?: boolean;
       required?: boolean;
       size?: number;
       src?: string;
@@ -658,7 +640,7 @@ declare global {
 
     interface InsHTMLAttributes<T> extends HTMLAttributes<T> {
       cite?: string;
-      datetime?: string;
+      dateTime?: string;
     }
 
     interface KeygenHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -682,13 +664,13 @@ declare global {
 
     interface LinkHTMLAttributes<T> extends HTMLAttributes<T> {
       as?: HTMLLinkAs;
-      crossorigin?: HTMLCrossorigin;
+      crossOrigin?: HTMLCrossorigin;
       disabled?: boolean;
       href?: string;
       hreflang?: string;
       integrity?: string;
       media?: string;
-      referrerpolicy?: HTMLReferrerPolicy;
+      referrerPolicy?: HTMLReferrerPolicy;
       rel?: string;
       sizes?: string;
       type?: string;
@@ -696,6 +678,17 @@ declare global {
 
     interface MapHTMLAttributes<T> extends HTMLAttributes<T> {
       name?: string;
+    }
+
+    interface MediaHTMLAttributes<T> extends HTMLAttributes<T> {
+      autoplay?: boolean;
+      controls?: boolean;
+      crossOrigin?: HTMLCrossorigin;
+      loop?: boolean;
+      mediaGroup?: string;
+      muted?: boolean;
+      preload?: "none" | "metadata" | "auto" | "";
+      src?: string;
     }
 
     interface MenuHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -730,7 +723,7 @@ declare global {
       height?: number | string;
       name?: string;
       type?: string;
-      usemap?: string;
+      useMap?: string;
       width?: number | string;
     }
 
@@ -771,12 +764,12 @@ declare global {
     interface ScriptHTMLAttributes<T> extends HTMLAttributes<T> {
       async?: boolean;
       charset?: string;
-      crossorigin?: HTMLCrossorigin;
+      crossOrigin?: HTMLCrossorigin;
       defer?: boolean;
       integrity?: string;
-      nomodule?: boolean;
+      noModule?: boolean;
       nonce?: string;
-      referrerpolicy: HTMLReferrerPolicy;
+      referrerPolicy: HTMLReferrerPolicy;
       src?: string;
       type?: string;
     }
@@ -809,9 +802,9 @@ declare global {
     }
 
     interface TdHTMLAttributes<T> extends HTMLAttributes<T> {
-      colspan?: number;
+      colSpan?: number;
       headers?: string;
-      rowspan?: number;
+      rowSpan?: number;
     }
 
     interface TextareaHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -821,11 +814,11 @@ declare global {
       dirname?: string;
       disabled?: boolean;
       form?: string;
-      maxlength?: number;
-      minlength?: number;
+      maxLength?: number;
+      minLength?: number;
       name?: string;
       placeholder?: string;
-      readonly?: boolean;
+      readOnly?: boolean;
       required?: boolean;
       rows?: number;
       value?: string | string[] | number;
@@ -833,13 +826,13 @@ declare global {
     }
 
     interface ThHTMLAttributes<T> extends HTMLAttributes<T> {
-      colspan?: number;
+      colSpan?: number;
       headers?: string;
-      rowspan?: number;
+      rowSpan?: number;
     }
 
     interface TimeHTMLAttributes<T> extends HTMLAttributes<T> {
-      datetime?: string;
+      dateTime?: string;
     }
 
     interface TrackHTMLAttributes<T> extends HTMLAttributes<T> {
