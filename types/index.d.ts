@@ -37,7 +37,7 @@ declare global {
       | (() => Child[]);
 
     interface EventHandler<T, E extends Event> {
-      (e: E & { currentTarget: T, target: T }): void;
+      (e: E & { currentTarget: T; target: T }): void;
     }
 
     // Intrinsic attributes enable us to define certain keys as attributes on an element, while
@@ -105,18 +105,18 @@ declare global {
       onchange?: EventHandler<T, Event>;
       onChangeCapture?: EventHandler<T, Event>;
       onchangecapture?: EventHandler<T, Event>;
-      onInput?: EventHandler<T, Event>;
-      oninput?: EventHandler<T, Event>;
-      onInputCapture?: EventHandler<T, Event>;
-      oninputcapture?: EventHandler<T, Event>;
+      onInput?: EventHandler<T, InputEvent>;
+      oninput?: EventHandler<T, InputEvent>;
+      onInputCapture?: EventHandler<T, InputEvent>;
+      oninputcapture?: EventHandler<T, InputEvent>;
       onReset?: EventHandler<T, Event>;
       onreset?: EventHandler<T, Event>;
       onResetCapture?: EventHandler<T, Event>;
       onresetcapture?: EventHandler<T, Event>;
-      onSubmit?: EventHandler<T, Event>;
-      onsubmit?: EventHandler<T, Event>;
-      onSubmitCapture?: EventHandler<T, Event>;
-      onsubmitcapture?: EventHandler<T, Event>;
+      onSubmit?: EventHandler<T, FocusEvent>;
+      onsubmit?: EventHandler<T, FocusEvent>;
+      onSubmitCapture?: EventHandler<T, FocusEvent>;
+      onsubmitcapture?: EventHandler<T, FocusEvent>;
 
       // Image Events
       onLoad?: EventHandler<T, Event>;
@@ -143,26 +143,26 @@ declare global {
       onkeyupcapture?: EventHandler<T, KeyboardEvent>;
 
       // Pointer Events
-      onGotPointerCapture?: EventHandler<T, Event>;
-      ongotpointercapture?: EventHandler<T, Event>;
-      onLostPointerCapture?: EventHandler<T, Event>;
-      onlostpointercapture?: EventHandler<T, Event>;
-      onPointerCancel?: EventHandler<T, Event>;
-      onpointercancel?: EventHandler<T, Event>;
-      onPointerDown?: EventHandler<T, Event>;
-      onpointerdown?: EventHandler<T, Event>;
-      onPointerEnter?: EventHandler<T, Event>;
-      onpointerenter?: EventHandler<T, Event>;
-      onPointerLeave?: EventHandler<T, Event>;
-      onpointerleave?: EventHandler<T, Event>;
-      onPointerMove?: EventHandler<T, Event>;
-      onpointermove?: EventHandler<T, Event>;
-      onPointerOver?: EventHandler<T, Event>;
-      onpointerover?: EventHandler<T, Event>;
-      onPointerOut?: EventHandler<T, Event>;
-      onpointerout?: EventHandler<T, Event>;
-      onPointerUp?: EventHandler<T, Event>;
-      onpointerup?: EventHandler<T, Event>;
+      onGotPointerCapture?: EventHandler<T, PointerEvent>;
+      ongotpointercapture?: EventHandler<T, PointerEvent>;
+      onLostPointerCapture?: EventHandler<T, PointerEvent>;
+      onlostpointercapture?: EventHandler<T, PointerEvent>;
+      onPointerCancel?: EventHandler<T, PointerEvent>;
+      onpointercancel?: EventHandler<T, PointerEvent>;
+      onPointerDown?: EventHandler<T, PointerEvent>;
+      onpointerdown?: EventHandler<T, PointerEvent>;
+      onPointerEnter?: EventHandler<T, PointerEvent>;
+      onpointerenter?: EventHandler<T, PointerEvent>;
+      onPointerLeave?: EventHandler<T, PointerEvent>;
+      onpointerleave?: EventHandler<T, PointerEvent>;
+      onPointerMove?: EventHandler<T, PointerEvent>;
+      onpointermove?: EventHandler<T, PointerEvent>;
+      onPointerOver?: EventHandler<T, PointerEvent>;
+      onpointerover?: EventHandler<T, PointerEvent>;
+      onPointerOut?: EventHandler<T, PointerEvent>;
+      onpointerout?: EventHandler<T, PointerEvent>;
+      onPointerUp?: EventHandler<T, PointerEvent>;
+      onpointerup?: EventHandler<T, PointerEvent>;
 
       // Media Events
       onAbort?: EventHandler<T, Event>;
@@ -325,10 +325,10 @@ declare global {
       onmouseupcapture?: EventHandler<T, MouseEvent>;
 
       // Selection Events
-      onSelect?: EventHandler<T, Event>;
-      onselect?: EventHandler<T, Event>;
-      onSelectCapture?: EventHandler<T, Event>;
-      onselectcapture?: EventHandler<T, Event>;
+      onSelect?: EventHandler<T, UIEvent>;
+      onselect?: EventHandler<T, UIEvent>;
+      onSelectCapture?: EventHandler<T, UIEvent>;
+      onselectcapture?: EventHandler<T, UIEvent>;
 
       // Touch Events
       onTouchCancel?: EventHandler<T, TouchEvent>;
@@ -381,136 +381,80 @@ declare global {
       ontransitionendcapture?: EventHandler<T, TransitionEvent>;
     }
 
+    type HTMLAutocapitalize =
+      | "off"
+      | "none"
+      | "on"
+      | "sentences"
+      | "words"
+      | "characters";
+
+    type HTMLDir = "ltr" | "rtl" | "auto";
+
+    type HTMLFormEncType =
+      | "application/x-www-form-urlencoded"
+      | "multipart/form-data"
+      | "text/plain";
+
+    type HTMLFormMethod = "post" | "get" | "dialog";
+
+    type HTMLCrossorigin = "anonymous" | "use-credentials" | "";
+
+    type HTMLReferrerPolicy =
+      | "no-referrer"
+      | "no-referrer-when-downgrade"
+      | "origin"
+      | "origin-when-cross-origin"
+      | "same-origin"
+      | "strict-origin"
+      | "strict-origin-when-cross-origin"
+      | "unsafe-url";
+
+    type HTMLIframeSandbox =
+      | "allow-downloads-without-user-activation"
+      | "allow-forms"
+      | "allow-modals"
+      | "allow-orientation-lock"
+      | "allow-pointer-lock"
+      | "allow-popups"
+      | "allow-popups-to-escape-sandbox"
+      | "allow-presentation"
+      | "allow-same-origin"
+      | "allow-scripts"
+      | "allow-storage-access-by-user-activation"
+      | "allow-top-navigation"
+      | "allow-top-navigation-by-user-activation";
+
+    type HTMLLinkAs =
+      | "audio"
+      | "document"
+      | "embed"
+      | "fetch"
+      | "font"
+      | "image"
+      | "object"
+      | "script"
+      | "style"
+      | "track"
+      | "video"
+      | "worker";
+
     interface HTMLAttributes<T> extends DOMAttributes<T> {
       // Standard HTML Attributes
-      accept?: string;
-      acceptCharset?: string;
       accessKey?: string;
-      action?: string;
-      allowFullScreen?: boolean;
-      allowFullscreen?: boolean;
-      allowTransparency?: boolean;
-      alt?: string;
-      async?: boolean;
-      autocomplete?: string;
-      autoFocus?: boolean;
-      autofocus?: boolean;
-      autoPlay?: boolean;
-      autoplay?: boolean;
-      capture?: boolean;
-      cellpadding?: number | string;
-      cellspacing?: number | string;
-      charSet?: string;
-      challenge?: string;
-      checked?: boolean;
-      classID?: string;
       className?: string;
-      class?: string;
-      cols?: number | string;
-      colSpan?: number | string;
-      content?: string;
-      contenteditable?: boolean;
-      contextmenu?: string;
-      controls?: boolean;
-      coords?: string;
-      crossorigin?: string;
-      data?: string;
-      dataset?: string;
-      dateTime?: string;
-      default?: boolean;
-      defer?: boolean;
-      dir?: string;
-      disabled?: boolean;
-      download?: any;
+      contentEditable?: boolean | "inherit";
+      contextMenu?: string;
+      dir?: HTMLDir;
       draggable?: boolean;
-      enctype?: string;
-      form?: string;
-      formAction?: string;
-      formEncType?: string;
-      formMethod?: string;
-      formNoValidate?: boolean;
-      formTarget?: string;
-      frameBorder?: number | string;
-      headers?: string;
-      height?: number | string;
       hidden?: boolean;
-      high?: number | string;
-      href?: string;
-      hreflang?: string;
-      htmlFor?: string;
-      for?: string;
-      httpEquiv?: string;
       id?: string;
-      innerText?: string | number;
-      inputmode?: string;
-      integrity?: string;
-      is?: string;
-      keytype?: string;
-      kind?: string;
-      label?: string;
       lang?: string;
-      list?: string;
-      loop?: boolean;
-      low?: number | string;
-      manifest?: string;
-      marginheight?: number | string;
-      marginwidth?: number | string;
-      max?: number | string;
-      maxLength?: number | string;
-      media?: string;
-      mediaGroup?: string;
-      method?: string;
-      min?: number | string;
-      minLength?: number | string;
-      multiple?: boolean;
-      muted?: boolean;
-      name?: string;
-      nonce?: string;
-      novalidate?: boolean;
-      open?: boolean;
-      optimum?: number | string;
-      pattern?: string;
-      placeholder?: string;
-      playsinline?: boolean;
-      poster?: string;
-      preload?: string;
-      radiogroup?: string;
-      readonly?: boolean;
-      rel?: string;
-      required?: boolean;
-      reversed?: boolean;
-      role?: string;
-      rows?: number | string;
-      rowspan?: number | string;
-      sandbox?: string;
-      scope?: string;
-      scoped?: boolean;
-      scrolling?: string;
-      seamless?: boolean;
-      selected?: boolean;
-      shape?: string;
-      size?: number | string;
-      sizes?: string;
-      span?: number | string;
-      spellCheck?: boolean;
       spellcheck?: boolean;
-      src?: string;
-      srcdoc?: string;
-      srclang?: string;
-      srcset?: string;
-      start?: number | string;
-      step?: number | string;
       style?: Partial<CSSStyleDeclaration>;
-      summary?: string;
-      tabindex?: number | string;
-      target?: string;
+      tabIndex?: number;
       title?: string;
-      type?: string;
-      useMap?: string;
-      value?: string | string[] | number;
-      width?: number | string;
-      wmode?: string;
-      wrap?: string;
+      translate?: "yes" | "no";
 
       // RDFa Attributes
       about?: string;
@@ -523,23 +467,396 @@ declare global {
       vocab?: string;
 
       // Non-standard Attributes
-      autoCapitalize?: string;
-      autocapitalize?: string;
-      autocorrect?: string;
-      autosave?: string;
+      autoCapitalize?: HTMLAutocapitalize;
       color?: string;
-      itemprop?: string;
-      itemscope?: boolean;
-      itemtype?: string;
-      itemid?: string;
-      itemref?: string;
-      results?: number | string;
-      security?: string;
-      unselectable?: boolean;
+      itemProp?: string;
+      itemScope?: boolean;
+      itemType?: string;
+      itemId?: string;
+      itemRef?: string;
     }
 
+    // HTML Elements
+
+    interface AnchorHTMLAttributes<T> extends HTMLAttributes<T> {
+      download?: any;
+      href?: string;
+      hreflang?: string;
+      media?: string;
+      ping?: string;
+      referrerPolicy: HTMLReferrerPolicy;
+      rel?: string;
+      target?: string;
+      type?: string;
+    }
+
+    interface AudioHTMLAttributes<T> extends MediaHTMLAttributes<T> {}
+
+    interface AreaHTMLAttributes<T> extends HTMLAttributes<T> {
+      alt?: string;
+      coords?: string;
+      download?: any;
+      href?: string;
+      hreflang?: string;
+      ping?: string;
+      referrerPolicy: HTMLReferrerPolicy;
+      rel?: string;
+      shape?: "rect" | "circle" | "poly" | "default";
+      target?: string;
+    }
+
+    interface BaseHTMLAttributes<T> extends HTMLAttributes<T> {
+      href?: string;
+      target?: string;
+    }
+
+    interface BlockquoteHTMLAttributes<T> extends HTMLAttributes<T> {
+      cite?: string;
+    }
+
+    interface ButtonHTMLAttributes<T> extends HTMLAttributes<T> {
+      autofocus?: boolean;
+      disabled?: boolean;
+      form?: string;
+      formAction?: string;
+      formEnctype?: HTMLFormEncType;
+      formMethod?: HTMLFormMethod;
+      formNoValidate?: boolean;
+      formTarget?: string;
+      name?: string;
+      type?: "submit" | "reset" | "button";
+      value?: string;
+    }
+
+    interface CanvasHTMLAttributes<T> extends HTMLAttributes<T> {
+      width?: number | string;
+      height?: number | string;
+    }
+
+    interface ColHTMLAttributes<T> extends HTMLAttributes<T> {
+      span?: number;
+      width?: number | string;
+    }
+
+    interface ColgroupHTMLAttributes<T> extends HTMLAttributes<T> {
+      span?: number;
+    }
+
+    interface DataHTMLAttributes<T> extends HTMLAttributes<T> {
+      value?: string | string[] | number;
+    }
+
+    interface DetailsHtmlAttributes<T> extends HTMLAttributes<T> {
+      open?: boolean;
+    }
+
+    interface DialogHtmlAttributes<T> extends HTMLAttributes<T> {
+      open?: boolean;
+    }
+
+    interface EmbedHTMLAttributes<T> extends HTMLAttributes<T> {
+      height?: number | string;
+      src?: string;
+      type?: string;
+      width?: number | string;
+    }
+
+    interface FieldsetHTMLAttributes<T> extends HTMLAttributes<T> {
+      disabled?: boolean;
+      form?: string;
+      name?: string;
+    }
+
+    interface FormHTMLAttributes<T> extends HTMLAttributes<T> {
+      acceptCharset?: string;
+      action?: string;
+      autocomplete?: string;
+      encoding?: HTMLFormEncType;
+      enctype?: HTMLFormEncType;
+      method?: HTMLFormMethod;
+      name?: string;
+      noValidate?: boolean;
+      target?: string;
+    }
+
+    interface IframeHTMLAttributes<T> extends HTMLAttributes<T> {
+      allow?: string;
+      allowfullscreen?: boolean;
+      height?: number | string;
+      name?: string;
+      referrerPolicy: HTMLReferrerPolicy;
+      sandbox?: HTMLIframeSandbox;
+      src?: string;
+      srcdoc?: string;
+      width?: number | string;
+    }
+
+    interface ImgHTMLAttributes<T> extends HTMLAttributes<T> {
+      alt?: string;
+      crossOrigin?: HTMLCrossorigin;
+      decoding?: "sync" | "async" | "auto";
+      height?: number;
+      referrerPolicy?: HTMLReferrerPolicy;
+      sizes?: string;
+      src?: string;
+      srcset?: string;
+      width?: number;
+    }
+
+    interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
+      accept?: string;
+      alt?: string;
+      autocomplete?: string;
+      autofocus?: boolean;
+      capture?: boolean | string;
+      checked?: boolean;
+      crossOrigin?: HTMLCrossorigin;
+      disabled?: boolean;
+      form?: string;
+      formAction?: string;
+      formEnctype?: HTMLFormEncType;
+      formMethod?: HTMLFormMethod;
+      formNoValidate?: boolean;
+      formTarget?: string;
+      height?: number | string;
+      list?: string;
+      max?: number | string;
+      maxLength?: number;
+      min?: number | string;
+      minLength?: number;
+      multiple?: boolean;
+      name?: string;
+      pattern?: string;
+      placeholder?: string;
+      readOnly?: boolean;
+      required?: boolean;
+      size?: number;
+      src?: string;
+      step?: number | string;
+      type?: string;
+      value?: string | string[] | number;
+      width?: number | string;
+    }
+
+    interface InsHTMLAttributes<T> extends HTMLAttributes<T> {
+      cite?: string;
+      dateTime?: string;
+    }
+
+    interface KeygenHTMLAttributes<T> extends HTMLAttributes<T> {
+      autofocus?: boolean;
+      challenge?: string;
+      disabled?: boolean;
+      form?: string;
+      keytype?: string;
+      keyparams?: string;
+      name?: string;
+    }
+
+    interface LabelHTMLAttributes<T> extends HTMLAttributes<T> {
+      htmlFor?: string;
+      form?: string;
+    }
+
+    interface LiHTMLAttributes<T> extends HTMLAttributes<T> {
+      value?: number;
+    }
+
+    interface LinkHTMLAttributes<T> extends HTMLAttributes<T> {
+      as?: HTMLLinkAs;
+      crossOrigin?: HTMLCrossorigin;
+      disabled?: boolean;
+      href?: string;
+      hreflang?: string;
+      integrity?: string;
+      media?: string;
+      referrerPolicy?: HTMLReferrerPolicy;
+      rel?: string;
+      sizes?: string;
+      type?: string;
+    }
+
+    interface MapHTMLAttributes<T> extends HTMLAttributes<T> {
+      name?: string;
+    }
+
+    interface MediaHTMLAttributes<T> extends HTMLAttributes<T> {
+      autoplay?: boolean;
+      controls?: boolean;
+      crossOrigin?: HTMLCrossorigin;
+      loop?: boolean;
+      mediaGroup?: string;
+      muted?: boolean;
+      preload?: "none" | "metadata" | "auto" | "";
+      src?: string;
+    }
+
+    interface MenuHTMLAttributes<T> extends HTMLAttributes<T> {
+      label?: string;
+      type?: "context" | "toolbar";
+    }
+
+    interface MetaHTMLAttributes<T> extends HTMLAttributes<T> {
+      charset?: string;
+      content?: string;
+      httpEquiv?: string;
+      name?: string;
+    }
+
+    interface MeterHTMLAttributes<T> extends HTMLAttributes<T> {
+      form?: string;
+      high?: number;
+      low?: number;
+      max?: number | string;
+      min?: number | string;
+      optimum?: number;
+      value?: string | string[] | number;
+    }
+
+    interface QuoteHTMLAttributes<T> extends HTMLAttributes<T> {
+      cite?: string;
+    }
+
+    interface ObjectHTMLAttributes<T> extends HTMLAttributes<T> {
+      data?: string;
+      form?: string;
+      height?: number | string;
+      name?: string;
+      type?: string;
+      useMap?: string;
+      width?: number | string;
+    }
+
+    interface OlHTMLAttributes<T> extends HTMLAttributes<T> {
+      reversed?: boolean;
+      start?: number;
+      type?: "1" | "a" | "A" | "i" | "I";
+    }
+
+    interface OptgroupHTMLAttributes<T> extends HTMLAttributes<T> {
+      disabled?: boolean;
+      label?: string;
+    }
+
+    interface OptionHTMLAttributes<T> extends HTMLAttributes<T> {
+      disabled?: boolean;
+      label?: string;
+      selected?: boolean;
+      value?: string | string[] | number;
+    }
+
+    interface OutputHTMLAttributes<T> extends HTMLAttributes<T> {
+      form?: string;
+      htmlFor?: string;
+      name?: string;
+    }
+
+    interface ParamHTMLAttributes<T> extends HTMLAttributes<T> {
+      name?: string;
+      value?: string | string[] | number;
+    }
+
+    interface ProgressHTMLAttributes<T> extends HTMLAttributes<T> {
+      max?: number | string;
+      value?: string | string[] | number;
+    }
+
+    interface ScriptHTMLAttributes<T> extends HTMLAttributes<T> {
+      async?: boolean;
+      charset?: string;
+      crossOrigin?: HTMLCrossorigin;
+      defer?: boolean;
+      integrity?: string;
+      noModule?: boolean;
+      nonce?: string;
+      referrerPolicy: HTMLReferrerPolicy;
+      src?: string;
+      type?: string;
+    }
+
+    interface SelectHTMLAttributes<T> extends HTMLAttributes<T> {
+      autocomplete?: string;
+      autofocus?: boolean;
+      disabled?: boolean;
+      form?: string;
+      multiple?: boolean;
+      name?: string;
+      required?: boolean;
+      size?: number;
+      value?: string | string[] | number;
+    }
+
+    interface SourceHTMLAttributes<T> extends HTMLAttributes<T> {
+      media?: string;
+      sizes?: string;
+      src?: string;
+      srcset?: string;
+      type?: string;
+    }
+
+    interface StyleHTMLAttributes<T> extends HTMLAttributes<T> {
+      media?: string;
+      nonce?: string;
+      scoped?: boolean;
+      type?: string;
+    }
+
+    interface TdHTMLAttributes<T> extends HTMLAttributes<T> {
+      colSpan?: number;
+      headers?: string;
+      rowSpan?: number;
+    }
+
+    interface TextareaHTMLAttributes<T> extends HTMLAttributes<T> {
+      autocomplete?: string;
+      autofocus?: boolean;
+      cols?: number;
+      dirname?: string;
+      disabled?: boolean;
+      form?: string;
+      maxLength?: number;
+      minLength?: number;
+      name?: string;
+      placeholder?: string;
+      readOnly?: boolean;
+      required?: boolean;
+      rows?: number;
+      value?: string | string[] | number;
+      wrap?: "hard" | "soft" | "off";
+    }
+
+    interface ThHTMLAttributes<T> extends HTMLAttributes<T> {
+      colSpan?: number;
+      headers?: string;
+      rowSpan?: number;
+    }
+
+    interface TimeHTMLAttributes<T> extends HTMLAttributes<T> {
+      dateTime?: string;
+    }
+
+    interface TrackHTMLAttributes<T> extends HTMLAttributes<T> {
+      default?: boolean;
+      kind?:
+        | "subtitles"
+        | "captions"
+        | "descriptions"
+        | "chapters"
+        | "metadata";
+      label?: string;
+      src?: string;
+      srclang?: string;
+    }
+
+    interface VideoHTMLAttributes<T> extends MediaHTMLAttributes<T> {
+      height?: number | string;
+      playsinline?: boolean;
+      poster?: string;
+      width?: number | string;
+    }
+
+    // SVG Elements
     interface SVGAttributes<T> extends HTMLAttributes<T> {
-      accentHeight?: number | string;
       accumulate?: "none" | "sum";
       additive?: "replace" | "sum";
       alignmentBaseline?:
@@ -557,10 +874,7 @@ declare global {
         | "mathematical"
         | "inherit";
       allowReorder?: "no" | "yes";
-      alphabetic?: number | string;
       amplitude?: number | string;
-      arabicForm?: "initial" | "medial" | "terminal" | "isolated";
-      ascent?: number | string;
       attributeName?: string;
       attributeType?: string;
       autoReverse?: number | string;
@@ -568,12 +882,10 @@ declare global {
       baseFrequency?: number | string;
       baselineShift?: number | string;
       baseProfile?: number | string;
-      bbox?: number | string;
       begin?: number | string;
       bias?: number | string;
       by?: number | string;
       calcMode?: number | string;
-      capHeight?: number | string;
       clip?: number | string;
       clipPath?: string;
       clipPathUnits?: number | string;
@@ -589,7 +901,6 @@ declare global {
       cy?: number | string;
       d?: string;
       decelerate?: number | string;
-      descent?: number | string;
       diffuseConstant?: number | string;
       direction?: number | string;
       display?: number | string;
@@ -624,18 +935,11 @@ declare global {
       from?: number | string;
       fx?: number | string;
       fy?: number | string;
-      g1?: number | string;
-      g2?: number | string;
-      glyphName?: number | string;
       glyphOrientationHorizontal?: number | string;
       glyphOrientationVertical?: number | string;
       glyphRef?: number | string;
       gradientTransform?: string;
       gradientUnits?: string;
-      hanging?: number | string;
-      horizAdvX?: number | string;
-      horizOriginX?: number | string;
-      ideographic?: number | string;
       imageRendering?: number | string;
       in2?: number | string;
       in?: string;
@@ -644,7 +948,6 @@ declare global {
       k2?: number | string;
       k3?: number | string;
       k4?: number | string;
-      k?: number | string;
       kernelMatrix?: number | string;
       kernelUnitLength?: number | string;
       kerning?: number | string;
@@ -655,7 +958,6 @@ declare global {
       letterSpacing?: number | string;
       lightingColor?: number | string;
       limitingConeAngle?: number | string;
-      local?: number | string;
       markerEnd?: string;
       markerHeight?: number | string;
       markerMid?: string;
@@ -665,7 +967,6 @@ declare global {
       mask?: string;
       maskContentUnits?: number | string;
       maskUnits?: number | string;
-      mathematical?: number | string;
       mode?: number | string;
       numOctaves?: number | string;
       offset?: number | string;
@@ -673,13 +974,9 @@ declare global {
       operator?: number | string;
       order?: number | string;
       orient?: number | string;
-      orientation?: number | string;
       origin?: number | string;
       overflow?: number | string;
-      overlinePosition?: number | string;
-      overlineThickness?: number | string;
       paintOrder?: number | string;
-      panose1?: number | string;
       pathLength?: number | string;
       patternContentUnits?: string;
       patternTransform?: number | string;
@@ -696,7 +993,6 @@ declare global {
       radius?: number | string;
       refX?: number | string;
       refY?: number | string;
-      renderingIntent?: number | string;
       repeatCount?: number | string;
       repeatDur?: number | string;
       requiredExtensions?: number | string;
@@ -709,7 +1005,6 @@ declare global {
       scale?: number | string;
       seed?: number | string;
       shapeRendering?: number | string;
-      slope?: number | string;
       spacing?: number | string;
       specularConstant?: number | string;
       specularExponent?: number | string;
@@ -717,13 +1012,9 @@ declare global {
       spreadMethod?: string;
       startOffset?: number | string;
       stdDeviation?: number | string;
-      stemh?: number | string;
-      stemv?: number | string;
       stitchTiles?: number | string;
       stopColor?: string;
       stopOpacity?: number | string;
-      strikethroughPosition?: number | string;
-      strikethroughThickness?: number | string;
       string?: number | string;
       stroke?: string;
       strokeDasharray?: string | number;
@@ -744,35 +1035,19 @@ declare global {
       textRendering?: number | string;
       to?: number | string;
       transform?: string;
-      u1?: number | string;
-      u2?: number | string;
-      underlinePosition?: number | string;
-      underlineThickness?: number | string;
-      unicode?: number | string;
       unicodeBidi?: number | string;
-      unicodeRange?: number | string;
-      unitsPerEm?: number | string;
-      vAlphabetic?: number | string;
       values?: string;
       vectorEffect?: number | string;
       version?: string;
-      vertAdvY?: number | string;
-      vertOriginX?: number | string;
-      vertOriginY?: number | string;
-      vHanging?: number | string;
-      vIdeographic?: number | string;
       viewBox?: string;
       viewTarget?: number | string;
       visibility?: number | string;
-      vMathematical?: number | string;
-      widths?: number | string;
       wordSpacing?: number | string;
       writingMode?: number | string;
       x1?: number | string;
       x2?: number | string;
       x?: number | string;
       xChannelSelector?: string;
-      xHeight?: number | string;
       xlinkActuate?: string;
       xlinkArcrole?: string;
       xlinkHref?: string;
@@ -795,45 +1070,45 @@ declare global {
 
     interface IntrinsicElements {
       // HTML
-      a: HTMLAttributes<HTMLAnchorElement>;
+      a: AnchorHTMLAttributes<HTMLAnchorElement>;
       abbr: HTMLAttributes<HTMLElement>;
       address: HTMLAttributes<HTMLElement>;
-      area: HTMLAttributes<HTMLAreaElement>;
+      area: AreaHTMLAttributes<HTMLAreaElement>;
       article: HTMLAttributes<HTMLElement>;
       aside: HTMLAttributes<HTMLElement>;
-      audio: HTMLAttributes<HTMLAudioElement>;
+      audio: AudioHTMLAttributes<HTMLAudioElement>;
       b: HTMLAttributes<HTMLElement>;
-      base: HTMLAttributes<HTMLBaseElement>;
+      base: BaseHTMLAttributes<HTMLBaseElement>;
       bdi: HTMLAttributes<HTMLElement>;
       bdo: HTMLAttributes<HTMLElement>;
       big: HTMLAttributes<HTMLElement>;
-      blockquote: HTMLAttributes<HTMLElement>;
+      blockquote: BlockquoteHTMLAttributes<HTMLElement>;
       body: HTMLAttributes<HTMLBodyElement>;
       br: HTMLAttributes<HTMLBRElement>;
-      button: HTMLAttributes<HTMLButtonElement>;
-      canvas: HTMLAttributes<HTMLCanvasElement>;
+      button: ButtonHTMLAttributes<HTMLButtonElement>;
+      canvas: CanvasHTMLAttributes<HTMLCanvasElement>;
       caption: HTMLAttributes<HTMLElement>;
       cite: HTMLAttributes<HTMLElement>;
       code: HTMLAttributes<HTMLElement>;
-      col: HTMLAttributes<HTMLTableColElement>;
-      colgroup: HTMLAttributes<HTMLTableColElement>;
-      data: HTMLAttributes<HTMLElement>;
+      col: ColHTMLAttributes<HTMLTableColElement>;
+      colgroup: ColgroupHTMLAttributes<HTMLTableColElement>;
+      data: DataHTMLAttributes<HTMLElement>;
       datalist: HTMLAttributes<HTMLDataListElement>;
       dd: HTMLAttributes<HTMLElement>;
       del: HTMLAttributes<HTMLElement>;
-      details: HTMLAttributes<HTMLElement>;
+      details: DetailsHtmlAttributes<HTMLElement>;
       dfn: HTMLAttributes<HTMLElement>;
-      dialog: HTMLAttributes<HTMLElement>;
+      dialog: DialogHtmlAttributes<HTMLElement>;
       div: HTMLAttributes<HTMLDivElement>;
       dl: HTMLAttributes<HTMLDListElement>;
       dt: HTMLAttributes<HTMLElement>;
       em: HTMLAttributes<HTMLElement>;
-      embed: HTMLAttributes<HTMLEmbedElement>;
-      fieldset: HTMLAttributes<HTMLFieldSetElement>;
+      embed: EmbedHTMLAttributes<HTMLEmbedElement>;
+      fieldset: FieldsetHTMLAttributes<HTMLFieldSetElement>;
       figcaption: HTMLAttributes<HTMLElement>;
       figure: HTMLAttributes<HTMLElement>;
       footer: HTMLAttributes<HTMLElement>;
-      form: HTMLAttributes<HTMLFormElement>;
+      form: FormHTMLAttributes<HTMLFormElement>;
       h1: HTMLAttributes<HTMLHeadingElement>;
       h2: HTMLAttributes<HTMLHeadingElement>;
       h3: HTMLAttributes<HTMLHeadingElement>;
@@ -846,127 +1121,127 @@ declare global {
       hr: HTMLAttributes<HTMLHRElement>;
       html: HTMLAttributes<HTMLHtmlElement>;
       i: HTMLAttributes<HTMLElement>;
-      iframe: HTMLAttributes<HTMLIFrameElement>;
-      img: HTMLAttributes<HTMLImageElement>;
-      input: HTMLAttributes<HTMLInputElement>;
-      ins: HTMLAttributes<HTMLModElement>;
+      iframe: IframeHTMLAttributes<HTMLIFrameElement>;
+      img: ImgHTMLAttributes<HTMLImageElement>;
+      input: InputHTMLAttributes<HTMLInputElement>;
+      ins: InsHTMLAttributes<HTMLModElement>;
       kbd: HTMLAttributes<HTMLElement>;
-      keygen: HTMLAttributes<HTMLElement>;
-      label: HTMLAttributes<HTMLLabelElement>;
+      keygen: KeygenHTMLAttributes<HTMLElement>;
+      label: LabelHTMLAttributes<HTMLLabelElement>;
       legend: HTMLAttributes<HTMLLegendElement>;
-      li: HTMLAttributes<HTMLLIElement>;
-      link: HTMLAttributes<HTMLLinkElement>;
+      li: LiHTMLAttributes<HTMLLIElement>;
+      link: LinkHTMLAttributes<HTMLLinkElement>;
       main: HTMLAttributes<HTMLElement>;
-      map: HTMLAttributes<HTMLMapElement>;
+      map: MapHTMLAttributes<HTMLMapElement>;
       mark: HTMLAttributes<HTMLElement>;
-      menu: HTMLAttributes<HTMLElement>;
+      menu: MenuHTMLAttributes<HTMLElement>;
       menuitem: HTMLAttributes<HTMLElement>;
-      meta: HTMLAttributes<HTMLMetaElement>;
-      meter: HTMLAttributes<HTMLElement>;
+      meta: MetaHTMLAttributes<HTMLMetaElement>;
+      meter: MeterHTMLAttributes<HTMLElement>;
       nav: HTMLAttributes<HTMLElement>;
       noindex: HTMLAttributes<HTMLElement>;
       noscript: HTMLAttributes<HTMLElement>;
-      object: HTMLAttributes<HTMLObjectElement>;
-      ol: HTMLAttributes<HTMLOListElement>;
-      optgroup: HTMLAttributes<HTMLOptGroupElement>;
-      option: HTMLAttributes<HTMLOptionElement>;
-      output: HTMLAttributes<HTMLElement>;
+      object: ObjectHTMLAttributes<HTMLObjectElement>;
+      ol: OlHTMLAttributes<HTMLOListElement>;
+      optgroup: OptgroupHTMLAttributes<HTMLOptGroupElement>;
+      option: OptionHTMLAttributes<HTMLOptionElement>;
+      output: OutputHTMLAttributes<HTMLElement>;
       p: HTMLAttributes<HTMLParagraphElement>;
-      param: HTMLAttributes<HTMLParamElement>;
+      param: ParamHTMLAttributes<HTMLParamElement>;
       picture: HTMLAttributes<HTMLElement>;
       pre: HTMLAttributes<HTMLPreElement>;
-      progress: HTMLAttributes<HTMLProgressElement>;
+      progress: ProgressHTMLAttributes<HTMLProgressElement>;
       q: HTMLAttributes<HTMLQuoteElement>;
       rp: HTMLAttributes<HTMLElement>;
       rt: HTMLAttributes<HTMLElement>;
       ruby: HTMLAttributes<HTMLElement>;
       s: HTMLAttributes<HTMLElement>;
       samp: HTMLAttributes<HTMLElement>;
-      script: HTMLAttributes<HTMLElement>;
+      script: ScriptHTMLAttributes<HTMLElement>;
       section: HTMLAttributes<HTMLElement>;
-      select: HTMLAttributes<HTMLSelectElement>;
+      select: SelectHTMLAttributes<HTMLSelectElement>;
       small: HTMLAttributes<HTMLElement>;
-      source: HTMLAttributes<HTMLSourceElement>;
+      source: SourceHTMLAttributes<HTMLSourceElement>;
       span: HTMLAttributes<HTMLSpanElement>;
       strong: HTMLAttributes<HTMLElement>;
-      style: HTMLAttributes<HTMLStyleElement>;
+      style: StyleHTMLAttributes<HTMLStyleElement>;
       sub: HTMLAttributes<HTMLElement>;
       summary: HTMLAttributes<HTMLElement>;
       sup: HTMLAttributes<HTMLElement>;
       table: HTMLAttributes<HTMLTableElement>;
       tbody: HTMLAttributes<HTMLTableSectionElement>;
-      td: HTMLAttributes<HTMLTableDataCellElement>;
-      textarea: HTMLAttributes<HTMLTextAreaElement>;
+      td: TdHTMLAttributes<HTMLTableDataCellElement>;
+      textarea: TextareaHTMLAttributes<HTMLTextAreaElement>;
       tfoot: HTMLAttributes<HTMLTableSectionElement>;
       th: HTMLAttributes<HTMLTableHeaderCellElement>;
       thead: HTMLAttributes<HTMLTableSectionElement>;
-      time: HTMLAttributes<HTMLElement>;
+      time: TimeHTMLAttributes<HTMLElement>;
       title: HTMLAttributes<HTMLTitleElement>;
       tr: HTMLAttributes<HTMLTableRowElement>;
-      track: HTMLAttributes<HTMLTrackElement>;
+      track: TrackHTMLAttributes<HTMLTrackElement>;
       u: HTMLAttributes<HTMLElement>;
       ul: HTMLAttributes<HTMLUListElement>;
       var: HTMLAttributes<HTMLElement>;
-      video: HTMLAttributes<HTMLVideoElement>;
+      video: VideoHTMLAttributes<HTMLVideoElement>;
       wbr: HTMLAttributes<HTMLElement>;
 
       // SVG
-      svg: SVGAttributes<SVGElement>;
+      svg: SVGAttributes<SVGSVGElement>;
 
-      animate: SVGAttributes<SVGElement>;
-      animateTransform: SVGAttributes<SVGElement>;
-      circle: SVGAttributes<SVGElement>;
-      clipPath: SVGAttributes<SVGElement>;
-      defs: SVGAttributes<SVGElement>;
-      desc: SVGAttributes<SVGElement>;
-      ellipse: SVGAttributes<SVGElement>;
-      feBlend: SVGAttributes<SVGElement>;
-      feColorMatrix: SVGAttributes<SVGElement>;
-      feComponentTransfer: SVGAttributes<SVGElement>;
-      feComposite: SVGAttributes<SVGElement>;
-      feConvolveMatrix: SVGAttributes<SVGElement>;
-      feDiffuseLighting: SVGAttributes<SVGElement>;
-      feDisplacementMap: SVGAttributes<SVGElement>;
-      feDistantLight: SVGAttributes<SVGElement>;
-      feFlood: SVGAttributes<SVGElement>;
-      feFuncA: SVGAttributes<SVGElement>;
-      feFuncB: SVGAttributes<SVGElement>;
-      feFuncG: SVGAttributes<SVGElement>;
-      feFuncR: SVGAttributes<SVGElement>;
-      feGaussianBlur: SVGAttributes<SVGElement>;
-      feImage: SVGAttributes<SVGElement>;
-      feMerge: SVGAttributes<SVGElement>;
-      feMergeNode: SVGAttributes<SVGElement>;
-      feMorphology: SVGAttributes<SVGElement>;
-      feOffset: SVGAttributes<SVGElement>;
-      fePointLight: SVGAttributes<SVGElement>;
-      feSpecularLighting: SVGAttributes<SVGElement>;
-      feSpotLight: SVGAttributes<SVGElement>;
-      feTile: SVGAttributes<SVGElement>;
-      feTurbulence: SVGAttributes<SVGElement>;
-      filter: SVGAttributes<SVGElement>;
-      foreignObject: SVGAttributes<SVGElement>;
-      g: SVGAttributes<SVGElement>;
-      image: SVGAttributes<SVGElement>;
-      line: SVGAttributes<SVGElement>;
-      linearGradient: SVGAttributes<SVGElement>;
-      marker: SVGAttributes<SVGElement>;
-      mask: SVGAttributes<SVGElement>;
-      metadata: SVGAttributes<SVGElement>;
-      path: SVGAttributes<SVGElement>;
-      pattern: SVGAttributes<SVGElement>;
-      polygon: SVGAttributes<SVGElement>;
-      polyline: SVGAttributes<SVGElement>;
-      radialGradient: SVGAttributes<SVGElement>;
-      rect: SVGAttributes<SVGElement>;
-      stop: SVGAttributes<SVGElement>;
-      switch: SVGAttributes<SVGElement>;
-      symbol: SVGAttributes<SVGElement>;
-      text: SVGAttributes<SVGElement>;
-      textPath: SVGAttributes<SVGElement>;
-      tspan: SVGAttributes<SVGElement>;
-      use: SVGAttributes<SVGElement>;
-      view: SVGAttributes<SVGElement>;
+      animate: SVGAttributes<SVGAnimateElement>;
+      animateTransform: SVGAttributes<SVGAnimateTransformElement>;
+      circle: SVGAttributes<SVGCircleElement>;
+      clipPath: SVGAttributes<SVGClipPathElement>;
+      defs: SVGAttributes<SVGDefsElement>;
+      desc: SVGAttributes<SVGDescElement>;
+      ellipse: SVGAttributes<SVGEllipseElement>;
+      feBlend: SVGAttributes<SVGFEBlendElement>;
+      feColorMatrix: SVGAttributes<SVGFEColorMatrixElement>;
+      feComponentTransfer: SVGAttributes<SVGFEComponentTransferElement>;
+      feComposite: SVGAttributes<SVGFECompositeElement>;
+      feConvolveMatrix: SVGAttributes<SVGFEConvolveMatrixElement>;
+      feDiffuseLighting: SVGAttributes<SVGFEDiffuseLightingElement>;
+      feDisplacementMap: SVGAttributes<SVGFEDisplacementMapElement>;
+      feDistantLight: SVGAttributes<SVGFEDistantLightElement>;
+      feFlood: SVGAttributes<SVGFEFloodElement>;
+      feFuncA: SVGAttributes<SVGFEFuncAElement>;
+      feFuncB: SVGAttributes<SVGFEFuncBElement>;
+      feFuncG: SVGAttributes<SVGFEFuncGElement>;
+      feFuncR: SVGAttributes<SVGFEFuncRElement>;
+      feGaussianBlur: SVGAttributes<SVGFEGaussianBlurElement>;
+      feImage: SVGAttributes<SVGFEImageElement>;
+      feMerge: SVGAttributes<SVGFEMergeElement>;
+      feMergeNode: SVGAttributes<SVGFEMergeNodeElement>;
+      feMorphology: SVGAttributes<SVGFEMorphologyElement>;
+      feOffset: SVGAttributes<SVGFEOffsetElement>;
+      fePointLight: SVGAttributes<SVGFEPointLightElement>;
+      feSpecularLighting: SVGAttributes<SVGFESpecularLightingElement>;
+      feSpotLight: SVGAttributes<SVGFESpotLightElement>;
+      feTile: SVGAttributes<SVGFETileElement>;
+      feTurbulence: SVGAttributes<SVGFETurbulenceElement>;
+      filter: SVGAttributes<SVGFilterElement>;
+      foreignObject: SVGAttributes<SVGForeignObjectElement>;
+      g: SVGAttributes<SVGGElement>;
+      image: SVGAttributes<SVGImageElement>;
+      line: SVGAttributes<SVGLineElement>;
+      linearGradient: SVGAttributes<SVGLinearGradientElement>;
+      marker: SVGAttributes<SVGMarkerElement>;
+      mask: SVGAttributes<SVGMaskElement>;
+      metadata: SVGAttributes<SVGMetadataElement>;
+      path: SVGAttributes<SVGPathElement>;
+      pattern: SVGAttributes<SVGPatternElement>;
+      polygon: SVGAttributes<SVGPolygonElement>;
+      polyline: SVGAttributes<SVGPolylineElement>;
+      radialGradient: SVGAttributes<SVGRadialGradientElement>;
+      rect: SVGAttributes<SVGRectElement>;
+      stop: SVGAttributes<SVGStopElement>;
+      switch: SVGAttributes<SVGSwitchElement>;
+      symbol: SVGAttributes<SVGSymbolElement>;
+      text: SVGAttributes<SVGTextElement>;
+      textPath: SVGAttributes<SVGTextPathElement>;
+      tspan: SVGAttributes<SVGTSpanElement>;
+      use: SVGAttributes<SVGUseElement>;
+      view: SVGAttributes<SVGViewElement>;
     }
   }
 }
