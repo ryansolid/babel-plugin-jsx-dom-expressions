@@ -743,6 +743,7 @@ export default babel => {
         } else {
           attribute = SVGAttributes[key];
           if (attribute && attribute.alias) key = attribute.alias;
+          key = key.toLowerCase();
         }
         results.template += ` ${key}`;
         results.template += value ? `="${value.value}"` : `=""`;

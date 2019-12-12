@@ -452,7 +452,7 @@ declare global {
       lang?: string;
       spellcheck?: boolean;
       style?: Partial<CSSStyleDeclaration>;
-      tabIndex?: number;
+      tabIndex?: number | string;
       title?: string;
       translate?: "yes" | "no";
 
@@ -534,12 +534,12 @@ declare global {
     }
 
     interface ColHTMLAttributes<T> extends HTMLAttributes<T> {
-      span?: number;
+      span?: number | string;
       width?: number | string;
     }
 
     interface ColgroupHTMLAttributes<T> extends HTMLAttributes<T> {
-      span?: number;
+      span?: number | string;
     }
 
     interface DataHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -595,12 +595,12 @@ declare global {
       alt?: string;
       crossOrigin?: HTMLCrossorigin;
       decoding?: "sync" | "async" | "auto";
-      height?: number;
+      height?: number | string;
       referrerPolicy?: HTMLReferrerPolicy;
       sizes?: string;
       src?: string;
       srcset?: string;
-      width?: number;
+      width?: number | string;
     }
 
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -621,16 +621,16 @@ declare global {
       height?: number | string;
       list?: string;
       max?: number | string;
-      maxLength?: number;
+      maxLength?: number | string;
       min?: number | string;
-      minLength?: number;
+      minLength?: number | string;
       multiple?: boolean;
       name?: string;
       pattern?: string;
       placeholder?: string;
       readOnly?: boolean;
       required?: boolean;
-      size?: number;
+      size?: number | string;
       src?: string;
       step?: number | string;
       type?: string;
@@ -659,7 +659,7 @@ declare global {
     }
 
     interface LiHTMLAttributes<T> extends HTMLAttributes<T> {
-      value?: number;
+      value?: number | string;
     }
 
     interface LinkHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -705,11 +705,11 @@ declare global {
 
     interface MeterHTMLAttributes<T> extends HTMLAttributes<T> {
       form?: string;
-      high?: number;
-      low?: number;
+      high?: number | string;
+      low?: number | string;
       max?: number | string;
       min?: number | string;
-      optimum?: number;
+      optimum?: number | string;
       value?: string | string[] | number;
     }
 
@@ -729,7 +729,7 @@ declare global {
 
     interface OlHTMLAttributes<T> extends HTMLAttributes<T> {
       reversed?: boolean;
-      start?: number;
+      start?: number | string;
       type?: "1" | "a" | "A" | "i" | "I";
     }
 
@@ -782,7 +782,7 @@ declare global {
       multiple?: boolean;
       name?: string;
       required?: boolean;
-      size?: number;
+      size?: number | string;
       value?: string | string[] | number;
     }
 
@@ -802,33 +802,33 @@ declare global {
     }
 
     interface TdHTMLAttributes<T> extends HTMLAttributes<T> {
-      colSpan?: number;
+      colSpan?: number | string;
       headers?: string;
-      rowSpan?: number;
+      rowSpan?: number | string;
     }
 
     interface TextareaHTMLAttributes<T> extends HTMLAttributes<T> {
       autocomplete?: string;
       autofocus?: boolean;
-      cols?: number;
+      cols?: number | string;
       dirname?: string;
       disabled?: boolean;
       form?: string;
-      maxLength?: number;
-      minLength?: number;
+      maxLength?: number | string;
+      minLength?: number | string;
       name?: string;
       placeholder?: string;
       readOnly?: boolean;
       required?: boolean;
-      rows?: number;
+      rows?: number | string;
       value?: string | string[] | number;
       wrap?: "hard" | "soft" | "off";
     }
 
     interface ThHTMLAttributes<T> extends HTMLAttributes<T> {
-      colSpan?: number;
+      colSpan?: number | string;
       headers?: string;
-      rowSpan?: number;
+      rowSpan?: number | string;
     }
 
     interface TimeHTMLAttributes<T> extends HTMLAttributes<T> {
