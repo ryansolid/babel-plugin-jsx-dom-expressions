@@ -3,7 +3,7 @@ import { wrap as _$wrap } from "r-dom";
 import { classList as _$classList } from "r-dom";
 import { spread as _$spread } from "r-dom";
 
-const _tmpl$ = _$template(`<div id="main"><h1 disabled=""><a>Welcome</a></h1></div>`),
+const _tmpl$ = _$template(`<div id="main"><h1 disabled=""><a href="/">Welcome</a></h1></div>`),
       _tmpl$2 = _$template(`<div><div></div><div></div></div>`);
 
 const template = function () {
@@ -24,8 +24,6 @@ const template = function () {
   _$spread(_el$2, () => results(), false);
 
   link = _el$3;
-
-  _el$3.setAttribute("href", "/");
 
   _$wrap((_p$ = {}) => {
     const _v$ = welcoming(),

@@ -35,7 +35,7 @@ const template4 = function () {
   _$insert(_el$4, (() => {
     const _c$ = _$wrapCondition(() => state.dynamic);
 
-    return () => _c$() ? good : bad;
+    return () => _c$() ? good() : bad;
   })());
 
   return _el$4;
@@ -47,7 +47,7 @@ const template5 = function () {
   _$insert(_el$5, (() => {
     const _c$ = _$wrapCondition(() => state.dynamic);
 
-    return () => _c$() && good;
+    return () => _c$() && good();
   })());
 
   return _el$5;
@@ -62,7 +62,7 @@ const template6 = function () {
     return () => _c$() ? (() => {
       const _c$ = _$wrapCondition(() => state.dynamic);
 
-      return _c$() ? best : good;
+      return _c$() ? best : good();
     })() : bad;
   })());
 
@@ -75,7 +75,7 @@ const template7 = function () {
   _$insert(_el$7, (() => {
     const _c$ = _$wrapCondition(() => state.dynamic && state.something);
 
-    return () => _c$() && good;
+    return () => _c$() && good();
   })());
 
   return _el$7;
@@ -87,7 +87,7 @@ const template8 = function () {
   _$insert(_el$8, (() => {
     const _c$ = _$wrapCondition(() => state.dynamic);
 
-    return () => _c$() && good || bad;
+    return () => _c$() && good() || bad;
   })());
 
   return _el$8;
@@ -97,14 +97,24 @@ const template9 = _$createComponent(Comp, {
   render: (() => {
     const _c$ = _$wrapCondition(() => state.dynamic);
 
-    return () => _c$() ? good : bad;
+    return () => _c$() ? good() : bad;
   })()
-}, ["render"]);
+}, ["render"]); // no dynamic predicate
+
 
 const template10 = _$createComponent(Comp, {
+  render: () => state.dynamic ? good : bad
+}, ["render"]);
+
+const template11 = _$createComponent(Comp, {
   render: (() => {
     const _c$ = _$wrapCondition(() => state.dynamic);
 
-    return () => _c$() && good;
+    return () => _c$() && good();
   })()
+}, ["render"]); // no dynamic predicate
+
+
+const template12 = _$createComponent(Comp, {
+  render: () => state.dynamic && good
 }, ["render"]);

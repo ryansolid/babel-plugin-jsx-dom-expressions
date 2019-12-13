@@ -237,7 +237,11 @@ export default babel => {
   function transformCondition(path, expr, deep) {
     registerImportMethod(path, "wrapCondition");
     let dTest, cond;
-    if (t.isConditionalExpression(expr)) {
+    if (
+      t.isConditionalExpression(expr) &&
+      (isDynamic(expr.consequent, path.get("consequent"), true) ||
+        isDynamic(expr.alternate, path.get("alternate"), true))
+    ) {
       dTest = isDynamic(expr.test, path.get("test"));
       if (dTest) {
         cond = expr.test;
@@ -271,7 +275,8 @@ export default babel => {
         nextExpr = nextExpr.left;
         nextPath = nextPath.get("left");
       }
-      dTest = isDynamic(nextExpr.left, nextPath.get("left"));
+      isDynamic(nextExpr.right, nextPath.get("right"), true) &&
+        (dTest = isDynamic(nextExpr.left, nextPath.get("left")));
       if (dTest) {
         cond = nextExpr.left;
         nextExpr.left = t.callExpression(t.identifier("_c$"), []);
@@ -639,7 +644,15 @@ export default babel => {
 
       let value = attribute.value,
         key = attribute.name.name;
-      if (t.isJSXExpressionContainer(value)) {
+      if (
+        t.isJSXExpressionContainer(value) &&
+        (key === "model" ||
+          key.toLowerCase() !== key ||
+          !(
+            t.isStringLiteral(value.expression) ||
+            t.isNumericLiteral(value.expression)
+          ))
+      ) {
         if (key === "ref") {
           results.exprs.unshift(
             t.expressionStatement(
@@ -734,6 +747,7 @@ export default babel => {
           );
         }
       } else {
+        if (t.isJSXExpressionContainer(value)) value = value.expression;
         if (isSVG) {
           attribute = SVGAttributes[key];
 
@@ -950,8 +964,13 @@ export default babel => {
       let results = { template: "", decl: [], exprs: [], dynamics: [] };
       transformFragmentChildren(path, jsx, opts, results);
       return results;
-    } else if (t.isJSXText(jsx)) {
-      const text = trimWhitespace(jsx.extra.raw);
+    } else if (
+      t.isJSXText(jsx) ||
+      (t.isJSXExpressionContainer(jsx) && t.isStringLiteral(jsx.expression))
+    ) {
+      const text = trimWhitespace(
+        t.isJSXExpressionContainer(jsx) ? jsx.expression.value : jsx.extra.raw
+      );
       if (!text.length) return null;
       const results = { template: text, decl: [], exprs: [], dynamics: [] };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
