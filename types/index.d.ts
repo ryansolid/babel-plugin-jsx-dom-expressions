@@ -484,7 +484,7 @@ declare global {
       hreflang?: string;
       media?: string;
       ping?: string;
-      referrerPolicy: HTMLReferrerPolicy;
+      referrerPolicy?: HTMLReferrerPolicy;
       rel?: string;
       target?: string;
       type?: string;
@@ -499,7 +499,7 @@ declare global {
       href?: string;
       hreflang?: string;
       ping?: string;
-      referrerPolicy: HTMLReferrerPolicy;
+      referrerPolicy?: HTMLReferrerPolicy;
       rel?: string;
       shape?: "rect" | "circle" | "poly" | "default";
       target?: string;
@@ -584,7 +584,7 @@ declare global {
       allowfullscreen?: boolean;
       height?: number | string;
       name?: string;
-      referrerPolicy: HTMLReferrerPolicy;
+      referrerPolicy?: HTMLReferrerPolicy;
       sandbox?: HTMLIframeSandbox;
       src?: string;
       srcdoc?: string;
@@ -769,7 +769,7 @@ declare global {
       integrity?: string;
       noModule?: boolean;
       nonce?: string;
-      referrerPolicy: HTMLReferrerPolicy;
+      referrerPolicy?: HTMLReferrerPolicy;
       src?: string;
       type?: string;
     }
