@@ -343,7 +343,15 @@ export default babel => {
   }
 
   function trimWhitespace(text) {
-    return text.replace(/[\r\n]\s*/g, "").replace(/\s+/g, " ");
+    text = text.replace(/\r/g, "");
+    if (/\n/g.test(text)) {
+      text = text
+        .split("\n")
+        .filter(s => !/^\s*$/.test(s))
+        .map(t => t.replace(/^\s*/g, ""))
+        .join(" ");
+    }
+    return text.replace(/\s+/g, " ");
   }
 
   function checkLength(children) {
@@ -966,10 +974,17 @@ export default babel => {
       return results;
     } else if (
       t.isJSXText(jsx) ||
-      (t.isJSXExpressionContainer(jsx) && t.isStringLiteral(jsx.expression))
+      (t.isJSXExpressionContainer(jsx) &&
+        (t.isStringLiteral(jsx.expression) ||
+          (t.isTemplateLiteral(jsx.expression) &&
+            jsx.expression.expressions.length === 0)))
     ) {
       const text = trimWhitespace(
-        t.isJSXExpressionContainer(jsx) ? jsx.expression.value : jsx.extra.raw
+        t.isJSXExpressionContainer(jsx)
+          ? t.isStringLiteral(jsx.expression)
+            ? jsx.expression.value
+            : jsx.expression.quasis[0].value.raw
+          : jsx.extra.raw
       );
       if (!text.length) return null;
       const results = { template: text, decl: [], exprs: [], dynamics: [] };

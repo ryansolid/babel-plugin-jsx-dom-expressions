@@ -3,46 +3,44 @@ import { insert as _$insert } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
 
 const _tmpl$ = _$template(`<span>Hello </span>`),
-      _tmpl$2 = _$template(`<span> John</span>`),
-      _tmpl$3 = _$template(`<span>Hello John</span>`),
-      _tmpl$4 = _$template(`<span>Hello <!--#--><!--/--></span>`),
-      _tmpl$5 = _$template(`<span><!--#--><!--/--> John</span>`),
-      _tmpl$6 = _$template(`<span><!--#--><!--/--> <!--#--><!--/--></span>`),
-      _tmpl$7 = _$template(`<span> <!--#--><!--/--> <!--#--><!--/--> </span>`),
-      _tmpl$8 = _$template(`<span>Hello</span>`),
-      _tmpl$9 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
+  _tmpl$2 = _$template(`<span> John</span>`),
+  _tmpl$3 = _$template(`<span>Hello John</span>`),
+  _tmpl$4 = _$template(`<span>Hello <!--#--><!--/--></span>`),
+  _tmpl$5 = _$template(`<span><!--#--><!--/--> John</span>`),
+  _tmpl$6 = _$template(`<span><!--#--><!--/--> <!--#--><!--/--></span>`),
+  _tmpl$7 = _$template(`<span> <!--#--><!--/--> <!--#--><!--/--> </span>`),
+  _tmpl$8 = _$template(`<span>Hello</span>`),
+  _tmpl$9 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
 
 const trailing = _$getNextElement(_tmpl$);
 
 const leading = _$getNextElement(_tmpl$2);
 /* prettier-ignore */
 
-
 const extraSpaces = _$getNextElement(_tmpl$3);
 
-const trailingExpr = function () {
+const trailingExpr = (function() {
   const _el$4 = _$getNextElement(_tmpl$4),
-        _el$5 = _el$4.firstChild,
-        _el$6 = _el$5.nextSibling,
-        _el$7 = _el$6.nextSibling;
+    _el$5 = _el$4.firstChild,
+    _el$6 = _el$5.nextSibling,
+    _el$7 = _el$6.nextSibling;
 
   _$insert(_el$4, name, _el$7);
 
   return _el$4;
-}();
+})();
 
-const leadingExpr = function () {
+const leadingExpr = (function() {
   const _el$8 = _$getNextElement(_tmpl$5),
-        _el$10 = _el$8.firstChild,
-        _el$11 = _el$10.nextSibling,
-        _el$9 = _el$11.nextSibling;
+    _el$10 = _el$8.firstChild,
+    _el$11 = _el$10.nextSibling,
+    _el$9 = _el$11.nextSibling;
 
   _$insert(_el$8, greeting, _el$11);
 
   return _el$8;
-}();
+})();
 /* prettier-ignore */
-
 
 const multiExpr = function () {
   const _el$12 = _$getNextElement(_tmpl$6),
@@ -59,7 +57,6 @@ const multiExpr = function () {
   return _el$12;
 }();
 /* prettier-ignore */
-
 
 const multiExprSpaced = function () {
   const _el$18 = _$getNextElement(_tmpl$7),
@@ -79,13 +76,10 @@ const multiExprSpaced = function () {
 }();
 /* prettier-ignore */
 
-
 const multiLine = _$getNextElement(_tmpl$8);
 /* prettier-ignore */
 
-
 const multiLineTrailingSpace = _$getNextElement(_tmpl$3);
 /* prettier-ignore */
-
 
 const escape = _$getNextElement(_tmpl$9);
