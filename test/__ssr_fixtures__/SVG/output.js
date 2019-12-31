@@ -16,10 +16,10 @@ const _tmpl$ = _$template(
     true
   );
 
-const template = _$getNextElement(_tmpl$);
+const template = _$getNextElement(_tmpl$, true);
 
 const template2 = (function() {
-  const _el$2 = _$getNextElement(_tmpl$2),
+  const _el$2 = _$getNextElement(_tmpl$2, true),
     _el$3 = _el$2.firstChild;
 
   _$wrap((_p$ = {}) => {
@@ -44,7 +44,7 @@ const template2 = (function() {
 })();
 
 const template3 = (function() {
-  const _el$4 = _$getNextElement(_tmpl$3),
+  const _el$4 = _$getNextElement(_tmpl$3, true),
     _el$5 = _el$4.firstChild;
 
   _$spread(_el$5, props, true);
@@ -52,14 +52,14 @@ const template3 = (function() {
   return _el$4;
 })();
 
-const template4 = _$getNextElement(_tmpl$4);
+const template4 = _$getNextElement(_tmpl$4, true);
 
-const template5 = [_$getNextElement(_tmpl$4)];
+const template5 = [_$getNextElement(_tmpl$4, true)];
 
 const template6 = _$createComponent(
   Component,
   {
-    children: () => _$getNextElement(_tmpl$4)
+    children: () => _$getNextElement(_tmpl$4, true)
   },
   ["children"]
 );

@@ -7,16 +7,19 @@ const _tmpl$ = _$template(`<div>First</div>`),
   _tmpl$2 = _$template(`<div>Last</div>`),
   _tmpl$3 = _$template(`<div></div>`);
 
-const multiStatic = [_$getNextElement(_tmpl$), _$getNextElement(_tmpl$2)];
+const multiStatic = [
+  _$getNextElement(_tmpl$, true),
+  _$getNextElement(_tmpl$2, true)
+];
 const multiExpression = [
-  _$getNextElement(_tmpl$),
+  _$getNextElement(_tmpl$, true),
   inserted,
-  _$getNextElement(_tmpl$2),
+  _$getNextElement(_tmpl$2, true),
   "After"
 ];
 const multiDynamic = [
   (() => {
-    const _el$5 = _$getNextElement(_tmpl$);
+    const _el$5 = _$getNextElement(_tmpl$, true);
 
     _$wrap(() => (_el$5.id = state.first));
 
@@ -24,7 +27,7 @@ const multiDynamic = [
   })(),
   () => state.inserted,
   (() => {
-    const _el$6 = _$getNextElement(_tmpl$2);
+    const _el$6 = _$getNextElement(_tmpl$2, true);
 
     _$wrap(() => (_el$6.id = state.last));
 
@@ -34,15 +37,15 @@ const multiDynamic = [
 ];
 const singleExpression = [inserted];
 const singleDynamic = [() => inserted()];
-const firstStatic = [inserted, _$getNextElement(_tmpl$3)];
-const firstDynamic = [() => inserted(), _$getNextElement(_tmpl$3)];
+const firstStatic = [inserted, _$getNextElement(_tmpl$3, true)];
+const firstDynamic = [() => inserted(), _$getNextElement(_tmpl$3, true)];
 const firstComponent = [
   _$createComponent(Component, {}),
-  _$getNextElement(_tmpl$3)
+  _$getNextElement(_tmpl$3, true)
 ];
-const lastStatic = [_$getNextElement(_tmpl$3), inserted];
-const lastDynamic = [_$getNextElement(_tmpl$3), () => inserted()];
+const lastStatic = [_$getNextElement(_tmpl$3, true), inserted];
+const lastDynamic = [_$getNextElement(_tmpl$3, true), () => inserted()];
 const lastComponent = [
-  _$getNextElement(_tmpl$3),
+  _$getNextElement(_tmpl$3, true),
   _$createComponent(Component, {})
 ];

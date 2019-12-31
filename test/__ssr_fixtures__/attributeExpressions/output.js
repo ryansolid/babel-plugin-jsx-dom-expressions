@@ -10,7 +10,7 @@ const _tmpl$ = _$template(
   _tmpl$2 = _$template(`<div><div></div><div></div></div>`);
 
 const template = (function() {
-  const _el$ = _$getNextElement(_tmpl$),
+  const _el$ = _$getNextElement(_tmpl$, true),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild;
 
@@ -47,7 +47,7 @@ const template = (function() {
 })();
 
 const template2 = (function() {
-  const _el$4 = _$getNextElement(_tmpl$2),
+  const _el$4 = _$getNextElement(_tmpl$2, true),
     _el$5 = _el$4.firstChild,
     _el$6 = _el$5.nextSibling;
 

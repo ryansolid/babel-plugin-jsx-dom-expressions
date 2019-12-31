@@ -13,7 +13,7 @@ const _tmpl$ = _$template(`<div>Hello <!--#--><!--/--></div>`),
 
 const Child = props => [
   (() => {
-    const _el$ = _$getNextElement(_tmpl$),
+    const _el$ = _$getNextElement(_tmpl$, true),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.nextSibling,
       _el$4 = _el$3.nextSibling;
@@ -25,7 +25,7 @@ const Child = props => [
     return _el$;
   })(),
   (() => {
-    const _el$5 = _$getNextElement(_tmpl$2);
+    const _el$5 = _$getNextElement(_tmpl$2, true);
 
     _$insert(_el$5, () => props.children);
 
@@ -37,7 +37,7 @@ const template = props => {
   let childRef;
   const { content } = props;
   return (function() {
-    const _el$6 = _$getNextElement(_tmpl$4),
+    const _el$6 = _$getNextElement(_tmpl$4, true),
       _el$9 = _el$6.firstChild,
       _el$10 = _el$9.nextSibling,
       _el$11 = _el$10.nextSibling,
@@ -60,7 +60,7 @@ const template = props => {
           {
             ref: r$ => (childRef = r$),
             booleanProperty: true,
-            children: () => _$getNextElement(_tmpl$3)
+            children: () => _$getNextElement(_tmpl$3, true)
           }
         ),
         [...Object.keys(props), "children"]
@@ -76,7 +76,7 @@ const template = props => {
           name: "Jason",
           ref: props.ref,
           children: () => {
-            const _el$8 = _$getNextElement(_tmpl$2);
+            const _el$8 = _$getNextElement(_tmpl$2, true);
 
             _$insert(_el$8, content);
 
@@ -114,9 +114,9 @@ const template3 = _$createComponent(
   Child,
   {
     children: () => [
-      _$getNextElement(_tmpl$2),
-      _$getNextElement(_tmpl$2),
-      _$getNextElement(_tmpl$2),
+      _$getNextElement(_tmpl$2, true),
+      _$getNextElement(_tmpl$2, true),
+      _$getNextElement(_tmpl$2, true),
       "After"
     ]
   },
@@ -126,7 +126,7 @@ const template3 = _$createComponent(
 const template4 = _$createComponent(
   Child,
   {
-    children: () => _$getNextElement(_tmpl$2)
+    children: () => _$getNextElement(_tmpl$2, true)
   },
   ["children"]
 );

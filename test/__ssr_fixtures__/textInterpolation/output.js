@@ -12,15 +12,15 @@ const _tmpl$ = _$template(`<span>Hello </span>`),
   _tmpl$8 = _$template(`<span>Hello</span>`),
   _tmpl$9 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
 
-const trailing = _$getNextElement(_tmpl$);
+const trailing = _$getNextElement(_tmpl$, true);
 
-const leading = _$getNextElement(_tmpl$2);
+const leading = _$getNextElement(_tmpl$2, true);
 /* prettier-ignore */
 
-const extraSpaces = _$getNextElement(_tmpl$3);
+const extraSpaces = _$getNextElement(_tmpl$3, true);
 
 const trailingExpr = (function() {
-  const _el$4 = _$getNextElement(_tmpl$4),
+  const _el$4 = _$getNextElement(_tmpl$4, true),
     _el$5 = _el$4.firstChild,
     _el$6 = _el$5.nextSibling,
     _el$7 = _el$6.nextSibling;
@@ -31,7 +31,7 @@ const trailingExpr = (function() {
 })();
 
 const leadingExpr = (function() {
-  const _el$8 = _$getNextElement(_tmpl$5),
+  const _el$8 = _$getNextElement(_tmpl$5, true),
     _el$10 = _el$8.firstChild,
     _el$11 = _el$10.nextSibling,
     _el$9 = _el$11.nextSibling;
@@ -43,7 +43,7 @@ const leadingExpr = (function() {
 /* prettier-ignore */
 
 const multiExpr = function () {
-  const _el$12 = _$getNextElement(_tmpl$6),
+  const _el$12 = _$getNextElement(_tmpl$6, true),
         _el$14 = _el$12.firstChild,
         _el$15 = _el$14.nextSibling,
         _el$13 = _el$15.nextSibling,
@@ -59,7 +59,7 @@ const multiExpr = function () {
 /* prettier-ignore */
 
 const multiExprSpaced = function () {
-  const _el$18 = _$getNextElement(_tmpl$7),
+  const _el$18 = _$getNextElement(_tmpl$7, true),
         _el$19 = _el$18.firstChild,
         _el$22 = _el$19.nextSibling,
         _el$23 = _el$22.nextSibling,
@@ -76,10 +76,10 @@ const multiExprSpaced = function () {
 }();
 /* prettier-ignore */
 
-const multiLine = _$getNextElement(_tmpl$8);
+const multiLine = _$getNextElement(_tmpl$8, true);
 /* prettier-ignore */
 
-const multiLineTrailingSpace = _$getNextElement(_tmpl$3);
+const multiLineTrailingSpace = _$getNextElement(_tmpl$3, true);
 /* prettier-ignore */
 
-const escape = _$getNextElement(_tmpl$9);
+const escape = _$getNextElement(_tmpl$9, true);

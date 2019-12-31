@@ -10,7 +10,7 @@ const _tmpl$ = _$template(`<my-element></my-element>`),
   _tmpl$3 = _$template(`<slot name="head"></slot>`);
 
 const template = (function() {
-  const _el$ = _$getNextElement(_tmpl$);
+  const _el$ = _$getNextElement(_tmpl$, true);
 
   _el$.setAttribute("some-attr", name);
 
@@ -20,7 +20,7 @@ const template = (function() {
 })();
 
 const template2 = (function() {
-  const _el$2 = _$getNextElement(_tmpl$);
+  const _el$2 = _$getNextElement(_tmpl$, true);
 
   _el$2._context = _$currentContext();
 
@@ -36,7 +36,7 @@ const template2 = (function() {
 })();
 
 const template3 = (function() {
-  const _el$3 = _$getNextElement(_tmpl$2);
+  const _el$3 = _$getNextElement(_tmpl$2, true);
 
   _el$3._context = _$currentContext();
   return _el$3;
@@ -44,7 +44,7 @@ const template3 = (function() {
 
 const template4 = [
   (() => {
-    const _el$4 = _$getNextElement(_tmpl$3);
+    const _el$4 = _$getNextElement(_tmpl$3, true);
 
     _el$4._context = _$currentContext();
     return _el$4;

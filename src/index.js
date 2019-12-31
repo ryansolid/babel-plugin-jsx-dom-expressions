@@ -83,7 +83,12 @@ export default babel => {
       decl = t.variableDeclarator(
         results.id,
         generate === "hydrate" || generate === "ssr"
-          ? t.callExpression(t.identifier("_$getNextElement"), [templateId])
+          ? t.callExpression(
+              t.identifier("_$getNextElement"),
+              generate === "ssr"
+                ? [templateId, t.booleanLiteral(true)]
+                : [templateId]
+            )
           : t.callExpression(
               t.memberExpression(templateId, t.identifier("cloneNode")),
               [t.booleanLiteral(true)]
@@ -473,7 +478,18 @@ export default babel => {
           children[i].openingElement.attributes.some(
             attr =>
               t.isJSXSpreadAttribute(attr) ||
-              t.isJSXExpressionContainer(attr.value)
+              (t.isJSXExpressionContainer(attr.value) &&
+                (generate !== "ssr" ||
+                  !(
+                    attr.name.name.startsWith("on") ||
+                    attr.name.name === "events"
+                  )) &&
+                (attr.name.name === "model" ||
+                  attr.name.name.toLowerCase() !== attr.name.name ||
+                  !(
+                    t.isStringLiteral(attr.value.expression) ||
+                    t.isNumericLiteral(attr.value.expression)
+                  )))
           )
         )
           return true;
@@ -678,6 +694,7 @@ export default babel => {
             )
           );
         } else if (key.startsWith("on")) {
+          if (generate === "ssr") return;
           const ev = toEventName(key);
           if (
             delegateEvents &&
@@ -714,6 +731,7 @@ export default babel => {
               )
             );
         } else if (key === "events") {
+          if (generate === "ssr") return;
           value.expression.properties.forEach(prop =>
             results.exprs.push(
               t.expressionStatement(
