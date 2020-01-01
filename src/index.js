@@ -110,13 +110,11 @@ export default babel => {
     if (t.isJSXIdentifier(jsx)) {
       return jsx.name;
     }
+    return `${jsx.namespace.name}:${jsx.name.name}`;
   }
 
   function getTagName(tag) {
     const jsxName = tag.openingElement.name;
-    if (t.isJSXNamespacedName(jsxName)) {
-      throw new Error("Not support JSXNamespacedName");
-    }
     return jsxToString(jsxName);
   }
 
