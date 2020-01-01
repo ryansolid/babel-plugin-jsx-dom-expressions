@@ -103,12 +103,21 @@ export default babel => {
     return name.slice(2).toLowerCase();
   }
 
-  function getTagName(tag) {
-    if (t.isJSXMemberExpression(tag.openingElement.name)) {
-      return `${tag.openingElement.name.object.name}.${tag.openingElement.name.property.name}`;
-    } else if (t.isJSXIdentifier(tag.openingElement.name)) {
-      return tag.openingElement.name.name;
+  function jsxToString(jsx) {
+    if (t.isJSXMemberExpression(jsx)) {
+      return `${jsxToString(jsx.object)}.${jsx.property.name}`;
     }
+    if (t.isJSXIdentifier(jsx)) {
+      return jsx.name;
+    }
+  }
+
+  function getTagName(tag) {
+    const jsxName = tag.openingElement.name;
+    if (t.isJSXNamespacedName(jsxName)) {
+      throw new Error("Not support JSXNamespacedName");
+    }
+    return jsxToString(jsxName);
   }
 
   function lookupPathForExpr(path, node) {
