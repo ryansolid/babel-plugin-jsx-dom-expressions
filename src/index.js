@@ -103,9 +103,9 @@ export default babel => {
     return name.slice(2).toLowerCase();
   }
 
-  function jsxToString(jsx) {
+  function jsxElementNameToString(jsx) {
     if (t.isJSXMemberExpression(jsx)) {
-      return `${jsxToString(jsx.object)}.${jsx.property.name}`;
+      return `${jsxElementNameToString(jsx.object)}.${jsx.property.name}`;
     }
     if (t.isJSXIdentifier(jsx)) {
       return jsx.name;
@@ -115,7 +115,7 @@ export default babel => {
 
   function getTagName(tag) {
     const jsxName = tag.openingElement.name;
-    return jsxToString(jsxName);
+    return jsxElementNameToString(jsxName);
   }
 
   function lookupPathForExpr(path, node) {
