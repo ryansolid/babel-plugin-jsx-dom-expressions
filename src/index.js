@@ -828,7 +828,6 @@ export default babel => {
         i++;
       } else if (child.exprs.length) {
         registerImportMethod(path, "insert");
-        if (generate === "hydrate") registerImportMethod(path, "hydration");
         const multi = checkLength(jsxChildren),
           markers = (generate === "ssr" || generate === "hydrate") && multi;
         // boxed by textNodes
@@ -847,20 +846,14 @@ export default babel => {
             i++,
             markers ? "/" : ""
           );
-          const insertExpr = t.callExpression(
-            t.identifier("_$insert"),
-            contentId
-              ? [results.id, child.exprs[0], exprId, contentId]
-              : [results.id, child.exprs[0], exprId]
-          );
           results.exprs.push(
             t.expressionStatement(
-              contentId
-                ? t.callExpression(t.identifier("_$hydration"), [
-                    t.arrowFunctionExpression([], insertExpr),
-                    results.id
-                  ])
-                : insertExpr
+              t.callExpression(
+                t.identifier("_$insert"),
+                contentId
+                  ? [results.id, child.exprs[0], exprId, contentId]
+                  : [results.id, child.exprs[0], exprId]
+              )
             )
           );
           tempPath = exprId.name;
@@ -875,43 +868,37 @@ export default babel => {
             )
           );
         } else {
-          const insertExpr = t.callExpression(
-            t.identifier("_$insert"),
-            generate === "hydrate"
-              ? [
-                  results.id,
-                  child.exprs[0],
-                  t.identifier("undefined"),
-                  t.callExpression(
-                    t.memberExpression(
-                      t.memberExpression(
-                        t.memberExpression(
-                          t.identifier("Array"),
-                          t.identifier("prototype")
-                        ),
-                        t.identifier("slice")
-                      ),
-                      t.identifier("call")
-                    ),
-                    [
-                      t.memberExpression(
-                        results.id,
-                        t.identifier("childNodes")
-                      ),
-                      t.numericLiteral(0)
-                    ]
-                  )
-                ]
-              : [results.id, child.exprs[0]]
-          );
           results.exprs.push(
             t.expressionStatement(
-              generate === "hydrate"
-                ? t.callExpression(t.identifier("_$hydration"), [
-                    t.arrowFunctionExpression([], insertExpr),
-                    results.id
-                  ])
-                : insertExpr
+              t.callExpression(
+                t.identifier("_$insert"),
+                generate === "hydrate"
+                  ? [
+                      results.id,
+                      child.exprs[0],
+                      t.identifier("undefined"),
+                      t.callExpression(
+                        t.memberExpression(
+                          t.memberExpression(
+                            t.memberExpression(
+                              t.identifier("Array"),
+                              t.identifier("prototype")
+                            ),
+                            t.identifier("slice")
+                          ),
+                          t.identifier("call")
+                        ),
+                        [
+                          t.memberExpression(
+                            results.id,
+                            t.identifier("childNodes")
+                          ),
+                          t.numericLiteral(0)
+                        ]
+                      )
+                    ]
+                  : [results.id, child.exprs[0]]
+              )
             )
           );
         }
