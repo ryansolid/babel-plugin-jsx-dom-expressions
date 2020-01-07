@@ -3,6 +3,7 @@ import { createComponent as _$createComponent } from "r-dom";
 import { spread as _$spread } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
+import { runHydrationEvents as _$runHydrationEvents } from "r-dom";
 
 const _tmpl$ = _$template(
     `<svg width="400" height="180"><rect stroke-width="2" x="50" y="20" rx="20" ry="20" width="150" height="150" style="fill:red;stroke:black;stroke-width:5;opacity:0.5"></rect></svg>`
@@ -16,7 +17,13 @@ const _tmpl$ = _$template(
     true
   );
 
-const template = _$getNextElement(_tmpl$);
+const template = (function() {
+  const _el$ = _$getNextElement(_tmpl$);
+
+  _$runHydrationEvents(_el$.getAttribute("_hk"));
+
+  return _el$;
+})();
 
 const template2 = (function() {
   const _el$2 = _$getNextElement(_tmpl$2),
@@ -40,6 +47,8 @@ const template2 = (function() {
     return _p$;
   });
 
+  _$runHydrationEvents(_el$2.getAttribute("_hk"));
+
   return _el$2;
 })();
 
@@ -49,17 +58,39 @@ const template3 = (function() {
 
   _$spread(_el$5, props, true);
 
+  _$runHydrationEvents(_el$4.getAttribute("_hk"));
+
   return _el$4;
 })();
 
-const template4 = _$getNextElement(_tmpl$4);
+const template4 = (function() {
+  const _el$6 = _$getNextElement(_tmpl$4);
 
-const template5 = [_$getNextElement(_tmpl$4)];
+  _$runHydrationEvents(_el$6.getAttribute("_hk"));
+
+  return _el$6;
+})();
+
+const template5 = [
+  (() => {
+    const _el$7 = _$getNextElement(_tmpl$4);
+
+    _$runHydrationEvents(_el$7.getAttribute("_hk"));
+
+    return _el$7;
+  })()
+];
 
 const template6 = _$createComponent(
   Component,
   {
-    children: () => _$getNextElement(_tmpl$4)
+    children: () => {
+      const _el$8 = _$getNextElement(_tmpl$4);
+
+      _$runHydrationEvents(_el$8.getAttribute("_hk"));
+
+      return _el$8;
+    }
   },
   ["children"]
 );

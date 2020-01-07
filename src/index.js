@@ -410,7 +410,11 @@ export default babel => {
         if (child.id) {
           registerTemplate(path, child);
           if (
-            !(child.exprs.length || child.dynamics.length) &&
+            !(
+              child.exprs.length ||
+              child.dynamics.length ||
+              child.postExprs.length
+            ) &&
             child.decl.declarations.length === 1
           )
             return child.decl.declarations[0].init;
@@ -421,7 +425,8 @@ export default babel => {
                 t.blockStatement([
                   child.decl,
                   ...child.exprs.concat(
-                    wrapDynamics(path, child.dynamics) || []
+                    wrapDynamics(path, child.dynamics) || [],
+                    child.postExprs || []
                   ),
                   t.returnStatement(child.id)
                 ])
@@ -916,7 +921,11 @@ export default babel => {
           if (child.id) {
             registerTemplate(path, child);
             if (
-              !(child.exprs.length || child.dynamics.length) &&
+              !(
+                child.exprs.length ||
+                child.dynamics.length ||
+                child.postExprs.length
+              ) &&
               child.decl.declarations.length === 1
             )
               return child.decl.declarations[0].init;
@@ -927,7 +936,8 @@ export default babel => {
                   t.blockStatement([
                     child.decl,
                     ...child.exprs.concat(
-                      wrapDynamics(path, child.dynamics) || []
+                      wrapDynamics(path, child.dynamics) || [],
+                      child.postExprs || []
                     ),
                     t.returnStatement(child.id)
                   ])
@@ -953,6 +963,7 @@ export default babel => {
         decl: [],
         exprs: [],
         dynamics: [],
+        postExprs: [],
         isSVG: wrapSVG
       };
       if (wrapSVG) results.template = "<svg>" + results.template;
@@ -977,6 +988,19 @@ export default babel => {
       if (!voidTag) {
         transformChildren(path, jsx, opts, results);
         results.template += `</${tagName}>`;
+      }
+      if (info.topLevel && generate === "hydrate") {
+        registerImportMethod(path, "runHydrationEvents");
+        results.postExprs.push(
+          t.expressionStatement(
+            t.callExpression(t.identifier("_$runHydrationEvents"), [
+              t.callExpression(
+                t.memberExpression(results.id, t.identifier("getAttribute")),
+                [t.stringLiteral("_hk")]
+              )
+            ])
+          )
+        );
       }
       if (wrapSVG) results.template += "</svg>";
       return results;
@@ -1048,7 +1072,11 @@ export default babel => {
         if (result.id) {
           registerTemplate(path, result);
           if (
-            !(result.exprs.length || result.dynamics.length) &&
+            !(
+              result.exprs.length ||
+              result.dynamics.length ||
+              result.postExprs.length
+            ) &&
             result.decl.declarations.length === 1
           )
             path.replaceWith(result.decl.declarations[0].init);
@@ -1057,6 +1085,7 @@ export default babel => {
               [result.decl].concat(
                 result.exprs,
                 wrapDynamics(path, result.dynamics) || [],
+                result.postExprs || [],
                 t.returnStatement(result.id)
               )
             );

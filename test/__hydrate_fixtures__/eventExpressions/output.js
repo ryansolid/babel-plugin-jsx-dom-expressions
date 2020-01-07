@@ -1,6 +1,7 @@
 import { template as _$template } from "r-dom";
 import { delegateEvents as _$delegateEvents } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
+import { runHydrationEvents as _$runHydrationEvents } from "r-dom";
 
 const _tmpl$ = _$template(
   `<div id="main"><button>Click Bound</button><button>Click Delegated</button><button>Click Listener</button></div>`
@@ -19,6 +20,8 @@ const template = (function() {
   _el$4.addEventListener("click", () => console.log("listener"));
 
   _el$4.addEventListener("CAPS-ev", () => console.log("custom"));
+
+  _$runHydrationEvents(_el$.getAttribute("_hk"));
 
   return _el$;
 })();

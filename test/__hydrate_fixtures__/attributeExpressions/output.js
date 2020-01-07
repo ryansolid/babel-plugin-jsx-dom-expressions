@@ -1,6 +1,7 @@
 import { template as _$template } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
+import { runHydrationEvents as _$runHydrationEvents } from "r-dom";
 import { classList as _$classList } from "r-dom";
 import { spread as _$spread } from "r-dom";
 
@@ -43,6 +44,8 @@ const template = (function() {
     return _p$;
   });
 
+  _$runHydrationEvents(_el$.getAttribute("_hk"));
+
   return _el$;
 })();
 
@@ -56,6 +59,8 @@ const template2 = (function() {
   const _el$7 = _el$6.firstChild;
 
   _$wrap(() => (_el$7.data = row.label));
+
+  _$runHydrationEvents(_el$4.getAttribute("_hk"));
 
   return _el$4;
 })();
