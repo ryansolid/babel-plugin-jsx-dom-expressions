@@ -649,7 +649,8 @@ export default babel => {
   }
 
   function transformAttributes(path, jsx, results) {
-    let elem = results.id;
+    let elem = results.id,
+      children;
     const spread = t.identifier("_$spread"),
       tagName = getTagName(jsx),
       isSVG = SVGElements.has(tagName);
@@ -690,6 +691,8 @@ export default babel => {
               t.assignmentExpression("=", value.expression, elem)
             )
           );
+        } else if (key === "children") {
+          children = value;
         } else if (key === "forwardRef") {
           results.exprs.unshift(
             t.expressionStatement(
@@ -796,6 +799,9 @@ export default babel => {
         results.template += value ? `="${value.value}"` : `=""`;
       }
     });
+    if (children && jsx.children.length === 0) {
+      jsx.children.push(children);
+    }
   }
 
   function transformChildren(path, jsx, opts, results) {
