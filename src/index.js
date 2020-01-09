@@ -651,6 +651,7 @@ export default babel => {
   function transformAttributes(path, jsx, results) {
     let elem = results.id,
       children;
+    const hasChildren = jsx.children.length > 0;
     const spread = t.identifier("_$spread"),
       tagName = getTagName(jsx),
       isSVG = SVGElements.has(tagName);
@@ -667,7 +668,8 @@ export default babel => {
               )
                 ? t.arrowFunctionExpression([], attribute.argument)
                 : attribute.argument,
-              t.booleanLiteral(isSVG)
+              t.booleanLiteral(isSVG),
+              t.booleanLiteral(hasChildren)
             ])
           )
         );
@@ -799,7 +801,7 @@ export default babel => {
         results.template += value ? `="${value.value}"` : `=""`;
       }
     });
-    if (children && jsx.children.length === 0) {
+    if (!hasChildren && children) {
       jsx.children.push(children);
     }
   }

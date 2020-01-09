@@ -54,7 +54,7 @@ const template6 = _$createComponent(
 const template7 = (function() {
   const _el$6 = _tmpl$2.cloneNode(true);
 
-  _$spread(_el$6, dynamic, false);
+  _$spread(_el$6, dynamic, false, false);
 
   return _el$6;
 })();
@@ -62,7 +62,7 @@ const template7 = (function() {
 const template8 = (function() {
   const _el$7 = _tmpl$3.cloneNode(true);
 
-  _$spread(_el$7, dynamic, false, true); // ignore children
+  _$spread(_el$7, dynamic, false, true);
 
   return _el$7;
 })();
@@ -70,7 +70,7 @@ const template8 = (function() {
 const template9 = (function() {
   const _el$8 = _tmpl$2.cloneNode(true);
 
-  _$spread(_el$8, dynamic, false, true); // ignore children
+  _$spread(_el$8, dynamic, false, true);
 
   _$insert(_el$8, () => dynamic.children);
 
