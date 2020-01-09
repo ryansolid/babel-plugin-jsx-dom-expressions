@@ -653,11 +653,14 @@ export default babel => {
     return { exprs, template: "", component: true };
   }
 
-  function transformAttributes(path, jsx, results) {
-    let elem = results.id;
+  function transformAttributes(path, jsx, info, opts, results) {
+    let elem = results.id,
+      hasHydratableEvent = false;
     const spread = t.identifier("_$spread"),
       tagName = getTagName(jsx),
-      isSVG = SVGElements.has(tagName);
+      isSVG = SVGElements.has(tagName),
+      enableEventHydration = info.topLevel && opts.generate === "hydrate";
+
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
         registerImportMethod(path, "spread");
@@ -675,6 +678,8 @@ export default babel => {
             ])
           )
         );
+        //TODO: generate runtime hydratable event check
+        hasHydratableEvent = enableEventHydration;
         return;
       }
 
@@ -708,6 +713,11 @@ export default babel => {
         } else if (key.startsWith("on")) {
           if (generate === "ssr") return;
           const ev = toEventName(key);
+          hasHydratableEvent =
+            enableEventHydration &&
+            opts.hydratableEvents &&
+            opts.hydratableEvents.includes(ev);
+
           if (
             delegateEvents &&
             key !== key.toLowerCase() &&
@@ -801,6 +811,20 @@ export default babel => {
         results.template += value ? `="${value.value}"` : `=""`;
       }
     });
+
+    if (hasHydratableEvent) {
+      registerImportMethod(path, "runHydrationEvents");
+      results.postExprs.push(
+        t.expressionStatement(
+          t.callExpression(t.identifier("_$runHydrationEvents"), [
+            t.callExpression(
+              t.memberExpression(elem, t.identifier("getAttribute")),
+              [t.stringLiteral("_hk")]
+            )
+          ])
+        )
+      );
+    }
   }
 
   function transformChildren(path, jsx, opts, results) {
@@ -968,7 +992,7 @@ export default babel => {
       };
       if (wrapSVG) results.template = "<svg>" + results.template;
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
-      transformAttributes(path, jsx, results);
+      transformAttributes(path, jsx, opts, info, results);
       if (
         contextToCustomElements &&
         (tagName === "slot" || tagName.indexOf("-") > -1)
@@ -988,19 +1012,6 @@ export default babel => {
       if (!voidTag) {
         transformChildren(path, jsx, opts, results);
         results.template += `</${tagName}>`;
-      }
-      if (info.topLevel && generate === "hydrate") {
-        registerImportMethod(path, "runHydrationEvents");
-        results.postExprs.push(
-          t.expressionStatement(
-            t.callExpression(t.identifier("_$runHydrationEvents"), [
-              t.callExpression(
-                t.memberExpression(results.id, t.identifier("getAttribute")),
-                [t.stringLiteral("_hk")]
-              )
-            ])
-          )
-        );
       }
       if (wrapSVG) results.template += "</svg>";
       return results;
