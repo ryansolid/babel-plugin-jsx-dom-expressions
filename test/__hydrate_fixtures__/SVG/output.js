@@ -47,7 +47,7 @@ const template3 = (function() {
   const _el$4 = _$getNextElement(_tmpl$3),
     _el$5 = _el$4.firstChild;
 
-  _$spread(_el$5, props, true);
+  _$spread(_el$5, props, true, false);
 
   return _el$4;
 })();
