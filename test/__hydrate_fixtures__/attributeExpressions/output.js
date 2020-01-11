@@ -15,7 +15,7 @@ const template = (function() {
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild;
 
-  _$spread(_el$, results, false);
+  _$spread(_el$, results, false, true);
 
   _$classList(_el$, {
     selected: selected
@@ -25,7 +25,7 @@ const template = (function() {
     color
   });
 
-  _$spread(_el$2, () => results(), false);
+  _$spread(_el$2, () => results(), false, true);
 
   link = _el$3;
 
