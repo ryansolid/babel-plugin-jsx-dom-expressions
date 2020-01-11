@@ -2,7 +2,6 @@ import { template as _$template } from "r-dom";
 import { For as _$For } from "r-dom";
 import { createComponent as _$createComponent } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
-import { runHydrationEvents as _$runHydrationEvents } from "r-dom";
 import { getNextMarker as _$getNextMarker } from "r-dom";
 import { insert as _$insert } from "r-dom";
 
@@ -24,8 +23,6 @@ const Child = props => [
 
     _$insert(_el$, () => props.name, _el$4, _co$);
 
-    _$runHydrationEvents(_el$.getAttribute("_hk"));
-
     return _el$;
   })(),
   (() => {
@@ -37,8 +34,6 @@ const Child = props => [
       undefined,
       Array.prototype.slice.call(_el$5.childNodes, 0)
     );
-
-    _$runHydrationEvents(_el$5.getAttribute("_hk"));
 
     return _el$5;
   })()
@@ -71,13 +66,7 @@ const template = props => {
           {
             ref: r$ => (childRef = r$),
             booleanProperty: true,
-            children: () => {
-              const _el$7 = _$getNextElement(_tmpl$3);
-
-              _$runHydrationEvents(_el$7.getAttribute("_hk"));
-
-              return _el$7;
-            }
+            children: () => _$getNextElement(_tmpl$3)
           }
         ),
         [...Object.keys(props), "children"]
@@ -103,8 +92,6 @@ const template = props => {
               Array.prototype.slice.call(_el$8.childNodes, 0)
             );
 
-            _$runHydrationEvents(_el$8.getAttribute("_hk"));
-
             return _el$8;
           }
         },
@@ -122,8 +109,6 @@ const template = props => {
       _el$14,
       _co$4
     );
-
-    _$runHydrationEvents(_el$6.getAttribute("_hk"));
 
     return _el$6;
   })();
@@ -143,27 +128,9 @@ const template3 = _$createComponent(
   Child,
   {
     children: () => [
-      (() => {
-        const _el$15 = _$getNextElement(_tmpl$2);
-
-        _$runHydrationEvents(_el$15.getAttribute("_hk"));
-
-        return _el$15;
-      })(),
-      (() => {
-        const _el$16 = _$getNextElement(_tmpl$2);
-
-        _$runHydrationEvents(_el$16.getAttribute("_hk"));
-
-        return _el$16;
-      })(),
-      (() => {
-        const _el$17 = _$getNextElement(_tmpl$2);
-
-        _$runHydrationEvents(_el$17.getAttribute("_hk"));
-
-        return _el$17;
-      })(),
+      _$getNextElement(_tmpl$2),
+      _$getNextElement(_tmpl$2),
+      _$getNextElement(_tmpl$2),
       "After"
     ]
   },
@@ -173,14 +140,7 @@ const template3 = _$createComponent(
 const template4 = _$createComponent(
   Child,
   {
-    children: () =>
-      (function() {
-        const _el$18 = _$getNextElement(_tmpl$2);
-
-        _$runHydrationEvents(_el$18.getAttribute("_hk"));
-
-        return _el$18;
-      })()
+    children: () => _$getNextElement(_tmpl$2)
   },
   ["children"]
 );

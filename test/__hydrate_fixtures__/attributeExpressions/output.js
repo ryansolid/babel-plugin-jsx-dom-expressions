@@ -60,7 +60,5 @@ const template2 = (function() {
 
   _$wrap(() => (_el$7.data = row.label));
 
-  _$runHydrationEvents(_el$4.getAttribute("_hk"));
-
   return _el$4;
 })();

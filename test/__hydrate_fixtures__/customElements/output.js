@@ -1,7 +1,6 @@
 import { template as _$template } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
-import { runHydrationEvents as _$runHydrationEvents } from "r-dom";
 import { currentContext as _$currentContext } from "r-dom";
 
 const _tmpl$ = _$template(`<my-element></my-element>`),
@@ -17,9 +16,6 @@ const template = (function() {
 
   _el$.someProp = data;
   _el$._context = _$currentContext();
-
-  _$runHydrationEvents(_el$.getAttribute("_hk"));
-
   return _el$;
 })();
 
@@ -36,8 +32,6 @@ const template2 = (function() {
     return _p$;
   });
 
-  _$runHydrationEvents(_el$2.getAttribute("_hk"));
-
   return _el$2;
 })();
 
@@ -45,9 +39,6 @@ const template3 = (function() {
   const _el$3 = _$getNextElement(_tmpl$2);
 
   _el$3._context = _$currentContext();
-
-  _$runHydrationEvents(_el$3.getAttribute("_hk"));
-
   return _el$3;
 })();
 
@@ -56,9 +47,6 @@ const template4 = [
     const _el$4 = _$getNextElement(_tmpl$3);
 
     _el$4._context = _$currentContext();
-
-    _$runHydrationEvents(_el$4.getAttribute("_hk"));
-
     return _el$4;
   })()
 ];

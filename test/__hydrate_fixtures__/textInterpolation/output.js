@@ -2,7 +2,6 @@ import { template as _$template } from "r-dom";
 import { getNextMarker as _$getNextMarker } from "r-dom";
 import { insert as _$insert } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
-import { runHydrationEvents as _$runHydrationEvents } from "r-dom";
 
 const _tmpl$ = _$template(`<span>Hello </span>`),
   _tmpl$2 = _$template(`<span> John</span>`),
@@ -14,30 +13,12 @@ const _tmpl$ = _$template(`<span>Hello </span>`),
   _tmpl$8 = _$template(`<span>Hello</span>`),
   _tmpl$9 = _$template(`<span>&nbsp;&lt;Hi&gt;&nbsp;</span>`);
 
-const trailing = (function() {
-  const _el$ = _$getNextElement(_tmpl$);
+const trailing = _$getNextElement(_tmpl$);
 
-  _$runHydrationEvents(_el$.getAttribute("_hk"));
-
-  return _el$;
-})();
-
-const leading = (function() {
-  const _el$2 = _$getNextElement(_tmpl$2);
-
-  _$runHydrationEvents(_el$2.getAttribute("_hk"));
-
-  return _el$2;
-})();
+const leading = _$getNextElement(_tmpl$2);
 /* prettier-ignore */
 
-const extraSpaces = function () {
-  const _el$3 = _$getNextElement(_tmpl$3);
-
-  _$runHydrationEvents(_el$3.getAttribute("_hk"));
-
-  return _el$3;
-}();
+const extraSpaces = _$getNextElement(_tmpl$3);
 
 const trailingExpr = (function() {
   const _el$4 = _$getNextElement(_tmpl$4),
@@ -46,8 +27,6 @@ const trailingExpr = (function() {
     [_el$7, _co$] = _$getNextMarker(_el$6.nextSibling);
 
   _$insert(_el$4, name, _el$7, _co$);
-
-  _$runHydrationEvents(_el$4.getAttribute("_hk"));
 
   return _el$4;
 })();
@@ -59,8 +38,6 @@ const leadingExpr = (function() {
     _el$9 = _el$11.nextSibling;
 
   _$insert(_el$8, greeting, _el$11, _co$2);
-
-  _$runHydrationEvents(_el$8.getAttribute("_hk"));
 
   return _el$8;
 })();
@@ -77,8 +54,6 @@ const multiExpr = function () {
   _$insert(_el$12, greeting, _el$15, _co$3);
 
   _$insert(_el$12, name, _el$17, _co$4);
-
-  _$runHydrationEvents(_el$12.getAttribute("_hk"));
 
   return _el$12;
 }();
@@ -98,34 +73,14 @@ const multiExprSpaced = function () {
 
   _$insert(_el$18, name, _el$25, _co$6);
 
-  _$runHydrationEvents(_el$18.getAttribute("_hk"));
-
   return _el$18;
 }();
 /* prettier-ignore */
 
-const multiLine = function () {
-  const _el$26 = _$getNextElement(_tmpl$8);
-
-  _$runHydrationEvents(_el$26.getAttribute("_hk"));
-
-  return _el$26;
-}();
+const multiLine = _$getNextElement(_tmpl$8);
 /* prettier-ignore */
 
-const multiLineTrailingSpace = function () {
-  const _el$27 = _$getNextElement(_tmpl$3);
-
-  _$runHydrationEvents(_el$27.getAttribute("_hk"));
-
-  return _el$27;
-}();
+const multiLineTrailingSpace = _$getNextElement(_tmpl$3);
 /* prettier-ignore */
 
-const escape = function () {
-  const _el$28 = _$getNextElement(_tmpl$9);
-
-  _$runHydrationEvents(_el$28.getAttribute("_hk"));
-
-  return _el$28;
-}();
+const escape = _$getNextElement(_tmpl$9);

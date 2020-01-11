@@ -653,13 +653,15 @@ export default babel => {
     return { exprs, template: "", component: true };
   }
 
-  function transformAttributes(path, jsx, results) {
+  function transformAttributes(path, jsx, opts, results) {
     let elem = results.id,
+      hasHydratableEvent = false,
       children;
-    const hasChildren = jsx.children.length > 0;
     const spread = t.identifier("_$spread"),
       tagName = getTagName(jsx),
-      isSVG = SVGElements.has(tagName);
+      isSVG = SVGElements.has(tagName),
+      hasChildren = jsx.children.length > 0;
+
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
         registerImportMethod(path, "spread");
@@ -678,6 +680,8 @@ export default babel => {
             ])
           )
         );
+        //TODO: generate runtime hydratable event check
+        hasHydratableEvent = true;
         return;
       }
 
@@ -718,6 +722,10 @@ export default babel => {
             key !== key.toLowerCase() &&
             !NonComposedEvents.has(ev)
           ) {
+            // can only hydrate delegated events
+            hasHydratableEvent = opts.hydratableEvents
+              ? opts.hydratableEvents.includes(ev)
+              : true;
             const events =
               path.scope.getProgramParent().data.events ||
               (path.scope.getProgramParent().data.events = new Set());
@@ -809,6 +817,8 @@ export default babel => {
     if (!hasChildren && children) {
       jsx.children.push(children);
     }
+
+    results.hasHydratableEvent = results.hasHydratableEvent || hasHydratableEvent;
   }
 
   function transformChildren(path, jsx, opts, results) {
@@ -837,6 +847,7 @@ export default babel => {
         results.decl.push(...child.decl);
         results.exprs.push(...child.exprs);
         results.dynamics.push(...child.dynamics);
+        results.hasHydratableEvent = results.hasHydratableEvent || child.hasHydratableEvent;
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
@@ -976,7 +987,7 @@ export default babel => {
       };
       if (wrapSVG) results.template = "<svg>" + results.template;
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
-      transformAttributes(path, jsx, results);
+      transformAttributes(path, jsx, opts, results);
       if (
         contextToCustomElements &&
         (tagName === "slot" || tagName.indexOf("-") > -1)
@@ -997,7 +1008,7 @@ export default babel => {
         transformChildren(path, jsx, opts, results);
         results.template += `</${tagName}>`;
       }
-      if (info.topLevel && generate === "hydrate") {
+      if (info.topLevel && generate === "hydrate" && results.hasHydratableEvent) {
         registerImportMethod(path, "runHydrationEvents");
         results.postExprs.push(
           t.expressionStatement(
