@@ -3,7 +3,6 @@
 [![Build Status](https://img.shields.io/travis/com/ryansolid/babel-plugin-jsx-dom-expressions.svg?style=flat)](https://travis-ci.com/ryansolid/babel-plugin-jsx-dom-expressions)
 [![Coverage Status](https://img.shields.io/coveralls/github/ryansolid/babel-plugin-jsx-dom-expressions.svg?style=flat)](https://coveralls.io/github/ryansolid/babel-plugin-jsx-dom-expressions?branch=master)
 [![NPM Version](https://img.shields.io/npm/v/babel-plugin-jsx-dom-expressions.svg?style=flat)](https://www.npmjs.com/package/babel-plugin-jsx-dom-expressions)
-![](https://img.shields.io/bundlephobia/minzip/babel-plugin-jsx-dom-expressions.svg?style=flat)
 ![](https://img.shields.io/david/ryansolid/babel-plugin-jsx-dom-expressions.svg?style=flat)
 ![](https://img.shields.io/npm/dt/babel-plugin-jsx-dom-expressions.svg?style=flat)
 [![Gitter](https://img.shields.io/gitter/room/dom-expressions/community)](https://gitter.im/dom-expressions/community)
