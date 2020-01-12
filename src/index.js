@@ -410,7 +410,11 @@ export default babel => {
         if (child.id) {
           registerTemplate(path, child);
           if (
-            !(child.exprs.length || child.dynamics.length) &&
+            !(
+              child.exprs.length ||
+              child.dynamics.length ||
+              child.postExprs.length
+            ) &&
             child.decl.declarations.length === 1
           )
             return child.decl.declarations[0].init;
@@ -421,7 +425,8 @@ export default babel => {
                 t.blockStatement([
                   child.decl,
                   ...child.exprs.concat(
-                    wrapDynamics(path, child.dynamics) || []
+                    wrapDynamics(path, child.dynamics) || [],
+                    child.postExprs || []
                   ),
                   t.returnStatement(child.id)
                 ])
@@ -648,13 +653,15 @@ export default babel => {
     return { exprs, template: "", component: true };
   }
 
-  function transformAttributes(path, jsx, results) {
+  function transformAttributes(path, jsx, opts, results) {
     let elem = results.id,
+      hasHydratableEvent = false,
       children;
-    const hasChildren = jsx.children.length > 0;
     const spread = t.identifier("_$spread"),
       tagName = getTagName(jsx),
-      isSVG = SVGElements.has(tagName);
+      isSVG = SVGElements.has(tagName),
+      hasChildren = jsx.children.length > 0;
+
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
         registerImportMethod(path, "spread");
@@ -673,6 +680,8 @@ export default babel => {
             ])
           )
         );
+        //TODO: generate runtime hydratable event check
+        hasHydratableEvent = true;
         return;
       }
 
@@ -713,6 +722,10 @@ export default babel => {
             key !== key.toLowerCase() &&
             !NonComposedEvents.has(ev)
           ) {
+            // can only hydrate delegated events
+            hasHydratableEvent = opts.hydratableEvents
+              ? opts.hydratableEvents.includes(ev)
+              : true;
             const events =
               path.scope.getProgramParent().data.events ||
               (path.scope.getProgramParent().data.events = new Set());
@@ -804,6 +817,8 @@ export default babel => {
     if (!hasChildren && children) {
       jsx.children.push(children);
     }
+
+    results.hasHydratableEvent = results.hasHydratableEvent || hasHydratableEvent;
   }
 
   function transformChildren(path, jsx, opts, results) {
@@ -832,6 +847,7 @@ export default babel => {
         results.decl.push(...child.decl);
         results.exprs.push(...child.exprs);
         results.dynamics.push(...child.dynamics);
+        results.hasHydratableEvent = results.hasHydratableEvent || child.hasHydratableEvent;
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
@@ -924,7 +940,11 @@ export default babel => {
           if (child.id) {
             registerTemplate(path, child);
             if (
-              !(child.exprs.length || child.dynamics.length) &&
+              !(
+                child.exprs.length ||
+                child.dynamics.length ||
+                child.postExprs.length
+              ) &&
               child.decl.declarations.length === 1
             )
               return child.decl.declarations[0].init;
@@ -935,7 +955,8 @@ export default babel => {
                   t.blockStatement([
                     child.decl,
                     ...child.exprs.concat(
-                      wrapDynamics(path, child.dynamics) || []
+                      wrapDynamics(path, child.dynamics) || [],
+                      child.postExprs || []
                     ),
                     t.returnStatement(child.id)
                   ])
@@ -961,11 +982,12 @@ export default babel => {
         decl: [],
         exprs: [],
         dynamics: [],
+        postExprs: [],
         isSVG: wrapSVG
       };
       if (wrapSVG) results.template = "<svg>" + results.template;
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
-      transformAttributes(path, jsx, results);
+      transformAttributes(path, jsx, opts, results);
       if (
         contextToCustomElements &&
         (tagName === "slot" || tagName.indexOf("-") > -1)
@@ -985,6 +1007,19 @@ export default babel => {
       if (!voidTag) {
         transformChildren(path, jsx, opts, results);
         results.template += `</${tagName}>`;
+      }
+      if (info.topLevel && generate === "hydrate" && results.hasHydratableEvent) {
+        registerImportMethod(path, "runHydrationEvents");
+        results.postExprs.push(
+          t.expressionStatement(
+            t.callExpression(t.identifier("_$runHydrationEvents"), [
+              t.callExpression(
+                t.memberExpression(results.id, t.identifier("getAttribute")),
+                [t.stringLiteral("_hk")]
+              )
+            ])
+          )
+        );
       }
       if (wrapSVG) results.template += "</svg>";
       return results;
@@ -1056,7 +1091,11 @@ export default babel => {
         if (result.id) {
           registerTemplate(path, result);
           if (
-            !(result.exprs.length || result.dynamics.length) &&
+            !(
+              result.exprs.length ||
+              result.dynamics.length ||
+              result.postExprs.length
+            ) &&
             result.decl.declarations.length === 1
           )
             path.replaceWith(result.decl.declarations[0].init);
@@ -1065,6 +1104,7 @@ export default babel => {
               [result.decl].concat(
                 result.exprs,
                 wrapDynamics(path, result.dynamics) || [],
+                result.postExprs || [],
                 t.returnStatement(result.id)
               )
             );

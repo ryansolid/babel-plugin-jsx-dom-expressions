@@ -1,5 +1,6 @@
 import { template as _$template } from "r-dom";
 import { createComponent as _$createComponent } from "r-dom";
+import { runHydrationEvents as _$runHydrationEvents } from "r-dom";
 import { spread as _$spread } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
@@ -48,6 +49,8 @@ const template3 = (function() {
     _el$5 = _el$4.firstChild;
 
   _$spread(_el$5, props, true, false);
+
+  _$runHydrationEvents(_el$4.getAttribute("_hk"));
 
   return _el$4;
 })();
