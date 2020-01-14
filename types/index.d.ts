@@ -443,6 +443,7 @@ declare global {
       // Standard HTML Attributes
       accessKey?: string;
       className?: string;
+      class?: string;
       contentEditable?: boolean | "inherit";
       contextMenu?: string;
       dir?: HTMLDir;
@@ -655,6 +656,7 @@ declare global {
 
     interface LabelHTMLAttributes<T> extends HTMLAttributes<T> {
       htmlFor?: string;
+      for?: string;
       form?: string;
     }
 
