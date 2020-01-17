@@ -10,7 +10,8 @@ pluginTester({
     generate: "dom",
     delegateEvents: true,
     wrapConditionals: true,
-    contextToCustomElements: true
+    contextToCustomElements: true,
+    staticMarker: "@once"
   },
   title: 'Convert JSX',
   fixtures: path.join(__dirname, '__dom_fixtures__'),
