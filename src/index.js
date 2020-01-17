@@ -15,10 +15,15 @@ export default babel => {
     delegateEvents = true,
     builtIns = [],
     wrapConditionals = false,
-    contextToCustomElements = false;
+    contextToCustomElements = false,
+    staticMarker = "@once";
 
   function isDynamic(expr, path, checkTags) {
     if (t.isFunction(expr)) return false;
+    if (expr.leadingComments && expr.leadingComments[0].value.trim() === staticMarker) {
+      expr.leadingComments.shift();
+      return false;
+    }
     if (
       t.isCallExpression(expr) ||
       t.isMemberExpression(expr) ||
@@ -680,7 +685,7 @@ export default babel => {
             ])
           )
         );
-        //TODO: generate runtime hydratable event check
+        //NOTE: can't be checked at compile time so add to compiled output
         hasHydratableEvent = true;
         return;
       }
@@ -818,7 +823,8 @@ export default babel => {
       jsx.children.push(children);
     }
 
-    results.hasHydratableEvent = results.hasHydratableEvent || hasHydratableEvent;
+    results.hasHydratableEvent =
+      results.hasHydratableEvent || hasHydratableEvent;
   }
 
   function transformChildren(path, jsx, opts, results) {
@@ -847,7 +853,8 @@ export default babel => {
         results.decl.push(...child.decl);
         results.exprs.push(...child.exprs);
         results.dynamics.push(...child.dynamics);
-        results.hasHydratableEvent = results.hasHydratableEvent || child.hasHydratableEvent;
+        results.hasHydratableEvent =
+          results.hasHydratableEvent || child.hasHydratableEvent;
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
@@ -1008,7 +1015,11 @@ export default babel => {
         transformChildren(path, jsx, opts, results);
         results.template += `</${tagName}>`;
       }
-      if (info.topLevel && generate === "hydrate" && results.hasHydratableEvent) {
+      if (
+        info.topLevel &&
+        generate === "hydrate" &&
+        results.hasHydratableEvent
+      ) {
         registerImportMethod(path, "runHydrationEvents");
         results.postExprs.push(
           t.expressionStatement(
@@ -1085,6 +1096,7 @@ export default babel => {
         if ("builtIns" in opts) builtIns = opts.builtIns;
         if ("wrapConditionals" in opts)
           wrapConditionals = opts.wrapConditionals;
+        if ("staticMarker" in opts) staticMarker = opts.staticMarker;
         const result = generateHTMLNode(path, path.node, opts, {
           topLevel: true
         });
@@ -1119,6 +1131,7 @@ export default babel => {
         if ("builtIns" in opts) builtIns = opts.builtIns;
         if ("wrapConditionals" in opts)
           wrapConditionals = opts.wrapConditionals;
+        if ("staticMarker" in opts) staticMarker = opts.staticMarker;
         const result = generateHTMLNode(path, path.node, opts);
         path.replaceWith(result.exprs[0]);
       },

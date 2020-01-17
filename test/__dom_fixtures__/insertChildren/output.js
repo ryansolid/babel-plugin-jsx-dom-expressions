@@ -90,3 +90,15 @@ const template10 = _$createComponent(
   ),
   [...Object.keys(dynamic), "children"]
 );
+
+const template11 = (function() {
+  const _el$9 = _tmpl$2.cloneNode(true);
+
+  _$insert(_el$9, state.children);
+
+  return _el$9;
+})();
+
+const template12 = _$createComponent(Module, {
+  children: state.children
+});

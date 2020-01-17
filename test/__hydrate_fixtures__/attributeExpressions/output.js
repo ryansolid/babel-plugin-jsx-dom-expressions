@@ -8,7 +8,8 @@ import { spread as _$spread } from "r-dom";
 const _tmpl$ = _$template(
     `<div id="main"><h1 disabled=""><a href="/">Welcome</a></h1></div>`
   ),
-  _tmpl$2 = _$template(`<div><div></div><div></div></div>`);
+  _tmpl$2 = _$template(`<div><div></div><div></div></div>`),
+  _tmpl$3 = _$template(`<div></div>`);
 
 const template = (function() {
   const _el$ = _$getNextElement(_tmpl$),
@@ -61,4 +62,18 @@ const template2 = (function() {
   _$wrap(() => (_el$7.data = row.label));
 
   return _el$4;
+})();
+
+const template3 = (function() {
+  const _el$8 = _$getNextElement(_tmpl$3);
+
+  _el$8.id = state.id;
+  Object.assign(_el$8.style, {
+    backgroundColor: state.color
+  });
+  _el$8.textContent = state.content;
+
+  _$wrap(() => (_el$8.name = state.name));
+
+  return _el$8;
 })();

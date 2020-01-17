@@ -23,7 +23,12 @@ const template = props => {
 };
 
 const template2 = (
-  <Child name="Jake" dynamic={state.data} handleClick={clickHandler} />
+  <Child
+    name="Jake"
+    dynamic={state.data}
+    stale={/*@once*/ state.data}
+    handleClick={clickHandler}
+  />
 );
 
 const template3 = (
@@ -40,4 +45,8 @@ const template4 = <Child>{<div />}</Child>;
 const template5 = <Child>{state.dynamic}</Child>;
 
 // builtIns
-const template6 = <For each={state.list} fallback={<Loading />}>{item => item}</For>;
+const template6 = (
+  <For each={state.list} fallback={<Loading />}>
+    {item => item}
+  </For>
+);

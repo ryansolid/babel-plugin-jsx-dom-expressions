@@ -25,3 +25,12 @@ const template2 = (
     <div textContent={row.label} />
   </div>
 );
+
+const template3 = (
+  <div
+    id={/*@once*/ state.id}
+    style={/*@once*/ { backgroundColor: state.color }}
+    name={state.name}
+    textContent={/*@once*/ state.content}
+  />
+);

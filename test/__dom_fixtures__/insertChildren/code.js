@@ -16,3 +16,5 @@ const template7 = <module {...dynamic} />;
 const template8 = <module {...dynamic}>Hello</module>;
 const template9 = <module {...dynamic}>{dynamic.children}</module>;
 const template10 = <Module {...dynamic}>Hello</Module>;
+const template11 = <module children={/*@once*/ state.children} />;
+const template12 = <Module children={/*@once*/ state.children} />;

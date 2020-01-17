@@ -93,6 +93,7 @@ const template2 = _$createComponent(
   {
     name: "Jake",
     dynamic: () => state.data,
+    stale: state.data,
     handleClick: clickHandler
   },
   ["dynamic"]

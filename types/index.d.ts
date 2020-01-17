@@ -2,8 +2,8 @@ declare global {
   /**
    * Forked from `https://github.com/adamhaile/surplus` and adapted for `babel-plugin-jsx-dom-expressions`.
    *
-   * @see https://github.com/adamhaile/surplus/blob/master/index.d.ts
-   * @see https://github.com/ryansolid/babel-plugin-jsx-dom-expressions
+   * @onceee https://github.com/adamhaile/surplus/blob/master/index.d.ts
+   * @onceee https://github.com/ryansolid/babel-plugin-jsx-dom-expressions
    */
 
   namespace JSX {
