@@ -14,13 +14,17 @@ export default babel => {
     generate = "dom",
     delegateEvents = true,
     builtIns = [],
+    wrapFragments = false,
     wrapConditionals = false,
     contextToCustomElements = false,
     staticMarker = "@once";
 
   function isDynamic(expr, path, checkTags) {
     if (t.isFunction(expr)) return false;
-    if (expr.leadingComments && expr.leadingComments[0].value.trim() === staticMarker) {
+    if (
+      expr.leadingComments &&
+      expr.leadingComments[0].value.trim() === staticMarker
+    ) {
       expr.leadingComments.shift();
       return false;
     }
@@ -402,7 +406,7 @@ export default babel => {
   function transformComponentChildren(path, children, opts) {
     const filteredChildren = filterChildren(children);
     if (!filteredChildren.length) return;
-    let dynamic;
+    let dynamic = false;
 
     let transformedChildren = filteredChildren.map(child => {
       if (t.isJSXText(child)) {
@@ -439,7 +443,7 @@ export default babel => {
               []
             );
         }
-        dynamic = child.dynamic;
+        dynamic = dynamic || child.dynamic;
         return child.exprs[0];
       }
     });
@@ -455,6 +459,15 @@ export default babel => {
         dynamic = true;
       }
     } else {
+      if (wrapFragments) {
+        transformedChildren = transformedChildren.map(c => {
+          if (t.isFunction(c)) {
+            registerImportMethod(path, "wrapMemo");
+            return t.callExpression(t.identifier("_$wrapMemo"), [c]);
+          }
+          return c;
+        });
+      }
       transformedChildren = t.arrowFunctionExpression(
         [],
         t.arrayExpression(transformedChildren)
@@ -971,6 +984,12 @@ export default babel => {
                 []
               );
           }
+          if (wrapFragments && child.dynamic) {
+            registerImportMethod(path, "wrapMemo");
+            return t.callExpression(t.identifier("_$wrapMemo"), [
+              child.exprs[0]
+            ]);
+          }
           return child.exprs[0];
         }
       });
@@ -1096,6 +1115,7 @@ export default babel => {
         if ("builtIns" in opts) builtIns = opts.builtIns;
         if ("wrapConditionals" in opts)
           wrapConditionals = opts.wrapConditionals;
+        if ("wrapFragments" in opts) wrapFragments = opts.wrapFragments;
         if ("staticMarker" in opts) staticMarker = opts.staticMarker;
         const result = generateHTMLNode(path, path.node, opts, {
           topLevel: true
@@ -1131,6 +1151,7 @@ export default babel => {
         if ("builtIns" in opts) builtIns = opts.builtIns;
         if ("wrapConditionals" in opts)
           wrapConditionals = opts.wrapConditionals;
+        if ("wrapFragments" in opts) wrapFragments = opts.wrapFragments;
         if ("staticMarker" in opts) staticMarker = opts.staticMarker;
         const result = generateHTMLNode(path, path.node, opts);
         path.replaceWith(result.exprs[0]);

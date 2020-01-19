@@ -10,6 +10,7 @@ pluginTester({
     generate: "dom",
     delegateEvents: true,
     wrapConditionals: true,
+    wrapFragments: true,
     contextToCustomElements: true,
     staticMarker: "@once"
   },

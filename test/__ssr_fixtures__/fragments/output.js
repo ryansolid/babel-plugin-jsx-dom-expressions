@@ -1,5 +1,6 @@
 import { template as _$template } from "r-dom";
 import { createComponent as _$createComponent } from "r-dom";
+import { wrapMemo as _$wrapMemo } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 import { getNextElement as _$getNextElement } from "r-dom";
 
@@ -25,7 +26,7 @@ const multiDynamic = [
 
     return _el$5;
   })(),
-  () => state.inserted,
+  _$wrapMemo(() => state.inserted),
   (() => {
     const _el$6 = _$getNextElement(_tmpl$2, true);
 
@@ -36,15 +37,21 @@ const multiDynamic = [
   "After"
 ];
 const singleExpression = [inserted];
-const singleDynamic = [() => inserted()];
+const singleDynamic = [_$wrapMemo(() => inserted())];
 const firstStatic = [inserted, _$getNextElement(_tmpl$3, true)];
-const firstDynamic = [() => inserted(), _$getNextElement(_tmpl$3, true)];
+const firstDynamic = [
+  _$wrapMemo(() => inserted()),
+  _$getNextElement(_tmpl$3, true)
+];
 const firstComponent = [
   _$createComponent(Component, {}),
   _$getNextElement(_tmpl$3, true)
 ];
 const lastStatic = [_$getNextElement(_tmpl$3, true), inserted];
-const lastDynamic = [_$getNextElement(_tmpl$3, true), () => inserted()];
+const lastDynamic = [
+  _$getNextElement(_tmpl$3, true),
+  _$wrapMemo(() => inserted())
+];
 const lastComponent = [
   _$getNextElement(_tmpl$3, true),
   _$createComponent(Component, {})

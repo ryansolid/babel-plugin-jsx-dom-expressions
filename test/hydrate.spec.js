@@ -9,6 +9,7 @@ pluginTester({
     builtIns: ['For'],
     generate: "hydrate",
     delegateEvents: true,
+    wrapFragments: true,
     contextToCustomElements: true
   },
   title: 'Convert JSX',

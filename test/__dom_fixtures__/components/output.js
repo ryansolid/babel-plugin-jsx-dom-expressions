@@ -1,4 +1,5 @@
 import { template as _$template } from "r-dom";
+import { wrapMemo as _$wrapMemo } from "r-dom";
 import { For as _$For } from "r-dom";
 import { createComponent as _$createComponent } from "r-dom";
 import { insert as _$insert } from "r-dom";
@@ -136,4 +137,12 @@ const template6 = _$createComponent(
     children: item => item
   },
   ["each", "fallback"]
+);
+
+const template7 = _$createComponent(
+  Child,
+  {
+    children: () => [_tmpl$2.cloneNode(true), _$wrapMemo(() => state.dynamic)]
+  },
+  ["children"]
 );

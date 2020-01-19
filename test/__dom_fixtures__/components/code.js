@@ -50,3 +50,10 @@ const template6 = (
     {item => item}
   </For>
 );
+
+const template7 = (
+  <Child>
+    <div />
+    {state.dynamic}
+  </Child>
+);
