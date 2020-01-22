@@ -425,9 +425,9 @@ export default babel => {
               child.postExprs.length
             ) &&
             child.decl.declarations.length === 1
-          )
+          ) {
             return child.decl.declarations[0].init;
-          else
+          } else {
             return t.callExpression(
               t.arrowFunctionExpression(
                 [],
@@ -442,6 +442,7 @@ export default babel => {
               ),
               []
             );
+          }
         }
         dynamic = dynamic || child.dynamic;
         return child.exprs[0];
