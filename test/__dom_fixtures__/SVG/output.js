@@ -4,7 +4,7 @@ import { spread as _$spread } from "r-dom";
 import { wrap as _$wrap } from "r-dom";
 
 const _tmpl$ = _$template(
-    `<svg width="400" height="180"><rect stroke-width="2" x="50" y="20" rx="20" ry="20" width="150" height="150" style="fill:red;stroke:black;stroke-width:5;opacity:0.5"></rect></svg>`
+    `<svg width="400" height="180"><rect stroke-width="2" x="50" y="20" rx="20" ry="20" width="150" height="150" style="fill:red;stroke:black;stroke-width:5;opacity:0.5"></rect><linearGradient gradientTransform="rotate(25)"><stop offset="0%"></stop></linearGradient></svg>`
   ),
   _tmpl$2 = _$template(
     `<svg width="400" height="180"><rect rx="20" ry="20" width="150" height="150"></rect></svg>`

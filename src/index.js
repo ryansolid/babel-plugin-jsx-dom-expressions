@@ -19,6 +19,10 @@ export default babel => {
     contextToCustomElements = false,
     staticMarker = "@once";
 
+  function isComponent(tagName) {
+    return tagName[0].toLowerCase() !== tagName[0] || tagName.includes(".");
+  }
+
   function isDynamic(expr, path, checkTags) {
     if (t.isFunction(expr)) return false;
     if (
@@ -490,7 +494,7 @@ export default babel => {
       if (
         t.isJSXElement(children[index - 1]) &&
         (tagName = getTagName(children[index - 1])) &&
-        tagName.toLowerCase() !== tagName
+        isComponent(tagName)
       )
         return true;
     }
@@ -499,7 +503,7 @@ export default babel => {
         if (!t.isJSXEmptyExpression(children[i].expression)) return true;
       } else if (t.isJSXElement(children[i])) {
         const tagName = getTagName(children[i]);
-        if (tagName.toLowerCase() !== tagName) return true;
+        if (isComponent(tagName)) return true;
         if (
           contextToCustomElements &&
           (tagName === "slot" || tagName.indexOf("-") > -1)
@@ -1003,7 +1007,7 @@ export default babel => {
       let tagName = getTagName(jsx),
         wrapSVG = info.topLevel && tagName != "svg" && SVGElements.has(tagName),
         voidTag = VoidElements.indexOf(tagName) > -1;
-      if (tagName !== tagName.toLowerCase())
+      if (isComponent(tagName))
         return generateComponent(path, jsx, opts);
       let results = {
         template: `<${tagName}`,
@@ -1074,7 +1078,13 @@ export default babel => {
           : jsx.extra.raw
       );
       if (!text.length) return null;
-      const results = { template: text, decl: [], exprs: [], dynamics: [], postExprs: [] };
+      const results = {
+        template: text,
+        decl: [],
+        exprs: [],
+        dynamics: [],
+        postExprs: []
+      };
       if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {

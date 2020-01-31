@@ -10,6 +10,9 @@ const template = (
       height="150"
       style="fill:red;stroke:black;stroke-width:5;opacity:0.5"
     />
+    <linearGradient gradientTransform="rotate(25)">
+      <stop offset="0%"></stop>
+    </linearGradient>
   </svg>
 );
 
