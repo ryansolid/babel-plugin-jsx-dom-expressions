@@ -15,29 +15,40 @@ const _tmpl$ = _$template(
     true
   );
 
+const _ck$ = ["children"];
+
 const template = _tmpl$.cloneNode(true);
 
 const template2 = (function() {
   const _el$2 = _tmpl$2.cloneNode(true),
     _el$3 = _el$2.firstChild;
 
-  _$wrap((_p$ = {}) => {
-    const _v$ = state.name,
-      _v$2 = state.width,
-      _v$3 = state.x,
-      _v$4 = state.y;
-    _v$ !== _p$._v$ && _el$3.setAttribute("class", (_p$._v$ = _v$));
-    _v$2 !== _p$._v$2 && _el$3.setAttribute("stroke-width", (_p$._v$2 = _v$2));
-    _v$3 !== _p$._v$3 && _el$3.setAttribute("x", (_p$._v$3 = _v$3));
-    _v$4 !== _p$._v$4 && _el$3.setAttribute("y", (_p$._v$4 = _v$4));
-    Object.assign(_el$3.style, {
-      fill: "red",
-      stroke: "black",
-      "stroke-width": props.stroke,
-      opacity: 0.5
-    });
-    return _p$;
-  });
+  _$wrap(
+    _p$ => {
+      const _v$ = state.name,
+        _v$2 = state.width,
+        _v$3 = state.x,
+        _v$4 = state.y;
+      _v$ !== _p$._v$ && _el$3.setAttribute("class", (_p$._v$ = _v$));
+      _v$2 !== _p$._v$2 &&
+        _el$3.setAttribute("stroke-width", (_p$._v$2 = _v$2));
+      _v$3 !== _p$._v$3 && _el$3.setAttribute("x", (_p$._v$3 = _v$3));
+      _v$4 !== _p$._v$4 && _el$3.setAttribute("y", (_p$._v$4 = _v$4));
+      Object.assign(_el$3.style, {
+        fill: "red",
+        stroke: "black",
+        "stroke-width": props.stroke,
+        opacity: 0.5
+      });
+      return _p$;
+    },
+    {
+      _v$: undefined,
+      _v$2: undefined,
+      _v$3: undefined,
+      _v$4: undefined
+    }
+  );
 
   return _el$2;
 })();
@@ -60,5 +71,5 @@ const template6 = _$createComponent(
   {
     children: () => _tmpl$4.cloneNode(true)
   },
-  ["children"]
+  _ck$
 );

@@ -12,6 +12,11 @@ const _tmpl$ = _$template(`<div>Hello <!--#--><!--/--></div>`),
     `<div><!--#--><!--/--><!--#--><!--/--><!--#--><!--/--></div>`
   );
 
+const _ck$ = ["children"],
+  _ck$2 = ["dynamic"],
+  _ck$3 = ["children", "dynamic"],
+  _ck$4 = ["each", "fallback"];
+
 const Child = props => [
   (() => {
     const _el$ = _$getNextElement(_tmpl$, true),
@@ -64,7 +69,7 @@ const template = props => {
             children: () => _$getNextElement(_tmpl$3, true)
           }
         ),
-        [...Object.keys(props), "children"]
+        ["children", ...Object.keys(props)]
       ),
       _el$10
     );
@@ -84,7 +89,7 @@ const template = props => {
             return _el$8;
           }
         },
-        ["children"]
+        _ck$
       ),
       _el$12
     );
@@ -106,9 +111,10 @@ const template2 = _$createComponent(
   {
     name: "Jake",
     dynamic: () => state.data,
+    stale: state.data,
     handleClick: clickHandler
   },
-  ["dynamic"]
+  _ck$2
 );
 
 const template3 = _$createComponent(
@@ -121,7 +127,7 @@ const template3 = _$createComponent(
       "After"
     ]
   },
-  ["children"]
+  _ck$
 );
 
 const template4 = _$createComponent(
@@ -129,15 +135,16 @@ const template4 = _$createComponent(
   {
     children: () => _$getNextElement(_tmpl$2, true)
   },
-  ["children"]
+  _ck$
 );
 
 const template5 = _$createComponent(
   Child,
   {
+    dynamic: () => state.dynamic,
     children: () => state.dynamic
   },
-  ["children"]
+  _ck$3
 ); // builtIns
 
 const template6 = _$createComponent(
@@ -147,7 +154,7 @@ const template6 = _$createComponent(
     fallback: () => _$createComponent(Loading, {}),
     children: item => item
   },
-  ["each", "fallback"]
+  _ck$4
 );
 
 const template7 = _$createComponent(
@@ -158,5 +165,5 @@ const template7 = _$createComponent(
       _$wrapMemo(() => state.dynamic)
     ]
   },
-  ["children"]
+  _ck$
 );

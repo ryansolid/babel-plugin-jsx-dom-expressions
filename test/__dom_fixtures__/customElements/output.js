@@ -23,13 +23,19 @@ const template2 = (function() {
 
   _el$2._context = _$currentContext();
 
-  _$wrap((_p$ = {}) => {
-    const _v$ = state.name,
-      _v$2 = state.data;
-    _v$ !== _p$._v$ && _el$2.setAttribute("some-attr", (_p$._v$ = _v$));
-    _v$2 !== _p$._v$2 && (_el$2.someProp = _p$._v$2 = _v$2);
-    return _p$;
-  });
+  _$wrap(
+    _p$ => {
+      const _v$ = state.name,
+        _v$2 = state.data;
+      _v$ !== _p$._v$ && _el$2.setAttribute("some-attr", (_p$._v$ = _v$));
+      _v$2 !== _p$._v$2 && (_el$2.someProp = _p$._v$2 = _v$2);
+      return _p$;
+    },
+    {
+      _v$: undefined,
+      _v$2: undefined
+    }
+  );
 
   return _el$2;
 })();

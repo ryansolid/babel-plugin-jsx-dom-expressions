@@ -183,78 +183,89 @@ export default babel => {
   function wrapDynamics(path, dynamics) {
     if (!dynamics.length) return;
     registerImportMethod(path, "wrap");
-    let results, argument;
     if (dynamics.length === 1) {
-      results = setAttr(
-        path,
-        dynamics[0].elem,
-        dynamics[0].key,
-        dynamics[0].value,
-        dynamics[0].isSVG,
-        true
+      return t.expressionStatement(
+        t.callExpression(t.identifier("_$wrap"), [
+          t.arrowFunctionExpression(
+            [],
+            setAttr(
+              path,
+              dynamics[0].elem,
+              dynamics[0].key,
+              dynamics[0].value,
+              dynamics[0].isSVG,
+              true
+            )
+          )
+        ])
       );
-    } else {
-      const decls = [],
-        statements = [],
-        prevId = t.identifier("_p$");
-      argument = t.assignmentPattern(prevId, t.objectExpression([]));
-      dynamics.forEach(({ elem, key, value, isSVG }) => {
-        // no point diffing at this point as object
-        if (key === "style") {
-          statements.push(
-            t.expressionStatement(setAttr(path, elem, key, value, isSVG, true))
-          );
-        } else {
-          const identifier = path.scope.generateUidIdentifier("v$");
-          decls.push(t.variableDeclarator(identifier, value));
-          // stash prev value for comparison
-          let prevValue;
-          if (key === "classList") {
-            prevValue = path.scope.generateUidIdentifier("v$");
-            decls.push(
-              t.variableDeclarator(
-                prevValue,
-                t.memberExpression(prevId, identifier)
-              )
-            );
-          }
-          statements.push(
-            t.expressionStatement(
-              t.logicalExpression(
-                "&&",
-                t.binaryExpression(
-                  "!==",
-                  identifier,
-                  t.memberExpression(prevId, identifier)
-                ),
-                setAttr(
-                  path,
-                  elem,
-                  key,
-                  t.assignmentExpression(
-                    "=",
-                    t.memberExpression(prevId, identifier),
-                    identifier
-                  ),
-                  isSVG,
-                  true,
-                  prevValue
-                )
-              )
+    }
+    const decls = [],
+      statements = [],
+      identifiers = [],
+      prevId = t.identifier("_p$");
+    dynamics.forEach(({ elem, key, value, isSVG }) => {
+      // no point diffing at this point as object
+      if (key === "style") {
+        statements.push(
+          t.expressionStatement(setAttr(path, elem, key, value, isSVG, true))
+        );
+      } else {
+        const identifier = path.scope.generateUidIdentifier("v$");
+        identifiers.push(identifier);
+        decls.push(t.variableDeclarator(identifier, value));
+        // stash prev value for comparison
+        let prevValue;
+        if (key === "classList") {
+          prevValue = path.scope.generateUidIdentifier("v$");
+          decls.push(
+            t.variableDeclarator(
+              prevValue,
+              t.memberExpression(prevId, identifier)
             )
           );
         }
-      });
-      results = t.blockStatement([
-        t.variableDeclaration("const", decls),
-        ...statements,
-        t.returnStatement(prevId)
-      ]);
-    }
+        statements.push(
+          t.expressionStatement(
+            t.logicalExpression(
+              "&&",
+              t.binaryExpression(
+                "!==",
+                identifier,
+                t.memberExpression(prevId, identifier)
+              ),
+              setAttr(
+                path,
+                elem,
+                key,
+                t.assignmentExpression(
+                  "=",
+                  t.memberExpression(prevId, identifier),
+                  identifier
+                ),
+                isSVG,
+                true,
+                prevValue
+              )
+            )
+          )
+        );
+      }
+    });
 
     return t.expressionStatement(
       t.callExpression(t.identifier("_$wrap"), [
-        t.arrowFunctionExpression(argument ? [argument] : [], results)
+        t.arrowFunctionExpression(
+          [prevId],
+          t.blockStatement([
+            t.variableDeclaration("const", decls),
+            ...statements,
+            t.returnStatement(prevId)
+          ])
+        ),
+        t.objectExpression(
+          identifiers.map(id => t.objectProperty(id, t.identifier("undefined")))
+        )
       ])
     );
   }
@@ -540,6 +551,7 @@ export default babel => {
       runningObject = [],
       exprs,
       tagName = getTagName(jsx),
+      dynamicSpreads = [],
       dynamicKeys = [];
 
     if (builtIns.indexOf(tagName) > -1) {
@@ -555,7 +567,7 @@ export default babel => {
         }
         const key = t.identifier("k$"),
           memo = t.identifier("m$");
-        dynamicKeys.push(
+        dynamicSpreads.push(
           t.spreadElement(
             t.callExpression(
               t.memberExpression(t.identifier("Object"), t.identifier("keys")),
@@ -658,17 +670,36 @@ export default babel => {
     }
     props.push(t.objectExpression(runningObject));
 
-    if (props.length > 1)
+    if (props.length > 1) {
       props = [
         t.callExpression(
           t.memberExpression(t.identifier("Object"), t.identifier("assign")),
           props
         )
       ];
+    }
+    dynamicKeys.sort((a, b) => a.value.toLowerCase().localeCompare(b.value.toLowerCase()))
+    let dynamics;
+    if (dynamicSpreads.length) {
+      dynamicKeys.push.apply(dynamicKeys, dynamicSpreads);
+      dynamics = t.arrayExpression(dynamicKeys);
+    } else if (dynamicKeys.length) {
+      const hash = dynamicKeys.map(k => k.value).join("|"),
+        childKeys =
+          path.scope.getProgramParent().data.childKeys ||
+          (path.scope.getProgramParent().data.childKeys = new Map());
+      if (!childKeys.has(hash)) {
+        const identifier = path.scope.generateUidIdentifier("ck$")
+        childKeys.set(hash, { identifier, dynamicKeys });
+        dynamics = identifier;
+      } else {
+        dynamics = childKeys.get(hash).identifier;
+      }
+    }
 
     registerImportMethod(path, "createComponent");
     const componentArgs = [t.identifier(tagName), props[0]];
-    if (dynamicKeys.length) componentArgs.push(t.arrayExpression(dynamicKeys));
+    if (dynamics) componentArgs.push(dynamics);
     exprs = [
       t.callExpression(t.identifier("_$createComponent"), componentArgs)
     ];
@@ -1007,8 +1038,7 @@ export default babel => {
       let tagName = getTagName(jsx),
         wrapSVG = info.topLevel && tagName != "svg" && SVGElements.has(tagName),
         voidTag = VoidElements.indexOf(tagName) > -1;
-      if (isComponent(tagName))
-        return generateComponent(path, jsx, opts);
+      if (isComponent(tagName)) return generateComponent(path, jsx, opts);
       let results = {
         template: `<${tagName}`,
         decl: [],
@@ -1194,6 +1224,12 @@ export default babel => {
                 ])
               )
             );
+          }
+          if (path.scope.data.childKeys) {
+            const declarators = [...path.scope.data.childKeys.values()].map(o =>
+              t.variableDeclarator(o.identifier, t.arrayExpression(o.dynamicKeys))
+            );
+            path.node.body.unshift(t.variableDeclaration("const", declarators))
           }
           if (path.scope.data.templates) {
             const declarators = path.scope.data.templates.map(template => {

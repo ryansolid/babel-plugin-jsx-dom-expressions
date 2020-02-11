@@ -42,7 +42,7 @@ const template3 = (
 
 const template4 = <Child>{<div />}</Child>;
 
-const template5 = <Child>{state.dynamic}</Child>;
+const template5 = <Child dynamic={state.dynamic}>{state.dynamic}</Child>;
 
 // builtIns
 const template6 = (

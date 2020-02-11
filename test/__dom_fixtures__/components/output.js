@@ -8,6 +8,11 @@ const _tmpl$ = _$template(`<div>Hello </div>`),
   _tmpl$2 = _$template(`<div></div>`),
   _tmpl$3 = _$template(`<div>From Parent</div>`);
 
+const _ck$ = ["children"],
+  _ck$2 = ["dynamic"],
+  _ck$3 = ["children", "dynamic"],
+  _ck$4 = ["each", "fallback"];
+
 const Child = props => [
   (() => {
     const _el$ = _tmpl$.cloneNode(true),
@@ -52,7 +57,7 @@ const template = props => {
             children: () => _tmpl$3.cloneNode(true)
           }
         ),
-        [...Object.keys(props), "children"]
+        ["children", ...Object.keys(props)]
       ),
       null
     );
@@ -72,7 +77,7 @@ const template = props => {
             return _el$6;
           }
         },
-        ["children"]
+        _ck$
       ),
       null
     );
@@ -97,7 +102,7 @@ const template2 = _$createComponent(
     stale: state.data,
     handleClick: clickHandler
   },
-  ["dynamic"]
+  _ck$2
 );
 
 const template3 = _$createComponent(
@@ -110,7 +115,7 @@ const template3 = _$createComponent(
       "After"
     ]
   },
-  ["children"]
+  _ck$
 );
 
 const template4 = _$createComponent(
@@ -118,15 +123,16 @@ const template4 = _$createComponent(
   {
     children: () => _tmpl$2.cloneNode(true)
   },
-  ["children"]
+  _ck$
 );
 
 const template5 = _$createComponent(
   Child,
   {
+    dynamic: () => state.dynamic,
     children: () => state.dynamic
   },
-  ["children"]
+  _ck$3
 ); // builtIns
 
 const template6 = _$createComponent(
@@ -136,7 +142,7 @@ const template6 = _$createComponent(
     fallback: () => _$createComponent(Loading, {}),
     children: item => item
   },
-  ["each", "fallback"]
+  _ck$4
 );
 
 const template7 = _$createComponent(
@@ -144,5 +150,5 @@ const template7 = _$createComponent(
   {
     children: () => [_tmpl$2.cloneNode(true), _$wrapMemo(() => state.dynamic)]
   },
-  ["children"]
+  _ck$
 );

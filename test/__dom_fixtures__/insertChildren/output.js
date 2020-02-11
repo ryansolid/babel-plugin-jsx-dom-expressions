@@ -7,6 +7,8 @@ const _tmpl$ = _$template(`<div></div>`),
   _tmpl$2 = _$template(`<module></module>`),
   _tmpl$3 = _$template(`<module>Hello</module>`);
 
+const _ck$ = ["children"];
+
 const children = _tmpl$.cloneNode(true);
 
 const dynamic = {
@@ -48,7 +50,7 @@ const template6 = _$createComponent(
   {
     children: () => dynamic.children
   },
-  ["children"]
+  _ck$
 );
 
 const template7 = (function() {
@@ -88,7 +90,7 @@ const template10 = _$createComponent(
       children: () => "Hello"
     }
   ),
-  [...Object.keys(dynamic), "children"]
+  ["children", ...Object.keys(dynamic)]
 );
 
 const template11 = (function() {

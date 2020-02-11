@@ -5,6 +5,8 @@ import { insert as _$insert } from "r-dom";
 
 const _tmpl$ = _$template(`<div></div>`);
 
+const _ck$ = ["render"];
+
 const template1 = (function() {
   const _el$ = _tmpl$.cloneNode(true);
 
@@ -120,7 +122,7 @@ const template9 = _$createComponent(
       return () => (_c$() ? good() : bad);
     })()
   },
-  ["render"]
+  _ck$
 ); // no dynamic predicate
 
 const template10 = _$createComponent(
@@ -128,7 +130,7 @@ const template10 = _$createComponent(
   {
     render: () => (state.dynamic ? good : bad)
   },
-  ["render"]
+  _ck$
 );
 
 const template11 = _$createComponent(
@@ -140,7 +142,7 @@ const template11 = _$createComponent(
       return () => _c$() && good();
     })()
   },
-  ["render"]
+  _ck$
 ); // no dynamic predicate
 
 const template12 = _$createComponent(
@@ -148,5 +150,5 @@ const template12 = _$createComponent(
   {
     render: () => state.dynamic && good
   },
-  ["render"]
+  _ck$
 );
