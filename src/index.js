@@ -383,9 +383,9 @@ export default babel => {
     if (/\n/g.test(text)) {
       text = text
         .split("\n")
+        .map((t, i) => i ? t.replace(/^\s*/g, "") : t)
         .filter(s => !/^\s*$/.test(s))
-        .map(t => t.replace(/^\s*/g, ""))
-        .join(" ");
+        .join("");
     }
     return text.replace(/\s+/g, " ");
   }
