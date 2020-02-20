@@ -942,6 +942,7 @@ declare global {
       glyphRef?: number | string;
       gradientTransform?: string;
       gradientUnits?: string;
+      height?: number | string;
       imageRendering?: number | string;
       in2?: number | string;
       in?: string;
@@ -1044,6 +1045,7 @@ declare global {
       viewBox?: string;
       viewTarget?: number | string;
       visibility?: number | string;
+      width?: number | string;
       wordSpacing?: number | string;
       writingMode?: number | string;
       x1?: number | string;
