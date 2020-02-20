@@ -32,8 +32,10 @@ const multiDynamic = [
   })(),
   "After"
 ];
-const singleExpression = [inserted];
-const singleDynamic = [_$wrapMemo(() => inserted())];
+const singleExpression = inserted;
+
+const singleDynamic = () => inserted();
+
 const firstStatic = [inserted, _tmpl$3.cloneNode(true)];
 const firstDynamic = [_$wrapMemo(() => inserted()), _tmpl$3.cloneNode(true)];
 const firstComponent = [

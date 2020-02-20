@@ -48,11 +48,9 @@ const template3 = (function() {
   return _el$3;
 })();
 
-const template4 = [
-  (() => {
-    const _el$4 = _$getNextElement(_tmpl$3, true);
+const template4 = (() => {
+  const _el$4 = _$getNextElement(_tmpl$3, true);
 
-    _el$4._context = _$currentContext();
-    return _el$4;
-  })()
-];
+  _el$4._context = _$currentContext();
+  return _el$4;
+})();

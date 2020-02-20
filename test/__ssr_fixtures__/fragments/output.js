@@ -36,8 +36,10 @@ const multiDynamic = [
   })(),
   "After"
 ];
-const singleExpression = [inserted];
-const singleDynamic = [_$wrapMemo(() => inserted())];
+const singleExpression = inserted;
+
+const singleDynamic = () => inserted();
+
 const firstStatic = [inserted, _$getNextElement(_tmpl$3, true)];
 const firstDynamic = [
   _$wrapMemo(() => inserted()),

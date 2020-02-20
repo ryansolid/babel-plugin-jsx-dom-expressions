@@ -988,6 +988,7 @@ export default babel => {
 
   function transformFragmentChildren(path, jsx, opts, results) {
     const jsxChildren = filterChildren(jsx.children, true),
+      singleChild = jsxChildren.length === 1,
       children = jsxChildren.map(child => {
         if (t.isJSXText(child)) {
           return t.stringLiteral(trimWhitespace(child.extra.raw));
@@ -1021,7 +1022,7 @@ export default babel => {
               );
             }
           }
-          if (wrapFragments && child.dynamic) {
+          if (!singleChild && wrapFragments && child.dynamic) {
             registerImportMethod(path, "wrapMemo");
             return t.callExpression(t.identifier("_$wrapMemo"), [
               child.exprs[0]
@@ -1030,7 +1031,7 @@ export default babel => {
           return child.exprs[0];
         }
       });
-    results.exprs.push(t.arrayExpression(children));
+    results.exprs.push(singleChild ? children[0] : t.arrayExpression(children));
   }
 
   function generateHTMLNode(path, jsx, opts, info = {}) {

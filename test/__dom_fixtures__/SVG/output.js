@@ -64,7 +64,7 @@ const template3 = (function() {
 
 const template4 = _tmpl$4.cloneNode(true);
 
-const template5 = [_tmpl$4.cloneNode(true)];
+const template5 = _tmpl$4.cloneNode(true);
 
 const template6 = _$createComponent(
   Component,

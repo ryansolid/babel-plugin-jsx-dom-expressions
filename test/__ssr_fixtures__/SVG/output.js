@@ -65,7 +65,7 @@ const template3 = (function() {
 
 const template4 = _$getNextElement(_tmpl$4, true);
 
-const template5 = [_$getNextElement(_tmpl$4, true)];
+const template5 = _$getNextElement(_tmpl$4, true);
 
 const template6 = _$createComponent(
   Component,
