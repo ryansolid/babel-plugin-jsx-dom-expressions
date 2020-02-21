@@ -61,6 +61,8 @@ declare global {
     interface DOMAttributes<T> extends CustomAttributes<T> {
       children?: Children;
       innerHTML?: string;
+      innerText?: string;
+      textContent?: string;
 
       // Clipboard Events
       onCopy?: EventHandler<T, ClipboardEvent>;
@@ -454,6 +456,7 @@ declare global {
       spellcheck?: boolean;
       style?: Partial<CSSStyleDeclaration>;
       tabIndex?: number | string;
+      tabindex?: number | string;
       title?: string;
       translate?: "yes" | "no";
 
@@ -943,6 +946,8 @@ declare global {
       gradientTransform?: string;
       gradientUnits?: string;
       height?: number | string;
+      href?: string;
+      hreflang?: string;
       imageRendering?: number | string;
       in2?: number | string;
       in?: string;
@@ -970,7 +975,12 @@ declare global {
       mask?: string;
       maskContentUnits?: number | string;
       maskUnits?: number | string;
+      max?: number | string;
+      media?: string;
+      method?: string;
+      min?: number | string;
       mode?: number | string;
+      name?: string;
       numOctaves?: number | string;
       offset?: number | string;
       opacity?: number | string;
@@ -996,6 +1006,7 @@ declare global {
       radius?: number | string;
       refX?: number | string;
       refY?: number | string;
+      rel?: string;
       repeatCount?: number | string;
       repeatDur?: number | string;
       requiredExtensions?: number | string;
@@ -1030,6 +1041,7 @@ declare global {
       surfaceScale?: number | string;
       systemLanguage?: number | string;
       tableValues?: number | string;
+      target?: string;
       targetX?: number | string;
       targetY?: number | string;
       textAnchor?: string;
@@ -1038,6 +1050,7 @@ declare global {
       textRendering?: number | string;
       to?: number | string;
       transform?: string;
+      type?: string;
       unicodeBidi?: number | string;
       values?: string;
       vectorEffect?: number | string;
