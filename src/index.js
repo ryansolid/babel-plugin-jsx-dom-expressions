@@ -276,7 +276,8 @@ export default babel => {
     if (
       t.isConditionalExpression(expr) &&
       (isDynamic(expr.consequent, path.get("consequent"), true) ||
-        isDynamic(expr.alternate, path.get("alternate"), true))
+        isDynamic(expr.alternate, path.get("alternate"), true) ||
+        (deep && isDynamic(expr.test, path.get("test"))))
     ) {
       dTest = isDynamic(expr.test, path.get("test"));
       if (dTest) {
@@ -331,7 +332,7 @@ export default babel => {
                 ])
               )
             ]),
-            t.returnStatement(deep ? expr : t.arrowFunctionExpression([], expr))
+            t.returnStatement(t.arrowFunctionExpression([], expr))
           ])
         ),
         []
@@ -383,7 +384,7 @@ export default babel => {
     if (/\n/g.test(text)) {
       text = text
         .split("\n")
-        .map((t, i) => i ? t.replace(/^\s*/g, "") : t)
+        .map((t, i) => (i ? t.replace(/^\s*/g, "") : t))
         .filter(s => !/^\s*$/.test(s))
         .join("");
     }
@@ -678,7 +679,9 @@ export default babel => {
         )
       ];
     }
-    dynamicKeys.sort((a, b) => a.value.toLowerCase().localeCompare(b.value.toLowerCase()))
+    dynamicKeys.sort((a, b) =>
+      a.value.toLowerCase().localeCompare(b.value.toLowerCase())
+    );
     let dynamics;
     if (dynamicSpreads.length) {
       dynamicKeys.push.apply(dynamicKeys, dynamicSpreads);
@@ -689,7 +692,7 @@ export default babel => {
           path.scope.getProgramParent().data.childKeys ||
           (path.scope.getProgramParent().data.childKeys = new Map());
       if (!childKeys.has(hash)) {
-        const identifier = path.scope.generateUidIdentifier("ck$")
+        const identifier = path.scope.generateUidIdentifier("ck$");
         childKeys.set(hash, { identifier, dynamicKeys });
         dynamics = identifier;
       } else {
@@ -1228,9 +1231,12 @@ export default babel => {
           }
           if (path.scope.data.childKeys) {
             const declarators = [...path.scope.data.childKeys.values()].map(o =>
-              t.variableDeclarator(o.identifier, t.arrayExpression(o.dynamicKeys))
+              t.variableDeclarator(
+                o.identifier,
+                t.arrayExpression(o.dynamicKeys)
+              )
             );
-            path.node.body.unshift(t.variableDeclaration("const", declarators))
+            path.node.body.unshift(t.variableDeclaration("const", declarators));
           }
           if (path.scope.data.templates) {
             const declarators = path.scope.data.templates.map(template => {

@@ -16,12 +16,16 @@ const template7 = <div>{state.dynamic && state.something && good()}</div>;
 
 const template8 = <div>{(state.dynamic && good()) || bad}</div>;
 
-const template9 = <Comp render={state.dynamic ? good() : bad} />;
+const template9 = (
+  <div>{state.a ? "a" : state.b ? "b" : state.c ? "c" : "fallback"}</div>
+);
+
+const template10 = <Comp render={state.dynamic ? good() : bad} />;
 
 // no dynamic predicate
-const template10 = <Comp render={state.dynamic ? good : bad} />;
+const template11 = <Comp render={state.dynamic ? good : bad} />;
 
-const template11 = <Comp render={state.dynamic && good()} />;
+const template12 = <Comp render={state.dynamic && good()} />;
 
 // no dynamic predicate
-const template12 = <Comp render={state.dynamic && good} />;
+const template13 = <Comp render={state.dynamic && good} />;

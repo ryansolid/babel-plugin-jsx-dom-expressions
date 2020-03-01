@@ -74,7 +74,7 @@ const template6 = (function() {
           ? (() => {
               const _c$ = _$wrapCondition(() => state.dynamic);
 
-              return _c$() ? best : good();
+              return () => (_c$() ? best : good());
             })()
           : bad;
     })()
@@ -113,7 +113,36 @@ const template8 = (function() {
   return _el$8;
 })();
 
-const template9 = _$createComponent(
+const template9 = (function() {
+  const _el$9 = _tmpl$.cloneNode(true);
+
+  _$insert(
+    _el$9,
+    (() => {
+      const _c$ = _$wrapCondition(() => state.a);
+
+      return () =>
+        _c$()
+          ? "a"
+          : (() => {
+              const _c$ = _$wrapCondition(() => state.b);
+
+              return () =>
+                _c$()
+                  ? "b"
+                  : (() => {
+                      const _c$ = _$wrapCondition(() => state.c);
+
+                      return () => (_c$() ? "c" : "fallback");
+                    })();
+            })();
+    })()
+  );
+
+  return _el$9;
+})();
+
+const template10 = _$createComponent(
   Comp,
   {
     render: (() => {
@@ -125,7 +154,7 @@ const template9 = _$createComponent(
   _ck$
 ); // no dynamic predicate
 
-const template10 = _$createComponent(
+const template11 = _$createComponent(
   Comp,
   {
     render: () => (state.dynamic ? good : bad)
@@ -133,7 +162,7 @@ const template10 = _$createComponent(
   _ck$
 );
 
-const template11 = _$createComponent(
+const template12 = _$createComponent(
   Comp,
   {
     render: (() => {
@@ -145,7 +174,7 @@ const template11 = _$createComponent(
   _ck$
 ); // no dynamic predicate
 
-const template12 = _$createComponent(
+const template13 = _$createComponent(
   Comp,
   {
     render: () => state.dynamic && good
