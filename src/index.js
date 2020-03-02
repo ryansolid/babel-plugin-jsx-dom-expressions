@@ -23,7 +23,7 @@ export default babel => {
     return tagName[0].toLowerCase() !== tagName[0] || tagName.includes(".");
   }
 
-  function isDynamic(expr, path, checkTags) {
+  function isDynamic(expr, path, { checkMember, checkTags }) {
     if (t.isFunction(expr)) return false;
     if (
       expr.leadingComments &&
@@ -34,7 +34,7 @@ export default babel => {
     }
     if (
       t.isCallExpression(expr) ||
-      t.isMemberExpression(expr) ||
+      (checkMember && t.isMemberExpression(expr)) ||
       (checkTags && (t.isJSXElement(expr) || t.isJSXFragment(expr)))
     )
       return true;
@@ -49,8 +49,7 @@ export default babel => {
         p.stop();
       },
       MemberExpression(p) {
-        dynamic = true;
-        p.stop();
+        checkMember && (dynamic = true) && p.stop();
       },
       JSXElement(p) {
         checkTags ? (dynamic = true) && p.stop() : p.skip();
@@ -275,11 +274,12 @@ export default babel => {
     let dTest, cond;
     if (
       t.isConditionalExpression(expr) &&
-      (isDynamic(expr.consequent, path.get("consequent"), true) ||
-        isDynamic(expr.alternate, path.get("alternate"), true) ||
-        (deep && isDynamic(expr.test, path.get("test"))))
+      (isDynamic(expr.consequent, path.get("consequent"), {
+        checkTags: true
+      }) ||
+        isDynamic(expr.alternate, path.get("alternate"), { checkTags: true }))
     ) {
-      dTest = isDynamic(expr.test, path.get("test"));
+      dTest = isDynamic(expr.test, path.get("test"), { checkMember: true });
       if (dTest) {
         cond = expr.test;
         expr.test = t.callExpression(t.identifier("_c$"), []);
@@ -312,8 +312,10 @@ export default babel => {
         nextExpr = nextExpr.left;
         nextPath = nextPath.get("left");
       }
-      isDynamic(nextExpr.right, nextPath.get("right"), true) &&
-        (dTest = isDynamic(nextExpr.left, nextPath.get("left")));
+      isDynamic(nextExpr.right, nextPath.get("right"), { checkTags: true }) &&
+        (dTest = isDynamic(nextExpr.left, nextPath.get("left"), {
+          checkMember: true
+        }));
       if (dTest) {
         cond = nextExpr.left;
         nextExpr.left = t.callExpression(t.identifier("_c$"), []);
@@ -632,7 +634,7 @@ export default babel => {
             isDynamic(
               value.expression,
               lookupPathForExpr(path, value.expression),
-              true
+              { checkMember: true, checkTags: true }
             )
           ) {
             dynamicKeys.push(t.stringLiteral(attribute.name.name));
@@ -728,7 +730,8 @@ export default babel => {
               elem,
               isDynamic(
                 attribute.argument,
-                lookupPathForExpr(path, attribute.argument)
+                lookupPathForExpr(path, attribute.argument),
+                { checkMember: true }
               )
                 ? t.arrowFunctionExpression([], attribute.argument)
                 : attribute.argument,
@@ -825,7 +828,11 @@ export default babel => {
             )
           );
         } else if (
-          isDynamic(value.expression, lookupPathForExpr(path, value.expression))
+          isDynamic(
+            value.expression,
+            lookupPathForExpr(path, value.expression),
+            { checkMember: true }
+          )
         ) {
           if (key === "textContent") {
             const textId = path.scope.generateUidIdentifier("el$");
@@ -1124,11 +1131,10 @@ export default babel => {
     } else if (t.isJSXExpressionContainer(jsx)) {
       if (t.isJSXEmptyExpression(jsx.expression)) return null;
       if (
-        !isDynamic(
-          jsx.expression,
-          lookupPathForExpr(path, jsx.expression),
-          !!info.componentChild
-        )
+        !isDynamic(jsx.expression, lookupPathForExpr(path, jsx.expression), {
+          checkMember: true,
+          checkTags: !!info.componentChild
+        })
       )
         return { exprs: [jsx.expression], template: "" };
       const expr =

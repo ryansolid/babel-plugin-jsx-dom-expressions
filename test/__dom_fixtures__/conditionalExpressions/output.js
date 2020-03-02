@@ -34,14 +34,7 @@ const template3 = (function() {
 const template4 = (function() {
   const _el$4 = _tmpl$.cloneNode(true);
 
-  _$insert(
-    _el$4,
-    (() => {
-      const _c$ = _$wrapCondition(() => state.dynamic);
-
-      return () => (_c$() ? good() : bad);
-    })()
-  );
+  _$insert(_el$4, () => (simple ? good() : bad));
 
   return _el$4;
 })();
@@ -54,7 +47,7 @@ const template5 = (function() {
     (() => {
       const _c$ = _$wrapCondition(() => state.dynamic);
 
-      return () => _c$() && good();
+      return () => (_c$() ? good() : bad);
     })()
   );
 
@@ -66,6 +59,21 @@ const template6 = (function() {
 
   _$insert(
     _el$6,
+    (() => {
+      const _c$ = _$wrapCondition(() => state.dynamic);
+
+      return () => _c$() && good();
+    })()
+  );
+
+  return _el$6;
+})();
+
+const template7 = (function() {
+  const _el$7 = _tmpl$.cloneNode(true);
+
+  _$insert(
+    _el$7,
     (() => {
       const _c$ = _$wrapCondition(() => state.count > 5);
 
@@ -80,21 +88,6 @@ const template6 = (function() {
     })()
   );
 
-  return _el$6;
-})();
-
-const template7 = (function() {
-  const _el$7 = _tmpl$.cloneNode(true);
-
-  _$insert(
-    _el$7,
-    (() => {
-      const _c$ = _$wrapCondition(() => state.dynamic && state.something);
-
-      return () => _c$() && good();
-    })()
-  );
-
   return _el$7;
 })();
 
@@ -104,9 +97,9 @@ const template8 = (function() {
   _$insert(
     _el$8,
     (() => {
-      const _c$ = _$wrapCondition(() => state.dynamic);
+      const _c$ = _$wrapCondition(() => state.dynamic && state.something);
 
-      return () => (_c$() && good()) || bad;
+      return () => _c$() && good();
     })()
   );
 
@@ -119,30 +112,48 @@ const template9 = (function() {
   _$insert(
     _el$9,
     (() => {
-      const _c$ = _$wrapCondition(() => state.a);
+      const _c$ = _$wrapCondition(() => state.dynamic);
 
-      return () =>
-        _c$()
-          ? "a"
-          : (() => {
-              const _c$ = _$wrapCondition(() => state.b);
-
-              return () =>
-                _c$()
-                  ? "b"
-                  : (() => {
-                      const _c$ = _$wrapCondition(() => state.c);
-
-                      return () => (_c$() ? "c" : "fallback");
-                    })();
-            })();
+      return () => (_c$() && good()) || bad;
     })()
   );
 
   return _el$9;
 })();
 
-const template10 = _$createComponent(
+const template10 = (function() {
+  const _el$10 = _tmpl$.cloneNode(true);
+
+  _$insert(_el$10, () =>
+    state.a ? "a" : state.b ? "b" : state.c ? "c" : "fallback"
+  );
+
+  return _el$10;
+})();
+
+const template11 = (function() {
+  const _el$11 = _tmpl$.cloneNode(true);
+
+  _$insert(
+    _el$11,
+    (() => {
+      const _c$ = _$wrapCondition(() => state.a);
+
+      return () =>
+        _c$()
+          ? a()
+          : (() => {
+              const _c$ = _$wrapCondition(() => state.b);
+
+              return () => (_c$() ? b() : state.c ? "c" : "fallback");
+            })();
+    })()
+  );
+
+  return _el$11;
+})();
+
+const template12 = _$createComponent(
   Comp,
   {
     render: (() => {
@@ -154,7 +165,7 @@ const template10 = _$createComponent(
   _ck$
 ); // no dynamic predicate
 
-const template11 = _$createComponent(
+const template13 = _$createComponent(
   Comp,
   {
     render: () => (state.dynamic ? good : bad)
@@ -162,7 +173,7 @@ const template11 = _$createComponent(
   _ck$
 );
 
-const template12 = _$createComponent(
+const template14 = _$createComponent(
   Comp,
   {
     render: (() => {
@@ -174,7 +185,7 @@ const template12 = _$createComponent(
   _ck$
 ); // no dynamic predicate
 
-const template13 = _$createComponent(
+const template15 = _$createComponent(
   Comp,
   {
     render: () => state.dynamic && good
