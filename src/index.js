@@ -1,25 +1,25 @@
-import SyntaxJSX from '@babel/plugin-syntax-jsx';
-import { addNamed } from '@babel/helper-module-imports';
+import SyntaxJSX from "@babel/plugin-syntax-jsx";
+import { addNamed } from "@babel/helper-module-imports";
 import {
   Attributes,
   SVGAttributes,
   NonComposedEvents,
   SVGElements
-} from 'dom-expressions';
-import VoidElements from './VoidElements';
+} from "dom-expressions";
+import VoidElements from "./VoidElements";
 
 export default babel => {
   const { types: t } = babel;
 
   const JSXoptions = {
-    moduleName: 'dom',
-    generate: 'dom',
+    moduleName: "dom",
+    generate: "dom",
     delegateEvents: true,
     builtIns: [],
     wrapFragments: false,
     wrapConditionals: false,
     contextToCustomElements: false,
-    staticMarker: '@once'
+    staticMarker: "@once"
   };
 
   function assignJSXoptions(opts = {}) {
@@ -32,7 +32,7 @@ export default babel => {
   function isComponent(tagName) {
     return (
       (tagName[0] && tagName[0].toLowerCase() !== tagName[0]) ||
-      tagName.includes('.')
+      tagName.includes(".")
     );
   }
 
@@ -86,7 +86,7 @@ export default babel => {
 
   function registerTemplate(path, results) {
     const { generate } = JSXoptions;
-    const generateIsHydrateOrSsr = generate === 'hydrate' || generate === 'ssr';
+    const generateIsHydrateOrSsr = generate === "hydrate" || generate === "ssr";
     let decl;
     if (results.template.length) {
       const templates =
@@ -98,31 +98,31 @@ export default babel => {
       ) {
         templateId = templateDef.id;
       } else {
-        templateId = path.scope.generateUidIdentifier('tmpl$');
+        templateId = path.scope.generateUidIdentifier("tmpl$");
         templates.push({
           id: templateId,
           template: results.template,
           isSVG: results.isSVG
         });
       }
-      generateIsHydrateOrSsr && registerImportMethod(path, 'getNextElement');
+      generateIsHydrateOrSsr && registerImportMethod(path, "getNextElement");
       decl = t.variableDeclarator(
         results.id,
         generateIsHydrateOrSsr
           ? t.callExpression(
-              t.identifier('_$getNextElement'),
-              generate === 'ssr'
+              t.identifier("_$getNextElement"),
+              generate === "ssr"
                 ? [templateId, t.booleanLiteral(true)]
                 : [templateId]
             )
           : t.callExpression(
-              t.memberExpression(templateId, t.identifier('cloneNode')),
+              t.memberExpression(templateId, t.identifier("cloneNode")),
               [t.booleanLiteral(true)]
             )
       );
     }
     results.decl.unshift(decl);
-    results.decl = t.variableDeclaration('const', results.decl);
+    results.decl = t.variableDeclaration("const", results.decl);
   }
 
   function toEventName(name) {
@@ -149,45 +149,45 @@ export default babel => {
   }
 
   function setAttr(path, elem, name, value, isSVG, dynamic, prevId) {
-    if (name === 'style') {
+    if (name === "style") {
       return t.callExpression(
-        t.memberExpression(t.identifier('Object'), t.identifier('assign')),
+        t.memberExpression(t.identifier("Object"), t.identifier("assign")),
         [t.memberExpression(elem, t.identifier(name)), value]
       );
     }
 
-    if (name === 'classList') {
-      registerImportMethod(path, 'classList');
+    if (name === "classList") {
+      registerImportMethod(path, "classList");
       return t.callExpression(
-        t.identifier('_$classList'),
+        t.identifier("_$classList"),
         prevId ? [elem, value, prevId] : [elem, value]
       );
     }
 
-    if (dynamic && name === 'textContent') {
+    if (dynamic && name === "textContent") {
       return t.assignmentExpression(
-        '=',
-        t.memberExpression(elem, t.identifier('data')),
+        "=",
+        t.memberExpression(elem, t.identifier("data")),
         value
       );
     }
 
-    let isAttribute = isSVG || name.indexOf('-') > -1,
+    let isAttribute = isSVG || name.indexOf("-") > -1,
       attribute = isSVG ? SVGAttributes[name] : Attributes[name];
 
     if (attribute) {
-      if (attribute.type === 'attribute') isAttribute = true;
+      if (attribute.type === "attribute") isAttribute = true;
       if (attribute.alias) name = attribute.alias;
     } else if (isSVG)
       name = name.replace(/([A-Z])/g, g => `-${g[0].toLowerCase()}`);
 
     if (isAttribute)
       return t.callExpression(
-        t.memberExpression(elem, t.identifier('setAttribute')),
+        t.memberExpression(elem, t.identifier("setAttribute")),
         [t.stringLiteral(name), value]
       );
     return t.assignmentExpression(
-      '=',
+      "=",
       t.memberExpression(elem, t.identifier(name)),
       value
     );
@@ -195,10 +195,10 @@ export default babel => {
 
   function wrapDynamics(path, dynamics) {
     if (!dynamics.length) return;
-    registerImportMethod(path, 'wrap');
+    registerImportMethod(path, "wrap");
     if (dynamics.length === 1) {
       return t.expressionStatement(
-        t.callExpression(t.identifier('_$wrap'), [
+        t.callExpression(t.identifier("_$wrap"), [
           t.arrowFunctionExpression(
             [],
             setAttr(
@@ -216,21 +216,21 @@ export default babel => {
     const decls = [],
       statements = [],
       identifiers = [],
-      prevId = t.identifier('_p$');
+      prevId = t.identifier("_p$");
     dynamics.forEach(({ elem, key, value, isSVG }) => {
       // no point diffing at this point as object
-      if (key === 'style') {
+      if (key === "style") {
         statements.push(
           t.expressionStatement(setAttr(path, elem, key, value, isSVG, true))
         );
       } else {
-        const identifier = path.scope.generateUidIdentifier('v$');
+        const identifier = path.scope.generateUidIdentifier("v$");
         identifiers.push(identifier);
         decls.push(t.variableDeclarator(identifier, value));
         // stash prev value for comparison
         let prevValue;
-        if (key === 'classList') {
-          prevValue = path.scope.generateUidIdentifier('v$');
+        if (key === "classList") {
+          prevValue = path.scope.generateUidIdentifier("v$");
           decls.push(
             t.variableDeclarator(
               prevValue,
@@ -241,9 +241,9 @@ export default babel => {
         statements.push(
           t.expressionStatement(
             t.logicalExpression(
-              '&&',
+              "&&",
               t.binaryExpression(
-                '!==',
+                "!==",
                 identifier,
                 t.memberExpression(prevId, identifier)
               ),
@@ -252,7 +252,7 @@ export default babel => {
                 elem,
                 key,
                 t.assignmentExpression(
-                  '=',
+                  "=",
                   t.memberExpression(prevId, identifier),
                   identifier
                 ),
@@ -267,42 +267,42 @@ export default babel => {
     });
 
     return t.expressionStatement(
-      t.callExpression(t.identifier('_$wrap'), [
+      t.callExpression(t.identifier("_$wrap"), [
         t.arrowFunctionExpression(
           [prevId],
           t.blockStatement([
-            t.variableDeclaration('const', decls),
+            t.variableDeclaration("const", decls),
             ...statements,
             t.returnStatement(prevId)
           ])
         ),
         t.objectExpression(
-          identifiers.map(id => t.objectProperty(id, t.identifier('undefined')))
+          identifiers.map(id => t.objectProperty(id, t.identifier("undefined")))
         )
       ])
     );
   }
 
   function transformCondition(path, expr, deep) {
-    registerImportMethod(path, 'wrapCondition');
+    registerImportMethod(path, "wrapCondition");
     let dTest, cond;
     if (
       t.isConditionalExpression(expr) &&
-      (isDynamic(expr.consequent, path.get('consequent'), {
+      (isDynamic(expr.consequent, path.get("consequent"), {
         checkTags: true
       }) ||
-        isDynamic(expr.alternate, path.get('alternate'), { checkTags: true }))
+        isDynamic(expr.alternate, path.get("alternate"), { checkTags: true }))
     ) {
-      dTest = isDynamic(expr.test, path.get('test'), { checkMember: true });
+      dTest = isDynamic(expr.test, path.get("test"), { checkMember: true });
       if (dTest) {
         cond = expr.test;
-        expr.test = t.callExpression(t.identifier('_c$'), []);
+        expr.test = t.callExpression(t.identifier("_c$"), []);
         if (
           t.isConditionalExpression(expr.consequent) ||
           t.isLogicalExpression(expr.consequent)
         ) {
           expr.consequent = transformCondition(
-            path.get('consequent'),
+            path.get("consequent"),
             expr.consequent,
             true
           );
@@ -312,7 +312,7 @@ export default babel => {
           t.isLogicalExpression(expr.alternate)
         ) {
           expr.alternate = transformCondition(
-            path.get('alternate'),
+            path.get("alternate"),
             expr.alternate,
             true
           );
@@ -322,17 +322,17 @@ export default babel => {
       let nextExpr = expr;
       let nextPath = path;
       // handle top-level or, ie cond && <A/> || <B/>
-      if (expr.operator === '||' && t.isLogicalExpression(expr.left)) {
+      if (expr.operator === "||" && t.isLogicalExpression(expr.left)) {
         nextExpr = nextExpr.left;
-        nextPath = nextPath.get('left');
+        nextPath = nextPath.get("left");
       }
-      isDynamic(nextExpr.right, nextPath.get('right'), { checkTags: true }) &&
-        (dTest = isDynamic(nextExpr.left, nextPath.get('left'), {
+      isDynamic(nextExpr.right, nextPath.get("right"), { checkTags: true }) &&
+        (dTest = isDynamic(nextExpr.left, nextPath.get("left"), {
           checkMember: true
         }));
       if (dTest) {
         cond = nextExpr.left;
-        nextExpr.left = t.callExpression(t.identifier('_c$'), []);
+        nextExpr.left = t.callExpression(t.identifier("_c$"), []);
       }
     }
     if (dTest) {
@@ -340,10 +340,10 @@ export default babel => {
         t.arrowFunctionExpression(
           [],
           t.blockStatement([
-            t.variableDeclaration('const', [
+            t.variableDeclaration("const", [
               t.variableDeclarator(
-                t.identifier('_c$'),
-                t.callExpression(t.identifier('_$wrapCondition'), [
+                t.identifier("_c$"),
+                t.callExpression(t.identifier("_$wrapCondition"), [
                   t.arrowFunctionExpression([], cond)
                 ])
               )
@@ -358,19 +358,19 @@ export default babel => {
   }
 
   function createPlaceholder(path, results, tempPath, i, char) {
-    const exprId = path.scope.generateUidIdentifier('el$');
+    const exprId = path.scope.generateUidIdentifier("el$");
     let contentId;
     results.template += `<!--${char}-->`;
-    if (JSXoptions.generate === 'hydrate' && char === '/') {
-      registerImportMethod(path, 'getNextMarker');
-      contentId = path.scope.generateUidIdentifier('co$');
+    if (JSXoptions.generate === "hydrate" && char === "/") {
+      registerImportMethod(path, "getNextMarker");
+      contentId = path.scope.generateUidIdentifier("co$");
       results.decl.push(
         t.variableDeclarator(
           t.arrayPattern([exprId, contentId]),
-          t.callExpression(t.identifier('_$getNextMarker'), [
+          t.callExpression(t.identifier("_$getNextMarker"), [
             t.memberExpression(
               t.identifier(tempPath),
-              t.identifier('nextSibling')
+              t.identifier("nextSibling")
             )
           ])
         )
@@ -381,7 +381,7 @@ export default babel => {
           exprId,
           t.memberExpression(
             t.identifier(tempPath),
-            t.identifier(i === 0 ? 'firstChild' : 'nextSibling')
+            t.identifier(i === 0 ? "firstChild" : "nextSibling")
           )
         )
       );
@@ -396,15 +396,15 @@ export default babel => {
   }
 
   function trimWhitespace(text) {
-    text = text.replace(/\r/g, '');
+    text = text.replace(/\r/g, "");
     if (/\n/g.test(text)) {
       text = text
-        .split('\n')
-        .map((t, i) => (i ? t.replace(/^\s*/g, '') : t))
+        .split("\n")
+        .map((t, i) => (i ? t.replace(/^\s*/g, "") : t))
         .filter(s => !/^\s*$/.test(s))
-        .join('');
+        .join("");
     }
-    return text.replace(/\s+/g, ' ');
+    return text.replace(/\s+/g, " ");
   }
 
   function checkLength(children) {
@@ -495,8 +495,8 @@ export default babel => {
       if (JSXoptions.wrapFragments) {
         transformedChildren = transformedChildren.map(c => {
           if (t.isFunction(c)) {
-            registerImportMethod(path, 'wrapMemo');
-            return t.callExpression(t.identifier('_$wrapMemo'), [c]);
+            registerImportMethod(path, "wrapMemo");
+            return t.callExpression(t.identifier("_$wrapMemo"), [c]);
           }
           return c;
         });
@@ -534,7 +534,7 @@ export default babel => {
         if (isComponent(tagName)) return true;
         if (
           JSXoptions.contextToCustomElements &&
-          (tagName === 'slot' || tagName.indexOf('-') > -1)
+          (tagName === "slot" || tagName.indexOf("-") > -1)
         )
           return true;
         if (
@@ -542,12 +542,12 @@ export default babel => {
             attr =>
               t.isJSXSpreadAttribute(attr) ||
               (t.isJSXExpressionContainer(attr.value) &&
-                (JSXoptions.generate !== 'ssr' ||
+                (JSXoptions.generate !== "ssr" ||
                   !(
-                    attr.name.name.startsWith('on') ||
-                    attr.name.name === 'events'
+                    attr.name.name.startsWith("on") ||
+                    attr.name.name === "events"
                   )) &&
-                (attr.name.name === 'model' ||
+                (attr.name.name === "model" ||
                   attr.name.name.toLowerCase() !== attr.name.name ||
                   !(
                     t.isStringLiteral(attr.value.expression) ||
@@ -582,12 +582,12 @@ export default babel => {
           props.push(t.objectExpression(runningObject));
           runningObject = [];
         }
-        const key = t.identifier('k$'),
-          memo = t.identifier('m$');
+        const key = t.identifier("k$"),
+          memo = t.identifier("m$");
         dynamicSpreads.push(
           t.spreadElement(
             t.callExpression(
-              t.memberExpression(t.identifier('Object'), t.identifier('keys')),
+              t.memberExpression(t.identifier("Object"), t.identifier("keys")),
               [attribute.argument]
             )
           )
@@ -597,19 +597,19 @@ export default babel => {
             t.memberExpression(
               t.callExpression(
                 t.memberExpression(
-                  t.identifier('Object'),
-                  t.identifier('keys')
+                  t.identifier("Object"),
+                  t.identifier("keys")
                 ),
                 [attribute.argument]
               ),
-              t.identifier('reduce')
+              t.identifier("reduce")
             ),
             [
               t.arrowFunctionExpression(
                 [memo, key],
                 t.sequenceExpression([
                   t.assignmentExpression(
-                    '=',
+                    "=",
                     t.memberExpression(memo, key, true),
                     t.arrowFunctionExpression(
                       [],
@@ -626,23 +626,23 @@ export default babel => {
       } else {
         const value = attribute.value || t.booleanLiteral(true);
         if (t.isJSXExpressionContainer(value))
-          if (attribute.name.name === 'ref') {
+          if (attribute.name.name === "ref") {
             runningObject.push(
               t.objectProperty(
-                t.identifier('ref'),
+                t.identifier("ref"),
                 t.arrowFunctionExpression(
-                  [t.identifier('r$')],
+                  [t.identifier("r$")],
                   t.assignmentExpression(
-                    '=',
+                    "=",
                     value.expression,
-                    t.identifier('r$')
+                    t.identifier("r$")
                   )
                 )
               )
             );
-          } else if (attribute.name.name === 'forwardRef') {
+          } else if (attribute.name.name === "forwardRef") {
             runningObject.push(
-              t.objectProperty(t.identifier('ref'), value.expression)
+              t.objectProperty(t.identifier("ref"), value.expression)
             );
           } else if (
             isDynamic(
@@ -680,9 +680,9 @@ export default babel => {
 
     const childResult = transformComponentChildren(path, jsx.children, opts);
     if (childResult && childResult[0]) {
-      childResult[1] && dynamicKeys.push(t.stringLiteral('children'));
+      childResult[1] && dynamicKeys.push(t.stringLiteral("children"));
       runningObject.push(
-        t.objectProperty(t.identifier('children'), childResult[0])
+        t.objectProperty(t.identifier("children"), childResult[0])
       );
     }
     props.push(t.objectExpression(runningObject));
@@ -690,7 +690,7 @@ export default babel => {
     if (props.length > 1) {
       props = [
         t.callExpression(
-          t.memberExpression(t.identifier('Object'), t.identifier('assign')),
+          t.memberExpression(t.identifier("Object"), t.identifier("assign")),
           props
         )
       ];
@@ -703,12 +703,12 @@ export default babel => {
       dynamicKeys.push.apply(dynamicKeys, dynamicSpreads);
       dynamics = t.arrayExpression(dynamicKeys);
     } else if (dynamicKeys.length) {
-      const hash = dynamicKeys.map(k => k.value).join('|'),
+      const hash = dynamicKeys.map(k => k.value).join("|"),
         childKeys =
           path.scope.getProgramParent().data.childKeys ||
           (path.scope.getProgramParent().data.childKeys = new Map());
       if (!childKeys.has(hash)) {
-        const identifier = path.scope.generateUidIdentifier('ck$');
+        const identifier = path.scope.generateUidIdentifier("ck$");
         childKeys.set(hash, { identifier, dynamicKeys });
         dynamics = identifier;
       } else {
@@ -716,28 +716,28 @@ export default babel => {
       }
     }
 
-    registerImportMethod(path, 'createComponent');
+    registerImportMethod(path, "createComponent");
     const componentArgs = [t.identifier(tagName), props[0]];
     if (dynamics) componentArgs.push(dynamics);
     exprs = [
-      t.callExpression(t.identifier('_$createComponent'), componentArgs)
+      t.callExpression(t.identifier("_$createComponent"), componentArgs)
     ];
 
-    return { exprs, template: '', component: true };
+    return { exprs, template: "", component: true };
   }
 
   function transformAttributes(path, jsx, opts, results) {
     let elem = results.id,
       hasHydratableEvent = false,
       children;
-    const spread = t.identifier('_$spread'),
+    const spread = t.identifier("_$spread"),
       tagName = getTagName(jsx),
       isSVG = SVGElements.has(tagName),
       hasChildren = jsx.children.length > 0;
 
     jsx.openingElement.attributes.forEach(attribute => {
       if (t.isJSXSpreadAttribute(attribute)) {
-        registerImportMethod(path, 'spread');
+        registerImportMethod(path, "spread");
         results.exprs.push(
           t.expressionStatement(
             t.callExpression(spread, [
@@ -763,33 +763,33 @@ export default babel => {
         key = attribute.name.name;
       if (
         t.isJSXExpressionContainer(value) &&
-        (key === 'model' ||
+        (key === "model" ||
           key.toLowerCase() !== key ||
           !(
             t.isStringLiteral(value.expression) ||
             t.isNumericLiteral(value.expression)
           ))
       ) {
-        if (key === 'ref') {
+        if (key === "ref") {
           results.exprs.unshift(
             t.expressionStatement(
-              t.assignmentExpression('=', value.expression, elem)
+              t.assignmentExpression("=", value.expression, elem)
             )
           );
-        } else if (key === 'children') {
+        } else if (key === "children") {
           children = value;
-        } else if (key === 'forwardRef') {
+        } else if (key === "forwardRef") {
           results.exprs.unshift(
             t.expressionStatement(
               t.logicalExpression(
-                '&&',
+                "&&",
                 value.expression,
                 t.callExpression(value.expression, [elem])
               )
             )
           );
-        } else if (key.startsWith('on')) {
-          if (JSXoptions.generate === 'ssr') return;
+        } else if (key.startsWith("on")) {
+          if (JSXoptions.generate === "ssr") return;
           const ev = toEventName(key);
           if (
             JSXoptions.delegateEvents &&
@@ -807,7 +807,7 @@ export default babel => {
             results.exprs.unshift(
               t.expressionStatement(
                 t.assignmentExpression(
-                  '=',
+                  "=",
                   t.memberExpression(
                     t.identifier(elem.name),
                     t.identifier(`__${ev}`)
@@ -820,7 +820,7 @@ export default babel => {
             results.exprs.unshift(
               t.expressionStatement(
                 t.assignmentExpression(
-                  '=',
+                  "=",
                   t.memberExpression(
                     t.identifier(elem.name),
                     t.identifier(`on${ev}`)
@@ -829,13 +829,13 @@ export default babel => {
                 )
               )
             );
-        } else if (key === 'events') {
-          if (JSXoptions.generate === 'ssr') return;
+        } else if (key === "events") {
+          if (JSXoptions.generate === "ssr") return;
           value.expression.properties.forEach(prop =>
             results.exprs.push(
               t.expressionStatement(
                 t.callExpression(
-                  t.memberExpression(elem, t.identifier('addEventListener')),
+                  t.memberExpression(elem, t.identifier("addEventListener")),
                   [t.stringLiteral(prop.key.name || prop.key.value), prop.value]
                 )
               )
@@ -848,20 +848,20 @@ export default babel => {
             { checkMember: true }
           )
         ) {
-          if (key === 'textContent') {
-            const textId = path.scope.generateUidIdentifier('el$');
+          if (key === "textContent") {
+            const textId = path.scope.generateUidIdentifier("el$");
             results.exprs.push(
               t.expressionStatement(
                 t.assignmentExpression(
-                  '=',
-                  t.memberExpression(elem, t.identifier('textContent')),
+                  "=",
+                  t.memberExpression(elem, t.identifier("textContent")),
                   value.expression
                 )
               ),
-              t.variableDeclaration('const', [
+              t.variableDeclaration("const", [
                 t.variableDeclarator(
                   textId,
-                  t.memberExpression(elem, t.identifier('firstChild'))
+                  t.memberExpression(elem, t.identifier("firstChild"))
                 )
               ])
             );
@@ -920,7 +920,7 @@ export default babel => {
             child.id,
             t.memberExpression(
               t.identifier(tempPath),
-              t.identifier(i === 0 ? 'firstChild' : 'nextSibling')
+              t.identifier(i === 0 ? "firstChild" : "nextSibling")
             )
           )
         );
@@ -932,9 +932,9 @@ export default babel => {
         tempPath = child.id.name;
         i++;
       } else if (child.exprs.length) {
-        registerImportMethod(path, 'insert');
+        registerImportMethod(path, "insert");
         const multi = checkLength(jsxChildren),
-          markers = (generate === 'ssr' || generate === 'hydrate') && multi;
+          markers = (generate === "ssr" || generate === "hydrate") && multi;
         // boxed by textNodes
         if (
           markers ||
@@ -942,19 +942,19 @@ export default babel => {
             t.isJSXText(jsxChildren[index + 1]))
         ) {
           if (markers)
-            tempPath = createPlaceholder(path, results, tempPath, i++, '#')[0]
+            tempPath = createPlaceholder(path, results, tempPath, i++, "#")[0]
               .name;
           const [exprId, contentId] = createPlaceholder(
             path,
             results,
             tempPath,
             i++,
-            markers ? '/' : ''
+            markers ? "/" : ""
           );
           results.exprs.push(
             t.expressionStatement(
               t.callExpression(
-                t.identifier('_$insert'),
+                t.identifier("_$insert"),
                 contentId
                   ? [results.id, child.exprs[0], exprId, contentId]
                   : [results.id, child.exprs[0], exprId]
@@ -965,7 +965,7 @@ export default babel => {
         } else if (multi) {
           results.exprs.push(
             t.expressionStatement(
-              t.callExpression(t.identifier('_$insert'), [
+              t.callExpression(t.identifier("_$insert"), [
                 results.id,
                 child.exprs[0],
                 nextChild(children, index) || t.nullLiteral()
@@ -976,27 +976,27 @@ export default babel => {
           results.exprs.push(
             t.expressionStatement(
               t.callExpression(
-                t.identifier('_$insert'),
-                generate === 'hydrate'
+                t.identifier("_$insert"),
+                generate === "hydrate"
                   ? [
                       results.id,
                       child.exprs[0],
-                      t.identifier('undefined'),
+                      t.identifier("undefined"),
                       t.callExpression(
                         t.memberExpression(
                           t.memberExpression(
                             t.memberExpression(
-                              t.identifier('Array'),
-                              t.identifier('prototype')
+                              t.identifier("Array"),
+                              t.identifier("prototype")
                             ),
-                            t.identifier('slice')
+                            t.identifier("slice")
                           ),
-                          t.identifier('call')
+                          t.identifier("call")
                         ),
                         [
                           t.memberExpression(
                             results.id,
-                            t.identifier('childNodes')
+                            t.identifier("childNodes")
                           ),
                           t.numericLiteral(0)
                         ]
@@ -1048,8 +1048,8 @@ export default babel => {
             }
           }
           if (!singleChild && JSXoptions.wrapFragments && child.dynamic) {
-            registerImportMethod(path, 'wrapMemo');
-            return t.callExpression(t.identifier('_$wrapMemo'), [
+            registerImportMethod(path, "wrapMemo");
+            return t.callExpression(t.identifier("_$wrapMemo"), [
               child.exprs[0]
             ]);
           }
@@ -1062,7 +1062,7 @@ export default babel => {
   function generateHTMLNode(path, jsx, opts, info = {}) {
     if (t.isJSXElement(jsx)) {
       let tagName = getTagName(jsx),
-        wrapSVG = info.topLevel && tagName != 'svg' && SVGElements.has(tagName),
+        wrapSVG = info.topLevel && tagName != "svg" && SVGElements.has(tagName),
         voidTag = VoidElements.indexOf(tagName) > -1;
       if (isComponent(tagName)) return generateComponent(path, jsx, opts);
       let results = {
@@ -1073,50 +1073,50 @@ export default babel => {
         postExprs: [],
         isSVG: wrapSVG
       };
-      if (wrapSVG) results.template = '<svg>' + results.template;
-      if (!info.skipId) results.id = path.scope.generateUidIdentifier('el$');
+      if (wrapSVG) results.template = "<svg>" + results.template;
+      if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       transformAttributes(path, jsx, opts, results);
       if (
         JSXoptions.contextToCustomElements &&
-        (tagName === 'slot' || tagName.indexOf('-') > -1)
+        (tagName === "slot" || tagName.indexOf("-") > -1)
       ) {
-        registerImportMethod(path, 'currentContext');
+        registerImportMethod(path, "currentContext");
         results.exprs.push(
           t.expressionStatement(
             t.assignmentExpression(
-              '=',
-              t.memberExpression(results.id, t.identifier('_context')),
-              t.callExpression(t.identifier('_$currentContext'), [])
+              "=",
+              t.memberExpression(results.id, t.identifier("_context")),
+              t.callExpression(t.identifier("_$currentContext"), [])
             )
           )
         );
       }
-      results.template += '>';
+      results.template += ">";
       if (!voidTag) {
         transformChildren(path, jsx, opts, results);
         results.template += `</${tagName}>`;
       }
       if (
         info.topLevel &&
-        JSXoptions.generate === 'hydrate' &&
+        JSXoptions.generate === "hydrate" &&
         results.hasHydratableEvent
       ) {
-        registerImportMethod(path, 'runHydrationEvents');
+        registerImportMethod(path, "runHydrationEvents");
         results.postExprs.push(
           t.expressionStatement(
-            t.callExpression(t.identifier('_$runHydrationEvents'), [
+            t.callExpression(t.identifier("_$runHydrationEvents"), [
               t.callExpression(
-                t.memberExpression(results.id, t.identifier('getAttribute')),
-                [t.stringLiteral('_hk')]
+                t.memberExpression(results.id, t.identifier("getAttribute")),
+                [t.stringLiteral("_hk")]
               )
             ])
           )
         );
       }
-      if (wrapSVG) results.template += '</svg>';
+      if (wrapSVG) results.template += "</svg>";
       return results;
     } else if (t.isJSXFragment(jsx)) {
-      let results = { template: '', decl: [], exprs: [], dynamics: [] };
+      let results = { template: "", decl: [], exprs: [], dynamics: [] };
       transformFragmentChildren(path, jsx, opts, results);
       return results;
     } else if (
@@ -1141,7 +1141,7 @@ export default babel => {
         dynamics: [],
         postExprs: []
       };
-      if (!info.skipId) results.id = path.scope.generateUidIdentifier('el$');
+      if (!info.skipId) results.id = path.scope.generateUidIdentifier("el$");
       return results;
     } else if (t.isJSXExpressionContainer(jsx)) {
       if (t.isJSXEmptyExpression(jsx.expression)) return null;
@@ -1151,7 +1151,7 @@ export default babel => {
           checkTags: !!info.componentChild
         })
       )
-        return { exprs: [jsx.expression], template: '' };
+        return { exprs: [jsx.expression], template: "" };
       const expr =
         JSXoptions.wrapConditionals &&
         (t.isLogicalExpression(jsx.expression) ||
@@ -1163,14 +1163,14 @@ export default babel => {
           : t.arrowFunctionExpression([], jsx.expression);
       return {
         exprs: [expr],
-        template: '',
+        template: "",
         dynamic: true
       };
     }
   }
 
   return {
-    name: 'ast-transform',
+    name: "ast-transform",
     inherits: SyntaxJSX,
     visitor: {
       JSXElement: (path, { opts }) => {
@@ -1210,19 +1210,19 @@ export default babel => {
           const exprs = (path.scope.data.exprs = new Map());
           path.traverse({
             JSXExpressionContainer(p) {
-              exprs.set(p.node.expression, p.get('expression'));
+              exprs.set(p.node.expression, p.get("expression"));
             },
             JSXSpreadAttribute(p) {
-              exprs.set(p.node.argument, p.get('arguments'));
+              exprs.set(p.node.argument, p.get("arguments"));
             }
           });
         },
         exit: path => {
           if (path.scope.data.events) {
-            registerImportMethod(path, 'delegateEvents');
+            registerImportMethod(path, "delegateEvents");
             path.node.body.push(
               t.expressionStatement(
-                t.callExpression(t.identifier('_$delegateEvents'), [
+                t.callExpression(t.identifier("_$delegateEvents"), [
                   t.arrayExpression(
                     Array.from(path.scope.data.events).map(e =>
                       t.stringLiteral(e)
@@ -1239,7 +1239,7 @@ export default babel => {
                 t.arrayExpression(o.dynamicKeys)
               )
             );
-            path.node.body.unshift(t.variableDeclaration('const', declarators));
+            path.node.body.unshift(t.variableDeclaration("const", declarators));
           }
           if (path.scope.data.templates) {
             const declarators = path.scope.data.templates.map(template => {
@@ -1247,11 +1247,11 @@ export default babel => {
                 cooked: template.template,
                 raw: template.template
               };
-              registerImportMethod(path, 'template');
+              registerImportMethod(path, "template");
               return t.variableDeclarator(
                 template.id,
                 t.callExpression(
-                  t.identifier('_$template'),
+                  t.identifier("_$template"),
                   [
                     t.templateLiteral([t.templateElement(tmpl, true)], [])
                   ].concat(
@@ -1260,7 +1260,7 @@ export default babel => {
                 )
               );
             });
-            path.node.body.unshift(t.variableDeclaration('const', declarators));
+            path.node.body.unshift(t.variableDeclaration("const", declarators));
           }
         }
       }
