@@ -79,7 +79,7 @@ export default babel => {
       path.scope.getProgramParent().data.imports ||
       (path.scope.getProgramParent().data.imports = new Set());
     if (!imports.has(name)) {
-      addNamed(path, name, JSXoptoins.moduleName, { nameHint: `_$${name}` });
+      addNamed(path, name, JSXoptions.moduleName, { nameHint: `_$${name}` });
       imports.add(name);
     }
   }
